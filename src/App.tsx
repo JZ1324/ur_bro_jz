@@ -194,10 +194,10 @@ export default function App() {
           </div>
 
           <div className="flex flex-col items-center md:items-start gap-4 flex-grow text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-text">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-text">
               <CanvasText 
-                text="JZ" 
-                className="text-4xl md:text-5xl"
+                text="ur_bro_jz" 
+                className="text-3xl md:text-4xl"
                 colors={["#b8795b", "#6e735e", "#d1d5db"]} 
               />
             </h1>
@@ -300,9 +300,9 @@ export default function App() {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 px-4">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-2xl font-bold text-text">The Vault</h2>
-                  <p className="text-muted text-sm font-medium">
+                  <div className="text-muted text-sm font-medium">
                     <TextScramble text="Unlocked collection · 4 posts" />
-                  </p>
+                  </div>
                 </div>
                 <button 
                   onClick={lockArchive}
@@ -463,7 +463,7 @@ export default function App() {
         {/* Fun Manifesto Section */}
         <section className="w-full py-20 flex flex-col items-center justify-center border-t border-border/20 bg-accent/5">
           <h2 className="text-center text-4xl leading-tight font-bold text-text md:text-6xl lg:text-7xl opacity-90 max-w-4xl px-4">
-            How many <SquigglyText scale={[3, 5]} className="text-warm-accent">projects</SquigglyText> <br />
+            How many <SquigglyText stepDuration={70} scale={[6, 9]} className="text-amber-500">projects</SquigglyText> <br />
             are <SquigglyText scale={[3, 5]} className="text-accent underline decoration-dotted underline-offset-8">too many</SquigglyText> projects?
           </h2>
           <p className="mt-8 text-muted font-medium text-sm tracking-widest uppercase opacity-60">The archive never ends.</p>
