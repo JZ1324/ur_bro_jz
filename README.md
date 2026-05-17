@@ -1,20 +1,36 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# ur_bro_jz
 
-# Run and deploy your AI Studio app
+A static personal archive site for `@ur_bro_jz`, built with Vite, React, TypeScript, Tailwind CSS, Motion, and GSAP.
 
-This contains everything you need to run your app locally.
+The site includes:
 
-View your app in AI Studio: https://ai.studio/apps/05795158-4d9b-491e-9c1b-2051bd7e22a9
+- Instagram-style profile card using a local profile image asset.
+- Story-highlight navigation for Projects, About, School, Music, and Leadership.
+- About overlay with a dynamic island table of contents.
+- Project matrix and project detail overlays.
+- Secure private archive flow designed for Supabase private Storage and signed URLs.
+- Polished coming-soon states for unfinished controls.
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+Prerequisite: Node.js.
 
+```bash
+npm install
+npm run dev
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+The dev server starts on `http://localhost:3000` when available, or the next open Vite port such as `http://localhost:3001`.
+
+## Checks
+
+```bash
+npm run lint
+npm run build
+```
+
+## Privacy Note
+
+Private photos must not be stored in `src/`, `public/`, `src/data/site.ts`, or committed to GitHub. The frontend now fails closed and only loads private archive content through a Supabase Edge Function after a server-side access-key check.
+
+See [supabase/README.md](supabase/README.md) for the required private bucket, manifest, secret, and function deployment setup.

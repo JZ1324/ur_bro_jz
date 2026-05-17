@@ -632,12 +632,15 @@ export const MagicBento: React.FC<MagicBentoProps> = ({
                 <p className="magic-bento-card__description">{card.description}</p>
               </div>
               {card.image && (
-                <img 
-                  src={card.image} 
-                  alt={card.title} 
-                  className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-30 transition-opacity"
-                  referrerPolicy="no-referrer"
-                />
+                <>
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="magic-bento-card__image"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="magic-bento-card__shade" />
+                </>
               )}
             </>
           );
