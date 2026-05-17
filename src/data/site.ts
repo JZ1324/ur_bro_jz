@@ -87,7 +87,7 @@ export const profileData: ProfileData = {
   displayName: 'ur_bro_jz',
   handle: '@ur_bro_jz',
   bio: 'Romans 12:16-21',
-  imageSrc: '/instagram-profile.jpg',
+  imageSrc: `${import.meta.env.BASE_URL}instagram-profile.jpg`,
   instagramUrl: 'https://www.instagram.com/ur_bro_jz/',
   stats: [
     { label: 'Posts', value: 1 },
