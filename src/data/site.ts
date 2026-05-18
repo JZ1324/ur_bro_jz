@@ -9,6 +9,7 @@ export type ProfileData = {
   bio: string;
   imageSrc: string;
   instagramUrl: string;
+  dumpsUrl: string;
   stats: ProfileStat[];
   track?: ProfileTrack;
 };
@@ -133,6 +134,7 @@ export const profileData: ProfileData = {
   bio: 'Romans 12:16-21',
   imageSrc: `${import.meta.env.BASE_URL}instagram-profile.jpg`,
   instagramUrl: 'https://www.instagram.com/ur_bro_jz/',
+  dumpsUrl: 'https://www.instagram.com/ur_bro._.jz',
   stats: [
     { label: 'Posts', value: 1 },
     { label: 'Following', value: 1 },
@@ -250,7 +252,7 @@ export const faithSections: FaithSection[] = [
 
 export const storyItems: StoryItem[] = [
   { id: 'projects', label: 'Projects', icon: 'folder', locked: false, action: 'projects' },
-  { id: 'about', label: 'About', icon: 'user', locked: false, action: 'about' },
+  { id: 'about', label: 'About', icon: 'user', locked: true, action: 'about' },
   { id: 'school', label: 'School', icon: 'graduationCap', locked: true, action: 'lockedArchive' },
   { id: 'music', label: 'Music', icon: 'music', locked: true, action: 'lockedArchive' },
   { id: 'leadership', label: 'Leadership', icon: 'users', locked: true, action: 'lockedArchive' },

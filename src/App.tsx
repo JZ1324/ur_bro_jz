@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { LayoutGrid, Lock, Menu, Moon, Plus, Sun } from 'lucide-react';
+import { LayoutGrid, Lock, Menu, Plus } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArchiveVault } from './components/ArchiveVault';
 import { AboutOverlay } from './components/AboutOverlay';
@@ -17,6 +17,7 @@ import { ProjectOverlays } from './components/ProjectOverlays';
 import { StoryHighlights } from './components/StoryHighlights';
 import { TextScramble } from './components/TextScramble';
 import Stepper, { Step } from './components/ui/Stepper';
+import { ThemeToggle, type Theme } from './components/ui/ThemeToggle';
 import {
   aboutSections,
   archiveSections,
@@ -53,21 +54,14 @@ export default function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [showJesus, setShowJesus] = useState(false);
   const [showArchiveOverlay, setShowArchiveOverlay] = useState(false);
+  const [pendingUnlockDestination, setPendingUnlockDestination] = useState<'archive' | 'about'>('archive');
   const [activeArchiveSectionId, setActiveArchiveSectionId] = useState<ArchiveSectionId | null>('school');
   const [pendingArchiveSectionId, setPendingArchiveSectionId] = useState<ArchiveSectionId | null>(null);
   const [privateArchiveSections, setPrivateArchiveSections] = useState<Partial<Record<ArchiveSectionId, PrivateArchiveSection>>>({});
   const [archiveAccessKey, setArchiveAccessKey] = useState<string | null>(null);
   const [archiveErrorMessage, setArchiveErrorMessage] = useState<string | null>(null);
   const [placeholderContent, setPlaceholderContent] = useState<PlaceholderContent | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const savedPreference = localStorage.getItem('darkMode');
-      return savedPreference === null
-        ? true
-        : savedPreference === 'true' || window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -75,7 +69,6 @@ export default function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    localStorage.setItem('darkMode', isDarkMode.toString());
   }, [isDarkMode]);
 
   useEffect(() => {
@@ -87,6 +80,7 @@ export default function App() {
       setArchiveErrorMessage(null);
       setError(false);
       setAccessInputResetKey(0);
+      setPendingUnlockDestination('archive');
     }
   }, [showModal]);
 
@@ -95,10 +89,23 @@ export default function App() {
     if (isUnlocked && archiveAccessKey) {
       setShowArchiveOverlay(true);
     } else {
+      setPendingUnlockDestination('archive');
       setPendingArchiveSectionId(activeArchiveSectionId ?? 'school');
       setArchiveErrorMessage(null);
       setShowModal(true);
     }
+  };
+
+  const showAboutLocked = () => {
+    if (isUnlocked && archiveAccessKey) {
+      setShowAbout(true);
+      return;
+    }
+
+    setPendingUnlockDestination('about');
+    setPendingArchiveSectionId(activeArchiveSectionId ?? 'school');
+    setArchiveErrorMessage(null);
+    setShowModal(true);
   };
 
   const loadArchiveSection = async (sectionId: ArchiveSectionId, accessKey: string) => {
@@ -149,7 +156,12 @@ export default function App() {
     setIsUnlocked(true);
     setArchiveAccessKey(verifiedAccessKey);
     setShowModal(false);
-    setShowArchiveOverlay(true);
+    if (pendingUnlockDestination === 'about') {
+      setShowAbout(true);
+      setShowArchiveOverlay(false);
+    } else {
+      setShowArchiveOverlay(true);
+    }
     setPasswordInput('');
     setError(false);
     setPendingArchiveSectionId(null);
@@ -170,7 +182,7 @@ export default function App() {
       return;
     }
     if (story.action === 'about') {
-      setShowAbout(true);
+      showAboutLocked();
       return;
     }
     const sectionId = story.id as ArchiveSectionId;
@@ -183,6 +195,7 @@ export default function App() {
       return;
     }
     setPendingArchiveSectionId(sectionId);
+    setPendingUnlockDestination('archive');
     setArchiveErrorMessage(null);
     setShowModal(true);
   };
@@ -212,6 +225,10 @@ export default function App() {
     setExpandedProjectId(id);
   };
 
+  const handleThemeChange = (theme: Theme) => {
+    setIsDarkMode(theme === 'dark');
+  };
+
   return (
     <div className="min-h-screen pt-20 pb-10 flex flex-col items-center bg-bg selection:bg-accent-soft/40">
       <header className="fixed top-0 left-0 w-full z-40 bg-bg/85 backdrop-blur-md border-b border-border/50 flex justify-center px-4 py-3">
@@ -224,13 +241,11 @@ export default function App() {
             <TextScramble text="jz.archive" className="scale-75 origin-left" />
           </button>
           <div className="flex items-center gap-2 text-accent">
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2 rounded-full text-accent hover:bg-accent-soft transition-all active:scale-90"
-              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            >
-              {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
-            </button>
+            <ThemeToggle
+              defaultTheme={isDarkMode ? 'dark' : 'light'}
+              onThemeChange={handleThemeChange}
+              buttonSize={36}
+            />
             <button
               onClick={() => setPlaceholderContent(placeholders.create)}
               className="p-2 rounded-full text-accent hover:bg-accent-soft transition-all active:scale-90"
@@ -261,7 +276,6 @@ export default function App() {
           profile={profileData}
           faithHover={faithHover}
           onFaithClick={() => setShowJesus(true)}
-          onResumeClick={() => setPlaceholderContent(placeholders.resume)}
         />
         <StoryHighlights stories={storyItems} isUnlocked={isUnlocked} onStoryClick={handleStoryClick} />
         <NowSection items={nowItems} />
@@ -282,7 +296,7 @@ export default function App() {
               Open Archive
             </button>
             <button
-              onClick={() => setShowAbout(true)}
+              onClick={showAboutLocked}
               className="rounded-full border border-accent/30 bg-accent-soft px-6 py-3 text-sm font-bold text-text transition-all hover:bg-[#2A3125] active:scale-95"
             >
               Read About

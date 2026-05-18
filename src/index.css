@@ -4,14 +4,14 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   
-  --color-bg: #11150F;
-  --color-surface: #1B2018;
-  --color-text: #F3F4EA;
-  --color-muted: #B7BBA8;
-  --color-accent: #C9D3B0;
-  --color-accent-dark: #E0E7CB;
-  --color-accent-soft: #23291F;
-  --color-border: #303728;
+  --color-bg: #F3EDE1;
+  --color-surface: #FFF8EB;
+  --color-text: #1A1A1A;
+  --color-muted: #5F6254;
+  --color-accent: #2F3B29;
+  --color-accent-dark: #48573D;
+  --color-accent-soft: #E5DDCF;
+  --color-border: #D0C6B6;
   --color-warm-accent: #E49A78;
 
   --dark-color-bg: #11150F;
@@ -54,10 +54,10 @@
   }
 
   body {
-    @apply bg-bg text-text antialiased transition-colors duration-300;
+    @apply bg-bg text-text antialiased;
     background:
-      radial-gradient(circle at 50% -10%, rgba(201, 211, 176, 0.08), transparent 34rem),
-      radial-gradient(circle at 90% 12%, rgba(228, 154, 120, 0.06), transparent 24rem),
+      radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 34rem),
+      radial-gradient(circle at 90% 12%, color-mix(in srgb, var(--color-warm-accent) 10%, transparent), transparent 24rem),
       var(--color-bg);
   }
 

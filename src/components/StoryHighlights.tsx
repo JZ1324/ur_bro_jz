@@ -46,8 +46,11 @@ export function StoryHighlights({ stories, isUnlocked, onStoryClick }: StoryHigh
                   <Icon size={28} className={isLocked ? 'text-muted' : 'text-accent'} />
                 </div>
                 {isLocked && (
-                  <div className="absolute bottom-1 right-0 bg-surface rounded-full p-1 border border-border shadow-sm text-warm-accent">
-                    <Lock size={12} fill="currentColor" />
+                  <div
+                    className="absolute -bottom-0.5 -right-0.5 flex h-7 w-7 items-center justify-center rounded-full border border-accent/45 bg-bg text-accent shadow-lg shadow-black/25 ring-2 ring-surface"
+                    aria-hidden="true"
+                  >
+                    <Lock size={15} strokeWidth={2.4} />
                   </div>
                 )}
               </div>

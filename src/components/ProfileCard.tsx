@@ -2,13 +2,13 @@ import { motion } from 'motion/react';
 import { TypewriterEffectSmooth } from './ui/typewriter-effect';
 import { FaithHoverCard } from './ui/faith-hover-card';
 import { MiniMusicPlayer } from './MiniMusicPlayer';
+import { ShinyText } from './ui/ShinyText';
 import type { FaithHover, ProfileData, ProfileStat } from '../data/site';
 
 type ProfileCardProps = {
   profile: ProfileData;
   faithHover: FaithHover;
   onFaithClick: () => void;
-  onResumeClick: () => void;
 };
 
 function ProfileStatItem({ stat }: { stat: ProfileStat }) {
@@ -20,7 +20,7 @@ function ProfileStatItem({ stat }: { stat: ProfileStat }) {
   );
 }
 
-export function ProfileCard({ profile, faithHover, onFaithClick, onResumeClick }: ProfileCardProps) {
+export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardProps) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
@@ -85,6 +85,8 @@ export function ProfileCard({ profile, faithHover, onFaithClick, onResumeClick }
             ]}
             className="justify-center text-3xl md:justify-start md:text-[2.35rem]"
             cursorClassName="bg-warm-accent"
+            characterDelay={0.2}
+            revealDuration={3.8}
           />
         </h1>
         <a
@@ -125,12 +127,14 @@ export function ProfileCard({ profile, faithHover, onFaithClick, onResumeClick }
           >
             Instagram
           </a>
-          <button
-            onClick={onResumeClick}
-            className="flex-1 rounded-full border border-accent/40 bg-accent-soft px-7 py-2 font-semibold text-text shadow-sm premium-transition hover:bg-[#2A3125] active:scale-95 md:flex-none"
+          <a
+            href={profile.dumpsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 rounded-full border border-warm-accent/45 bg-warm-accent/10 px-7 py-2 text-center font-semibold text-text shadow-sm premium-transition hover:bg-warm-accent/15 active:scale-95 md:flex-none"
           >
-            Resume
-          </button>
+            <ShinyText text="My Dumpy" color="#E49A78" shineColor="#FFF4CF" speed={3.2} delay={0.45} />
+          </a>
         </div>
       </div>
     </motion.section>

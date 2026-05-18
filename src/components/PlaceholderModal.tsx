@@ -43,13 +43,15 @@ export function PlaceholderModal({ content, onClose }: PlaceholderModalProps) {
 
             <p className="mt-4 leading-relaxed text-muted">{content.description}</p>
 
-            <div className="mt-6 flex flex-col gap-2">
-              {content.items.map((item) => (
-                <div key={item} className="rounded-lg border border-border/40 bg-bg px-4 py-3 text-sm font-semibold text-text">
-                  {item}
-                </div>
-              ))}
-            </div>
+            {content.items.length > 0 && (
+              <div className="mt-6 flex flex-col gap-2">
+                {content.items.map((item) => (
+                  <div key={item} className="rounded-lg border border-border/40 bg-bg px-4 py-3 text-sm font-semibold text-text">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {content.actionHref && content.actionLabel && (
               <a

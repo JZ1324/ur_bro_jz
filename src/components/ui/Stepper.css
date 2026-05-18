@@ -11,11 +11,11 @@
   width: 100%;
   overflow: hidden;
   border-radius: 1.5rem;
-  border: 1px solid rgba(201, 211, 176, 0.16);
+  border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
   background:
-    radial-gradient(circle at 50% 0%, rgba(201, 211, 176, 0.1), transparent 46%),
-    rgba(27, 32, 24, 0.98);
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 46%),
+    var(--color-surface);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.2);
 }
 
 .rb-stepper-indicator-row {
@@ -62,15 +62,15 @@
   border-radius: 9999px;
   background: transparent;
   padding: 0.75rem 1rem;
-  color: #b7bba8;
+  color: var(--color-muted);
   font-size: 0.875rem;
   font-weight: 700;
   transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
 }
 
 .rb-stepper-back-button:hover {
-  background: rgba(201, 211, 176, 0.08);
-  color: #f3f4ea;
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-text);
 }
 
 .rb-stepper-back-button:active {
@@ -90,15 +90,15 @@
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  background: #c9d3b0;
+  background: var(--color-accent);
   padding: 0.75rem 1.5rem;
-  color: #11150f;
+  color: var(--color-bg);
   font-weight: 800;
   transition: background-color 180ms ease, transform 180ms ease, opacity 180ms ease;
 }
 
 .rb-stepper-next-button:hover {
-  background: #d8e0c2;
+  background: var(--color-accent-dark);
 }
 
 .rb-stepper-next-button:active {
@@ -131,7 +131,7 @@
   height: 0.625rem;
   width: 0.625rem;
   border-radius: 9999px;
-  background: #11150f;
+  background: var(--color-bg);
 }
 
 .rb-stepper-number {
@@ -146,7 +146,7 @@
   flex: 1;
   overflow: hidden;
   border-radius: 9999px;
-  background: rgba(142, 146, 127, 0.34);
+  background: color-mix(in srgb, var(--color-muted) 34%, transparent);
 }
 
 .rb-stepper-connector-inner {
@@ -159,7 +159,7 @@
 .rb-stepper-check-icon {
   height: 1rem;
   width: 1rem;
-  color: #11150f;
+  color: var(--color-bg);
 }
 
 @media (max-width: 420px) {
