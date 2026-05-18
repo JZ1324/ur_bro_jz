@@ -14,6 +14,7 @@ import { NowSection } from './components/NowSection';
 import { PlaceholderModal } from './components/PlaceholderModal';
 import { ProfileCard } from './components/ProfileCard';
 import { ProjectOverlays } from './components/ProjectOverlays';
+import { SecretPuzzleOverlay } from './components/SecretPuzzleOverlay';
 import { StoryHighlights } from './components/StoryHighlights';
 import { TextScramble } from './components/TextScramble';
 import Stepper, { Step } from './components/ui/Stepper';
@@ -53,6 +54,7 @@ export default function App() {
   const [showBento, setShowBento] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showJesus, setShowJesus] = useState(false);
+  const [showSecretPuzzle, setShowSecretPuzzle] = useState(false);
   const [showArchiveOverlay, setShowArchiveOverlay] = useState(false);
   const [pendingUnlockDestination, setPendingUnlockDestination] = useState<'archive' | 'about'>('archive');
   const [activeArchiveSectionId, setActiveArchiveSectionId] = useState<ArchiveSectionId | null>('school');
@@ -278,7 +280,7 @@ export default function App() {
           onFaithClick={() => setShowJesus(true)}
         />
         <StoryHighlights stories={storyItems} isUnlocked={isUnlocked} onStoryClick={handleStoryClick} />
-        <NowSection items={nowItems} />
+        <NowSection items={nowItems} onSecretClick={() => setShowSecretPuzzle(true)} />
 
         <motion.hr
           initial={{ opacity: 0 }}
@@ -480,6 +482,11 @@ export default function App() {
         isOpen={showJesus}
         sections={faithSections}
         onClose={() => setShowJesus(false)}
+      />
+
+      <SecretPuzzleOverlay
+        isOpen={showSecretPuzzle}
+        onClose={() => setShowSecretPuzzle(false)}
       />
 
       <ProjectOverlays

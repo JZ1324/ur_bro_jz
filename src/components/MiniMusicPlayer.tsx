@@ -79,7 +79,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   };
 
   return (
-    <div className="relative z-10 mt-3 min-h-[6.75rem] w-full max-w-[14.5rem] overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl">
+    <div className="relative z-10 mt-3 min-h-[6.25rem] w-full max-w-[13rem] overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl">
       <audio
         ref={audioRef}
         preload="metadata"
@@ -95,11 +95,11 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(201,211,176,0.16),transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_42%)]" />
 
-      <div className="relative grid grid-cols-[2.8rem_minmax(0,1fr)_2.35rem] items-center gap-2.5">
+      <div className="relative grid grid-cols-[2.45rem_minmax(0,1fr)_2.2rem] items-center gap-2.25">
         <img
           src={track.artworkSrc}
           alt={`${track.title} cover`}
-          className="h-[2.8rem] w-[2.8rem] rounded-xl border border-white/10 object-cover opacity-90 shadow-lg shadow-black/20"
+          className="h-[2.45rem] w-[2.45rem] rounded-xl border border-white/10 object-cover opacity-90 shadow-lg shadow-black/20"
         />
 
         <div className="min-w-0 flex-1">
@@ -119,7 +119,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
           type="button"
           onClick={togglePlayback}
           disabled={hasAudioError}
-          className="flex h-[2.35rem] w-[2.35rem] shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-lg shadow-accent/10 transition-all hover:bg-accent-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
+          className="flex h-[2.2rem] w-[2.2rem] shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-lg shadow-accent/10 transition-all hover:bg-accent-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
           aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
         >
           {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="translate-x-px" />}

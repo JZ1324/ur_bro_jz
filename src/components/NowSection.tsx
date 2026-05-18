@@ -5,9 +5,10 @@ import { SquigglyText } from './ui/squiggly-text';
 
 type NowSectionProps = {
   items: NowItem[];
+  onSecretClick?: () => void;
 };
 
-export function NowSection({ items }: NowSectionProps) {
+export function NowSection({ items, onSecretClick }: NowSectionProps) {
   return (
     <motion.section
       initial={{ opacity: 0, y: 18 }}
@@ -26,9 +27,16 @@ export function NowSection({ items }: NowSectionProps) {
           {item.label === 'Music' ? (
             <p className="mt-2 text-[13px] leading-6 text-muted">
               This song is staying here for a reason. Maybe it is about{' '}
-              <SquigglyText stepDuration={180} scale={[3, 5]} className="font-semibold text-warm-accent">
-                <FlipWords words={['someone?', 'a crush?', 'her?']} duration={3400} />
-              </SquigglyText>
+              <button
+                type="button"
+                onClick={onSecretClick}
+                className="inline rounded-sm text-left font-semibold text-warm-accent outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-warm-accent/50"
+                aria-label="Open classified name puzzle"
+              >
+                <SquigglyText stepDuration={320} scale={[2, 4]} className="font-semibold text-warm-accent">
+                  <FlipWords words={['someone?', 'a crush?', 'her?']} duration={6200} transitionDuration={0.95} />
+                </SquigglyText>
+              </button>
             </p>
           ) : (
             <p className="mt-2 text-[13px] leading-6 text-muted">{item.body}</p>

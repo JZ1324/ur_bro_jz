@@ -26,10 +26,10 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="relative mx-auto mt-6 grid w-full max-w-4xl grid-cols-1 items-center gap-6 overflow-hidden rounded-2xl border border-border/60 bg-surface px-5 py-5 shadow-2xl shadow-black/20 ring-1 ring-accent/5 sm:px-6 sm:py-6 md:grid-cols-[14.5rem_minmax(0,1fr)] md:gap-10 md:px-8 md:py-7"
+      className="relative mx-auto mt-6 grid w-full max-w-4xl grid-cols-1 items-center gap-7 overflow-hidden rounded-2xl border border-border/60 bg-surface px-5 py-5 shadow-2xl shadow-black/20 ring-1 ring-accent/5 sm:px-6 sm:py-6 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:gap-7 md:px-8 md:py-7"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(201,211,176,0.12),transparent_46%),radial-gradient(circle_at_85%_25%,rgba(228,154,120,0.09),transparent_34%)]" />
-      <div className="relative z-10 flex w-full min-w-0 flex-col items-center md:w-[14.5rem]">
+      <div className="relative z-10 flex w-full min-w-0 flex-col items-center justify-center md:-translate-x-4">
         <div className="group relative p-1.5">
           <motion.div
             animate={{
@@ -74,7 +74,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
         {profile.track && <MiniMusicPlayer track={profile.track} />}
       </div>
 
-      <div className="relative z-10 flex min-w-0 flex-col items-center gap-3 text-center md:items-start md:text-left">
+      <div className="relative z-10 flex min-w-0 flex-col items-center gap-3 text-center md:-translate-x-4 md:items-start md:text-left">
         <h1 className="text-3xl font-bold tracking-tight text-text md:text-[2.35rem]" aria-label={profile.displayName}>
           <TypewriterEffectSmooth
             words={[
@@ -89,14 +89,18 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
             revealDuration={3.8}
           />
         </h1>
-        <a
-          href={profile.instagramUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-muted font-semibold tracking-wide text-sm hover:text-accent premium-transition"
-        >
-          {profile.handle}
-        </a>
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-muted md:justify-start">
+          <a
+            href={profile.instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-accent premium-transition"
+          >
+            {profile.handle}
+          </a>
+          <span className="text-border" aria-hidden="true">/</span>
+          <span className="text-muted">{profile.bio}</span>
+        </div>
 
         <div className="grid w-full max-w-xs grid-cols-2 gap-1.5 rounded-2xl border border-border/45 bg-bg/25 p-1.5 md:max-w-sm">
           {profile.stats.map((stat) => stat.label === 'Following' ? (
@@ -115,8 +119,6 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
             </span>
           ))}
         </div>
-
-        <p className="max-w-sm text-sm leading-relaxed text-text sm:text-base">{profile.bio}</p>
 
         <div className="mt-1 flex w-full max-w-sm gap-3">
           <a
