@@ -1,24 +1,10 @@
-import { useCallback, useEffect, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export type Theme = 'light' | 'dark';
 
 type ThemeToggleProps = {
   defaultTheme?: Theme;
-  buttonSize?: number;
   onThemeChange?: (theme: Theme) => void;
-};
-
-const tokens: Record<Theme, Record<string, string>> = {
-  light: {
-    btnBg: '#F3EDE1',
-    btnText: '#1A1A1A',
-    btnRing: '#D0C6B6',
-  },
-  dark: {
-    btnBg: '#11150F',
-    btnText: '#C9D3B0',
-    btnRing: '#303728',
-  },
 };
 
 function MoonIcon() {
@@ -47,14 +33,11 @@ function SunIcon() {
 
 export function ThemeToggle({
   defaultTheme = 'dark',
-  buttonSize = 36,
   onThemeChange,
 }: ThemeToggleProps) {
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
-  const currentTokens = tokens[theme];
-
   useEffect(() => {
     const isDark = document.documentElement.classList.contains('dark');
     setTheme(isDark ? 'dark' : 'light');
@@ -69,35 +52,23 @@ export function ThemeToggle({
 
   const buttonScale = pressed ? 0.96 : hovered ? 1.1 : 1;
 
-  const buttonStyle: CSSProperties = {
-    width: buttonSize,
-    height: buttonSize,
-    transform: `scale(${buttonScale})`,
-    background: currentTokens.btnBg,
-    color: currentTokens.btnText,
-    boxShadow: `0 0 0 1.5px ${currentTokens.btnRing}`,
-    transition: 'transform 0.15s ease',
-  };
-
   return (
-    <span className="inline-flex rounded-full bg-bg">
-      <button
-        type="button"
-        style={buttonStyle}
-        onClick={toggle}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => {
-          setHovered(false);
-          setPressed(false);
-        }}
-        onMouseDown={() => setPressed(true)}
-        onMouseUp={() => setPressed(false)}
-        className="flex items-center justify-center rounded-full"
-        aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-        aria-pressed={theme === 'dark'}
-      >
-        {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-      </button>
-    </span>
+    <button
+      type="button"
+      style={{ transform: `scale(${buttonScale})` }}
+      onClick={toggle}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => {
+        setHovered(false);
+        setPressed(false);
+      }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      className="flex h-10 w-10 items-center justify-center rounded-full text-accent transition-colors hover:bg-accent-soft"
+      aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+      aria-pressed={theme === 'dark'}
+    >
+      {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+    </button>
   );
 }

@@ -246,7 +246,6 @@ export default function App() {
             <ThemeToggle
               defaultTheme={isDarkMode ? 'dark' : 'light'}
               onThemeChange={handleThemeChange}
-              buttonSize={36}
             />
             <button
               onClick={() => setPlaceholderContent(placeholders.create)}
