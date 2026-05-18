@@ -1,0 +1,177 @@
+.rb-stepper-outer {
+  display: flex;
+  width: 100%;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.rb-stepper-card {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(201, 211, 176, 0.16);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(201, 211, 176, 0.1), transparent 46%),
+    rgba(27, 32, 24, 0.98);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+}
+
+.rb-stepper-indicator-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+
+.rb-stepper-content {
+  position: relative;
+  overflow: hidden;
+}
+
+.rb-stepper-step {
+  padding: 0.75rem 1.5rem 0;
+}
+
+.rb-stepper-footer {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.rb-stepper-footer-nav {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.rb-stepper-footer-nav.rb-stepper-spread {
+  justify-content: space-between;
+}
+
+.rb-stepper-footer-nav.rb-stepper-end {
+  justify-content: flex-end;
+}
+
+.rb-stepper-back-button,
+.rb-stepper-next-button {
+  border: 0;
+  font: inherit;
+}
+
+.rb-stepper-back-button {
+  cursor: pointer;
+  border-radius: 9999px;
+  background: transparent;
+  padding: 0.75rem 1rem;
+  color: #b7bba8;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.rb-stepper-back-button:hover {
+  background: rgba(201, 211, 176, 0.08);
+  color: #f3f4ea;
+}
+
+.rb-stepper-back-button:active {
+  transform: scale(0.97);
+}
+
+.rb-stepper-back-button.rb-stepper-inactive,
+.rb-stepper-back-button:disabled {
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.rb-stepper-next-button {
+  display: inline-flex;
+  min-height: 3rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #c9d3b0;
+  padding: 0.75rem 1.5rem;
+  color: #11150f;
+  font-weight: 800;
+  transition: background-color 180ms ease, transform 180ms ease, opacity 180ms ease;
+}
+
+.rb-stepper-next-button:hover {
+  background: #d8e0c2;
+}
+
+.rb-stepper-next-button:active {
+  transform: scale(0.97);
+}
+
+.rb-stepper-next-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.rb-stepper-indicator {
+  position: relative;
+  cursor: pointer;
+  outline: none;
+}
+
+.rb-stepper-indicator-inner {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+
+.rb-stepper-active-dot {
+  height: 0.625rem;
+  width: 0.625rem;
+  border-radius: 9999px;
+  background: #11150f;
+}
+
+.rb-stepper-number {
+  font-size: 0.8125rem;
+}
+
+.rb-stepper-connector {
+  position: relative;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  height: 0.125rem;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: rgba(142, 146, 127, 0.34);
+}
+
+.rb-stepper-connector-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+}
+
+.rb-stepper-check-icon {
+  height: 1rem;
+  width: 1rem;
+  color: #11150f;
+}
+
+@media (max-width: 420px) {
+  .rb-stepper-indicator-row {
+    padding-inline: 1rem;
+  }
+
+  .rb-stepper-step {
+    padding-inline: 1rem;
+  }
+
+  .rb-stepper-footer {
+    padding-inline: 1rem;
+  }
+}

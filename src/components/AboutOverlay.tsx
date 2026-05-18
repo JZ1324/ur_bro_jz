@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
-import type { AboutSection, ProfileData } from '../data/site';
+import { FaithHoverCard } from './ui/faith-hover-card';
+import type { AboutSection, FaithHover, ProfileData, ProfileStat } from '../data/site';
 
 type AboutOverlayProps = {
   isOpen: boolean;
@@ -9,8 +10,19 @@ type AboutOverlayProps = {
   facts: Array<{ title: string; value: string }>;
   focusItems: string[];
   archiveStyleItems: string[];
+  faithHover: FaithHover;
+  onFaithClick: () => void;
   onClose: () => void;
 };
+
+function AboutStatCard({ stat }: { stat: ProfileStat }) {
+  return (
+    <div className="rounded-lg border border-border/40 bg-surface p-4 text-center shadow-sm">
+      <div className="text-2xl font-bold text-accent">{stat.value}</div>
+      <div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted">{stat.label}</div>
+    </div>
+  );
+}
 
 export function AboutOverlay({
   isOpen,
@@ -19,6 +31,8 @@ export function AboutOverlay({
   facts,
   focusItems,
   archiveStyleItems,
+  faithHover,
+  onFaithClick,
   onClose,
 }: AboutOverlayProps) {
   const intro = sections.find((section) => section.id === 'about-intro');
@@ -38,28 +52,37 @@ export function AboutOverlay({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 bg-bg/95 backdrop-blur-2xl"
         >
-          <article id="about-panel" className="h-screen overflow-y-auto px-5 py-8 sm:px-8">
-            <div className="mx-auto flex max-w-3xl flex-col gap-12 pb-20">
-                <header className="sticky top-0 z-[10000] -mx-5 flex items-center justify-between border-b border-border/30 bg-bg/90 px-5 py-4 backdrop-blur-md sm:-mx-8 sm:px-8">
+          <article id="about-panel" className="h-screen overflow-y-auto px-5 pb-8 sm:px-8">
+            <div className="sticky top-0 z-[60] -mx-5 border-b border-border/35 bg-bg/88 px-5 py-4 backdrop-blur-xl sm:-mx-8 sm:px-8">
+              <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">About</p>
+                  <p className="text-sm font-bold text-text">{profile.displayName}</p>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="rounded-full border border-border/45 bg-surface/90 p-2.5 text-accent shadow-lg shadow-black/20 transition-all hover:bg-accent/15 active:scale-95"
+                  aria-label="Close about"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="mx-auto flex max-w-4xl flex-col gap-10 pb-20 pt-8">
+                <header className="flex items-start justify-between border-b border-border/30 pb-7">
                   <div>
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted">About</p>
                     <h2 className="text-2xl font-bold text-text">{profile.displayName}</h2>
                   </div>
-                  <button
-                    onClick={onClose}
-                    className="relative z-[10000] rounded-full bg-accent/10 p-3 text-accent transition-all hover:bg-accent/20 active:scale-95"
-                    aria-label="Close about"
-                  >
-                    <X size={22} />
-                  </button>
                 </header>
 
-                <section className="grid gap-8 pt-4 md:grid-cols-[220px_1fr] md:items-start">
+                <section className="grid gap-8 pt-2 md:grid-cols-[200px_1fr] md:items-start">
                   <div className="flex flex-col items-center gap-4 md:sticky md:top-24">
                     <img
                       src={profile.imageSrc}
                       alt={`${profile.displayName} Instagram profile`}
-                      className="h-44 w-44 rounded-full border-4 border-accent object-cover shadow-xl shadow-accent/10"
+                      className="h-40 w-40 rounded-full border-4 border-accent object-cover shadow-xl shadow-accent/10"
                     />
                     <a
                       href={profile.instagramUrl}
@@ -71,10 +94,10 @@ export function AboutOverlay({
                     </a>
                   </div>
 
-                  <div className="flex flex-col gap-10">
+                  <div className="flex flex-col gap-9">
                     {intro && (
                       <section className="flex flex-col gap-4">
-                        <h2 data-toc id={intro.id} className="text-4xl font-bold leading-tight text-text md:text-5xl">
+                        <h2 data-toc id={intro.id} className="text-3xl font-bold leading-tight text-text md:text-5xl">
                           {intro.title}
                         </h2>
                         {intro.body.map((paragraph) => (
@@ -85,12 +108,21 @@ export function AboutOverlay({
                       </section>
                     )}
 
-                    <section className="grid grid-cols-3 gap-3">
-                      {profile.stats.map((stat) => (
-                        <div key={stat.label} className="rounded-lg border border-border/40 bg-surface p-4 text-center shadow-sm">
-                          <div className="text-2xl font-bold text-accent">{stat.value}</div>
-                          <div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted">{stat.label}</div>
-                        </div>
+                    <section className="grid grid-cols-2 gap-3">
+                      {profile.stats.map((stat) => stat.label === 'Following' ? (
+                        <span key={stat.label}>
+                          <FaithHoverCard
+                            faith={faithHover}
+                            onOpenPage={onFaithClick}
+                            className="block rounded-lg transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                          >
+                            <AboutStatCard stat={stat} />
+                          </FaithHoverCard>
+                        </span>
+                      ) : (
+                        <span key={stat.label}>
+                          <AboutStatCard stat={stat} />
+                        </span>
                       ))}
                     </section>
 

@@ -1,67 +1,64 @@
-import React, { useId } from "react";
-import { motion } from "motion/react";
+import React, { useId } from 'react';
+import { motion, useTime, useTransform } from 'motion/react';
+import { cn } from '../../lib/utils';
 
-interface SquigglyTextProps {
+export interface SquigglyTextProps {
   children: React.ReactNode;
   className?: string;
-  baseFrequency?: number;
-  scale?: number | [number, number];
+  style?: React.CSSProperties;
+  steps?: number;
   stepDuration?: number;
+  scale?: number | [number, number];
+  baseFrequency?: number;
+  numOctaves?: number;
+  as?: 'span' | 'div';
 }
 
-export const SquigglyText = ({
+export function SquigglyText({
   children,
-  className,
+  steps = 5,
+  stepDuration = 80,
+  scale = [6, 8],
   baseFrequency = 0.02,
-  scale = 2,
-  stepDuration = 100,
-}: SquigglyTextProps) => {
-  const id = useId();
+  numOctaves = 3,
+  as = 'span',
+  className,
+  style,
+}: SquigglyTextProps) {
+  const reactId = useId();
+  const safeId = reactId.replace(/[:_]/g, '');
+  const filterId = (index: number) => `squiggly-${safeId}-${index}`;
+
+  const filters = React.useMemo(
+    () => Array.from({ length: steps }, (_, index) => `url(#${filterId(index)})`),
+    // filterId is stable because safeId is stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [steps, safeId],
+  );
+
+  const time = useTime();
+  const filter = useTransform(time, (currentTime) => filters[Math.floor(currentTime / stepDuration) % filters.length]);
+
+  const scaleAt = (index: number) => (Array.isArray(scale) ? scale[index % scale.length] : scale);
+  const Wrapper = as === 'div' ? motion.div : motion.span;
 
   return (
-    <span className={`relative inline-block ${className || ""}`}>
-      <motion.span
-        style={{
-          filter: `url(#${id})`,
-        }}
-        className="relative z-10 block"
+    <Wrapper style={{ filter, ...style }} className={cn('relative inline-block whitespace-nowrap', className)}>
+      <svg
+        aria-hidden="true"
+        className="pointer-events-none absolute h-0 w-0 overflow-hidden"
+        xmlns="http://www.w3.org/2000/svg"
       >
-        {children}
-      </motion.span>
-
-      <svg className="absolute h-0 w-0" aria-hidden="true" focusable="false">
         <defs>
-          <filter id={id}>
-            <motion.feTurbulence
-              baseFrequency={baseFrequency}
-              numOctaves="3"
-              result="noise"
-              seed="0"
-              animate={{
-                seed: [0, 1, 2, 3, 4],
-              }}
-              transition={{
-                duration: (stepDuration / 1000) * 5,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
-            <motion.feDisplacementMap
-              in="SourceGraphic"
-              in2="noise"
-              scale={Array.isArray(scale) ? 0 : scale}
-              animate={Array.isArray(scale) ? {
-                 scale: [scale[0], scale[1], scale[0]]
-              } : {}}
-               transition={Array.isArray(scale) ? {
-                duration: (stepDuration / 1000) * 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              } : {}}
-            />
-          </filter>
+          {Array.from({ length: steps }).map((_, index) => (
+            <filter id={filterId(index)} key={index}>
+              <feTurbulence baseFrequency={baseFrequency} numOctaves={numOctaves} result="noise" seed={index} />
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale={scaleAt(index)} />
+            </filter>
+          ))}
         </defs>
       </svg>
-    </span>
+      {children}
+    </Wrapper>
   );
-};
+}

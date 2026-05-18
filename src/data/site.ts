@@ -1,5 +1,5 @@
 export type ProfileStat = {
-  label: 'Posts' | 'Followers' | 'Following';
+  label: 'Posts' | 'Following';
   value: number;
 };
 
@@ -10,6 +10,23 @@ export type ProfileData = {
   imageSrc: string;
   instagramUrl: string;
   stats: ProfileStat[];
+  track?: ProfileTrack;
+};
+
+export type ProfileTrackSource = {
+  src: string;
+  type: 'audio/mpeg';
+  quality: 'high' | 'medium' | 'low';
+  bitrateKbps: number;
+};
+
+export type ProfileTrack = {
+  title: string;
+  artist: string;
+  note: string;
+  provider: string;
+  artworkSrc: string;
+  sources: ProfileTrackSource[];
 };
 
 export type StoryItem = {
@@ -67,6 +84,24 @@ export type Project = {
   link: string;
 };
 
+export type FaithHover = {
+  title: string;
+  description: string;
+  previewVideoSrc: string;
+  points: string[];
+  closing: string;
+};
+
+export type FaithSection = {
+  id: string;
+  title: string;
+  body: string[];
+  verses?: {
+    reference: string;
+    text: string;
+  }[];
+};
+
 export type AboutSection = {
   id: string;
   title: string;
@@ -83,6 +118,15 @@ export type PlaceholderContent = {
   actionHref?: string;
 };
 
+const supabaseStorageUrl = `${(import.meta.env.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
+  /\/$/,
+  '',
+)}/storage/v1/object/public/licensed-audio`;
+const supabasePublicVideoUrl = `${(import.meta.env.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
+  /\/$/,
+  '',
+)}/storage/v1/object/public/public-video-previews`;
+
 export const profileData: ProfileData = {
   displayName: 'ur_bro_jz',
   handle: '@ur_bro_jz',
@@ -91,10 +135,118 @@ export const profileData: ProfileData = {
   instagramUrl: 'https://www.instagram.com/ur_bro_jz/',
   stats: [
     { label: 'Posts', value: 1 },
-    { label: 'Followers', value: 89 },
-    { label: 'Following', value: 91 },
+    { label: 'Following', value: 1 },
   ],
+  track: {
+    title: 'So Easy',
+    artist: 'Olivia Dean',
+    note: 'licensed Supabase stream',
+    provider: 'Supabase',
+    artworkSrc: `${import.meta.env.BASE_URL}olivia-dean-art-of-loving-cover.jpg`,
+    sources: [
+      {
+        src: `${supabaseStorageUrl}/so-easy-320.mp3`,
+        type: 'audio/mpeg',
+        quality: 'high',
+        bitrateKbps: 320,
+      },
+      {
+        src: `${supabaseStorageUrl}/so-easy-160.mp3`,
+        type: 'audio/mpeg',
+        quality: 'medium',
+        bitrateKbps: 160,
+      },
+      {
+        src: `${supabaseStorageUrl}/so-easy-96.mp3`,
+        type: 'audio/mpeg',
+        quality: 'low',
+        bitrateKbps: 96,
+      },
+    ],
+  },
 };
+
+export const faithHover: FaithHover = {
+  title: 'Why I follow Jesus',
+  description: 'Because Jesus is my Lord and Saviour: He died for my sins, rose again, and gives forgiveness, hope, and new life.',
+  previewVideoSrc: `${supabasePublicVideoUrl}/jesus-christ-holy-light-moewalls-com.mp4`,
+  points: [
+    'The Gospel is that Jesus lived without sin, died on the cross for our sins, and rose again.',
+    'Salvation is a gift of grace: we turn from sin, trust in Him, and receive forgiveness and new life.',
+    'Following Him means humility, peace, patience, mercy, and overcoming evil with good.',
+  ],
+  closing: 'Romans 12:16-21 is the verse behind the bio and the way this page points back to Him.',
+};
+
+export const faithSections: FaithSection[] = [
+  {
+    id: 'jesus',
+    title: 'Who Jesus Is',
+    body: [
+      'Jesus Christ is the Son of God: fully God and fully man. He came into the world not just as a teacher or example, but as the Saviour promised by God.',
+      'He showed the heart of God with perfect truth, mercy, holiness, and love. In Him, we see God coming near to rescue people who could not rescue themselves.',
+    ],
+    verses: [
+      { reference: 'John 1:14', text: 'The Word was made flesh, and dwelt among us.' },
+      { reference: 'Colossians 1:15', text: 'The image of the invisible God.' },
+      { reference: 'John 14:6', text: 'The way, the truth, and the life.' },
+    ],
+  },
+  {
+    id: 'gospel',
+    title: 'What the Gospel Is',
+    body: [
+      'The Gospel is the good news that Jesus lived without sin, died on the cross for our sins, and rose again in victory over sin and death.',
+      'Because of Him, forgiveness is not earned by trying to be good enough. It is received by grace through faith: turning from sin, trusting Jesus, and receiving new life from God.',
+    ],
+    verses: [
+      { reference: 'Romans 5:8', text: 'While we were yet sinners, Christ died for us.' },
+      { reference: '1 Corinthians 15:3-4', text: 'Christ died for our sins, was buried, and rose again.' },
+      { reference: 'Ephesians 2:8-9', text: 'By grace are ye saved through faith.' },
+    ],
+  },
+  {
+    id: 'following',
+    title: 'What Following Him Means',
+    body: [
+      'Following Jesus means belonging to Him, learning His ways, and letting His love shape how we live. It is not just a label; it changes what we value and how we treat people.',
+      'Romans 12:16-21 points toward humility, peace, patience, mercy, and overcoming evil with good. That is the direction behind the bio and the reason the Following count is one.',
+    ],
+    verses: [
+      { reference: 'Luke 9:23', text: 'Take up his cross daily, and follow me.' },
+      { reference: 'Romans 12:18', text: 'Live peaceably with all men.' },
+      { reference: 'Romans 12:21', text: 'Overcome evil with good.' },
+    ],
+  },
+  {
+    id: 'hope',
+    title: 'The Hope',
+    body: [
+      'The hope of the Gospel is not just self-improvement. It is reconciliation with God, a clean heart, and eternal life through Jesus Christ.',
+      'This page is still an about-me archive, but the center is meant to point higher: to the Lord and Saviour Jesus Christ.',
+    ],
+    verses: [
+      { reference: 'John 3:16', text: 'God so loved the world.' },
+      { reference: '2 Corinthians 5:17', text: 'If any man be in Christ, he is a new creature.' },
+      { reference: 'John 20:31', text: 'That believing ye might have life through his name.' },
+    ],
+  },
+  {
+    id: 'historical-reasons',
+    title: 'Historical Reasons',
+    body: [
+      'One reason I take the Bible seriously is how it came together across history. It is not one short book written in one sitting. It is a library of 66 books, written over roughly 1,500 years, by about 40 human authors from different times, places, and backgrounds.',
+      'That means the Bible includes law, poetry, prophecy, history, wisdom, letters, and eyewitness testimony. Yet the story keeps moving in one direction: creation, rebellion, promise, rescue, and restoration.',
+      'Christians believe that unified story points to one person: Jesus Christ. The Old Testament builds the promise and pattern, and the New Testament announces that Jesus is the fulfilment: the King, the Saviour, the crucified and risen Lord.',
+      'That unity across centuries is not the only reason to believe, but it is one of the reasons I find the Bible historically and spiritually weighty.',
+    ],
+    verses: [
+      { reference: 'Luke 24:27', text: 'Moses and all the prophets point toward Christ.' },
+      { reference: 'Hebrews 1:1-2', text: 'God hath spoken unto us by his Son.' },
+      { reference: '2 Timothy 3:16', text: 'All scripture is given by inspiration of God.' },
+    ],
+  },
+];
 
 export const storyItems: StoryItem[] = [
   { id: 'projects', label: 'Projects', icon: 'folder', locked: false, action: 'projects' },
@@ -106,19 +258,19 @@ export const storyItems: StoryItem[] = [
 
 export const nowItems: NowItem[] = [
   {
-    label: 'Building',
-    title: 'Private archive profile',
-    body: 'Turning a simple Instagram handle into a darker, more personal web space with stories, locked sections, and project notes.',
+    label: 'Site',
+    title: 'ur_bro_jz',
+    body: 'This is the main place for my projects, profile, and the private archive sections.',
   },
   {
-    label: 'Learning',
-    title: 'Interfaces with restraint',
-    body: 'Practicing layouts that feel polished without getting loud: better spacing, readable type, smoother motion, and cleaner content.',
+    label: 'School',
+    title: 'Locked notes',
+    body: 'School stuff stays private unless you have the access key.',
   },
   {
-    label: 'Listening / Practicing',
-    title: 'Quiet reps',
-    body: 'Keeping room for music, reflection, and small creative experiments that do not need to be posted everywhere.',
+    label: 'Music',
+    title: 'Classified track',
+    body: 'This song is staying here for a reason. Maybe it is about someone.',
   },
 ];
 
@@ -201,7 +353,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Archive Style',
     level: 3,
     body: [
-      'The site borrows from Instagram stories, private collections, and portfolio grids. Locked highlights create a sense of discovery, while the project matrix gives the page a more interactive layer.',
+      'The site borrows from Instagram stories, private collections, and portfolio grids. Locked highlights create a sense of discovery, while the project grid gives the page a more interactive layer.',
     ],
   },
   {
@@ -210,7 +362,7 @@ export const aboutSections: AboutSection[] = [
     level: 3,
     body: [
       'Right now the page is focused on turning a simple profile into a fuller digital identity. The foundation is already here: a profile, an archive, project cards, and a few interactions that make the site feel custom.',
-      'The private archive is designed to load sensitive notes and photos from Supabase only after the access key is checked server-side, keeping private media out of the public source bundle.',
+      'The private archive keeps sensitive notes and photos out of the public source bundle, with access reserved for people who get the password directly from @ur_bro_jz.',
     ],
   },
   {
@@ -239,73 +391,115 @@ export const archiveStyleItems = [
   'Local profile image storage so the page does not depend on expiring social CDN links.',
 ];
 
+const liveScreenshot = (url: string) => {
+  const params = new URLSearchParams({
+    url,
+    screenshot: 'true',
+    meta: 'false',
+    embed: 'screenshot.url',
+    colorScheme: 'dark',
+    'viewport.isMobile': 'false',
+    'viewport.deviceScaleFactor': '1',
+    'viewport.width': '1440',
+    'viewport.height': '900',
+  });
+
+  return `https://api.microlink.io/?${params.toString()}`;
+};
+
 export const projects: Project[] = [
   {
-    id: 'ds-builder',
-    title: 'Archive Interface System',
-    description: 'The visual language behind this private profile: dark panels, story buttons, motion, and readable archive cards.',
-    longDescription: 'A reusable set of interface patterns for making the site feel like one complete archive instead of separate effects. It covers color, spacing, locked states, modals, and profile-first layout decisions.',
-    what: 'A small design system for the archive: profile cards, locked highlights, modals, project surfaces, and motion rules.',
-    why: 'The site needs to feel private and cinematic without becoming hard to read or looking unfinished.',
-    status: 'Active. The core style is in place, with content sections being filled in.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDKu4za2uG_gLwPIOf1prITYHvEZVm1rfskvSD7BbuqEAo_eJJPPxywM0HhckI9xGfF3aSdZ07gMCMHvzNiq0FpoiGGQzP2FOE0_NkCW25dP1fCj0d7avfBcy0AoGfkYbacLRJYzlW3VpmvpGfc_o8UzBhnaxrn82NxIMNUynR_phpKJKfzMa2DnixhIftzEHkj5uqe8mxFHoUAIDJb45p6_3JXljIkIf2pi224wkYSMp7GlxLXvzlarPke2Eu_lKi0_KinHZBB0w4',
-    tags: ['UI', 'Archive', 'Design'],
-    tech: ['Vite', 'Tailwind CSS', 'TypeScript', 'Framer Motion'],
-    link: 'https://github.com/jz-archive/ds-builder',
+    id: 'ur-bro-jz',
+    title: 'ur_bro_jz',
+    description: 'This dark private archive site, built around the @ur_bro_jz profile, locked stories, and project grid.',
+    longDescription: 'The current About Me archive site. It combines an Instagram-inspired profile, animated handle, locked story sections, Supabase-backed private archive flow, and a cinematic project grid.',
+    what: 'A Vite + React personal archive for @ur_bro_jz with public profile content and private sections kept behind an access-key flow.',
+    why: 'A normal link page felt too plain, so this repo turns the profile into a more personal archive with stronger visual identity.',
+    status: 'Live on GitHub Pages and actively being polished.',
+    image: liveScreenshot('https://jz1324.github.io/ur_bro_jz/'),
+    tags: ['Live', 'Archive', 'React'],
+    tech: ['Vite', 'React', 'TypeScript', 'Tailwind CSS', 'Supabase'],
+    link: 'https://jz1324.github.io/ur_bro_jz/',
   },
   {
-    id: 'portfolio-code',
-    title: 'ur_bro_jz Web Archive',
-    description: 'The actual static site that turns @ur_bro_jz into a profile, archive, and locked collection.',
-    longDescription: 'The main codebase for this page. It uses local data, reusable React components, animated text, and static front-end interactions to create a personal archive without adding a backend.',
-    what: 'A Vite + React personal archive site built around one Instagram profile and a locked-story concept.',
-    why: 'A normal link page would feel too generic. This gives the handle a clearer identity and a more memorable first impression.',
-    status: 'In progress. The structure is working; the next step is replacing remaining sample content with personal details.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuANRJKzGBk9wDa_GkbBdZvfWo6pqpTVSm4SnRBstrM6aCoAZP6CRSwRVsBha6j_wbbezQMuOve9x7pNefAi4rkGmayRVLJ3i4X5z5zvuyWr4fwW4T-vgeOTJnmpVvht2Q8PxAzCXitqhTBQG_QhhCrNCO5s163UgLJDbeROrYOLpc36RWVsFh7KVsJRQ62to1lH-I9AOJ1cMKULo5LGpEvZ-mhZ8v274tGnZfgSvPfuOMniNOxgansAESEOBhtVYlPcnlCw36DZVCU',
-    tags: ['Web', 'React', 'Static'],
-    tech: ['React', 'TypeScript', 'Tailwind CSS', 'Motion'],
-    link: 'https://github.com/jz-archive/portfolio',
+    id: 'about-me',
+    title: 'about-me',
+    description: 'A newer TypeScript about-me experiment with a live GitHub Pages deployment.',
+    longDescription: 'A recent TypeScript personal site repo. It works as another about-me direction and shows the path that led into the more cinematic ur_bro_jz archive.',
+    what: 'A TypeScript personal website experiment deployed as a static GitHub Pages site.',
+    why: 'It is a quick place to test layout ideas, profile copy, and how a personal homepage should feel before moving the best parts into the main archive.',
+    status: 'Live on GitHub Pages. Still has some starter-project traces, but it is useful as a design checkpoint.',
+    image: liveScreenshot('https://jz1324.github.io/about-me/'),
+    tags: ['Live', 'About', 'TypeScript'],
+    tech: ['TypeScript', 'Next.js', 'React', 'GitHub Pages'],
+    link: 'https://jz1324.github.io/about-me/',
   },
   {
-    id: 'api-engine',
-    title: 'Private Vault Flow',
-    description: 'A server-checked access-key flow for opening private archive sections without bundling private photos into the site.',
-    longDescription: 'A Supabase-backed vault pattern that keeps School, Music, and Leadership media out of src, public, and the production bundle. The frontend sends the key to an Edge Function, then renders short-lived signed URLs only when access is accepted.',
-    what: 'A private archive flow connected to Supabase private Storage, Edge Functions, and temporary signed photo URLs.',
-    why: 'The locked story buttons should feel cinematic, but private photos need real server-side gating instead of a static frontend password.',
-    status: 'Ready for Supabase setup. The frontend fails closed until the private bucket, function secrets, and environment URL are configured.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBVaZzTzJDG_a2HrH3Q_vZeAyKV4NHXx4BKD0-gIKKRyPWnfK2xjKA3Z-Uqkw8epeO_ypkHr6U_UjbKktZolKhQQJ7Mojz_EGEtRt4sQz1sjMpn0Urw9t3h8p2ZRUePtbffPS5wVIaEWLb8UAU9O2j5pXDK1mhhCBwjtlbB3tGboSlrB14SNpoq9ToJSI119EjihO4e7gD5UAiPv9uf1SCVYWpy5_L4OCX68oWK_-O4ea7pR_ib8SCev0wx9q_2PkVd2mDMjNqfJlc',
-    tags: ['Vault', 'UX', 'Logic'],
-    tech: ['React State', 'Motion', 'Input OTP', 'Static Data'],
-    link: 'https://github.com/jz-archive/api-engine',
+    id: 'pro-timetable',
+    title: 'Pro Timetable',
+    description: 'A standalone premium timetable app with its own live Vercel deployment.',
+    longDescription: 'A dedicated timetable project focused on making school schedule planning feel cleaner and more premium. The repo description marks it as a standalone copy of Premium Timetable.',
+    what: 'A live web timetable app for viewing and managing schedule information in a cleaner interface.',
+    why: 'Timetables are usually ugly or hard to scan, so this project turns the schedule into something faster and nicer to use.',
+    status: 'Live on Vercel. Last pushed April 2026.',
+    image: `${import.meta.env.BASE_URL}project-pro-timetable.png`,
+    tags: ['Live', 'Timetable', 'Web App'],
+    tech: ['JavaScript', 'Vercel', 'Frontend UI', 'Deployment'],
+    link: 'https://pro-timetable.vercel.app',
   },
   {
-    id: 'wireframe-kit',
-    title: 'Story Section Map',
-    description: 'A content structure for turning Projects, About, School, Music, and Leadership into real destinations.',
-    longDescription: 'A planning layer for the archive content. It defines what each story should contain, how much copy belongs in each section, and where placeholder content should become real.',
-    what: 'A content map for the story highlights and the sections they open.',
-    why: 'The site feels finished only when every visible control has a reason to exist.',
-    status: 'Drafted. Ready to keep expanding as more real school, music, and leadership details are added.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAKmK3vz2fdlq04L-C6RuoU9ZaW0g7Jgp0XFLQslqFY5mKip7uDcSpzAJKTdbAa_vcsZrbQ0VjVHmgtCslQZ8uGJJ8qh_ycxq5DV9s6naI14guY2tEbNFoN64a8WFaG6gaLoH7ltouAojhLFeiaE0HgSOnn03mcz1I_sYklbI084STfNb73zf4106WVxGJd5ISpNKsHOB7W2aOUr8t2TNQmCwauTZ5lpYdNpTg-E5BYVyc6gozUKsPJG-xtjLumUwTGanzCqbrsTUE',
-    tags: ['UX', 'Content', 'Stories'],
-    tech: ['Information Architecture', 'React Data', 'Responsive UI', 'Copywriting'],
-    link: 'https://figma.com/community/file/jz-wireframes',
+    id: 'premium-timetable',
+    title: 'Premium Timetable',
+    description: 'The original timetable project behind the newer Pro Timetable version.',
+    longDescription: 'The earlier timetable build and documentation base. Its README includes docs for parser work, deployment, setup, features, and fixes, which makes it the foundation for the later standalone Pro Timetable app.',
+    what: 'A timetable web project and documentation base for schedule features, deployment, and parser improvements.',
+    why: 'It captures the original timetable idea and the rougher build process before the standalone version was split out.',
+    status: 'Live on GitHub Pages as an older build.',
+    image: liveScreenshot('https://jz1324.github.io/Premium-Timetable/'),
+    tags: ['Live', 'Timetable', 'Docs'],
+    tech: ['JavaScript', 'GitHub Pages', 'Documentation', 'Frontend'],
+    link: 'https://jz1324.github.io/Premium-Timetable/',
+  },
+  {
+    id: 'imessaging',
+    title: 'iMessage Stats',
+    description: 'A local iMessage analytics project that turns chat.db into readable stats and reports.',
+    longDescription: 'A Swift and local-report project for generating iMessage stats without AI analysis. The README describes totals, sent and received counts, response-time stats, left-on-read counts, per-chat breakdowns, and standalone HTML reports.',
+    what: 'A local macOS/iMessage stats tool with a product page and report-generation workflow.',
+    why: 'Messages data is interesting when it is visual and private, so this keeps analysis local while still producing useful summaries.',
+    status: 'Live product page on GitHub Pages. The repo includes Swift/macOS app direction and local report tooling.',
+    image: liveScreenshot('https://jz1324.github.io/Imessaging/'),
+    tags: ['Live', 'macOS', 'Stats'],
+    tech: ['Swift', 'SwiftUI', 'Python', 'HTML Reports', 'GitHub Pages'],
+    link: 'https://jz1324.github.io/Imessaging/',
+  },
+  {
+    id: 'clipboard-manager',
+    title: 'Clipboard Manager',
+    description: 'A macOS clipboard manager concept with history, passcode protection, search, and themes.',
+    longDescription: 'A macOS clipboard manager project focused on making clipboard history easier to search, protect, and reuse. The README lists passcode protection, full history, custom themes, dark mode, smart search, and rich content support.',
+    what: 'A clipboard management app concept with a public GitHub Pages project page.',
+    why: 'Clipboard history is useful but usually hidden. This project makes it feel more controlled, searchable, and personal.',
+    status: 'Live on GitHub Pages as a project page. Repo last pushed January 2026.',
+    image: liveScreenshot('https://jz1324.github.io/ClipBoard-Manager/'),
+    tags: ['Live', 'macOS', 'Utility'],
+    tech: ['CSS', 'macOS UI', 'GitHub Pages', 'Frontend'],
+    link: 'https://jz1324.github.io/ClipBoard-Manager/',
   },
 ];
 
 export const placeholders: Record<string, PlaceholderContent> = {
   create: {
     eyebrow: 'Archive Tool',
-    title: 'New entry queue',
-    description: 'This control is reserved for adding new archive entries. For now it shows what the publishing flow would collect before anything becomes public.',
+    title: 'Capture an entry',
+    description: 'A quiet sketch of the archive publishing flow: decide what the entry is, where it belongs, and whether it should stay private.',
     items: ['Draft title and short note', 'Choose section: School, Music, Leadership, or Projects', 'Attach image, link, or private reference'],
   },
   grid: {
     eyebrow: 'View Control',
-    title: 'Archive display modes',
-    description: 'The grid control is staged for future view switching. The current site keeps the cinematic matrix as the main public view.',
-    items: ['Matrix view: active', 'Compact cards: planned', 'Timeline list: planned'],
+    title: 'Display modes',
+    description: 'The public archive is currently tuned for the clean project grid. These modes describe how the same entries can be scanned later.',
+    items: ['Project grid: active', 'Compact cards: saved as a future view', 'Timeline list: reserved for dated entries'],
   },
   menu: {
     eyebrow: 'Quick Menu',
@@ -315,9 +509,9 @@ export const placeholders: Record<string, PlaceholderContent> = {
   },
   resume: {
     eyebrow: 'Resume',
-    title: 'Resume not public yet',
-    description: 'The resume action is intentionally staged. The site can link a PDF later, but for now contact should go through Instagram.',
-    items: ['Add a resume PDF to public files', 'Link the current version from this button', 'Keep personal details off the static page until ready'],
+    title: 'Resume by request',
+    description: 'The public page keeps personal details light. For now, the clean contact path is Instagram, and a resume can be shared directly when needed.',
+    items: ['Keep public details minimal', 'Share the current version directly', 'Avoid storing extra personal information on the static page'],
     actionLabel: 'Message on Instagram',
     actionHref: 'https://www.instagram.com/ur_bro_jz/',
   },

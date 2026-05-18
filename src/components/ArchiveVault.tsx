@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { GraduationCap, Lock, Music, ShieldAlert, Users } from 'lucide-react';
+import { GraduationCap, Lock, Music, ShieldAlert, Users, X } from 'lucide-react';
 import { TextScramble } from './TextScramble';
 import type { ArchiveSection, ArchiveSectionId, PrivateArchiveSection } from '../data/site';
 
@@ -10,6 +10,7 @@ const icons = {
 };
 
 type ArchiveVaultProps = {
+  isOpen: boolean;
   isUnlocked: boolean;
   isLoading: boolean;
   sections: ArchiveSection[];
@@ -17,10 +18,12 @@ type ArchiveVaultProps = {
   activeSection: PrivateArchiveSection | null;
   errorMessage: string | null;
   onSelectSection: (id: ArchiveSectionId) => void;
+  onClose: () => void;
   onLock: () => void;
 };
 
 export function ArchiveVault({
+  isOpen,
   isUnlocked,
   isLoading,
   sections,
@@ -28,65 +31,85 @@ export function ArchiveVault({
   activeSection,
   errorMessage,
   onSelectSection,
+  onClose,
   onLock,
 }: ArchiveVaultProps) {
   const activeNavigationSection = sections.find((section) => section.id === activeSectionId) ?? sections[0];
 
   return (
     <AnimatePresence>
-      {isUnlocked && (
-        <motion.section
-          id="archive-section"
+      {isOpen && isUnlocked && (
+        <motion.div
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
+          animate={{ opacity: 1, height: '100vh' }}
           exit={{ opacity: 0, height: 0 }}
-          className="flex w-full flex-col gap-8 overflow-hidden"
+          className="fixed inset-0 z-50 overflow-y-auto bg-bg/96 px-4 py-8 text-text backdrop-blur-xl scrollbar-hide sm:px-6"
         >
-          <div className="flex flex-col items-start justify-between gap-4 px-4 sm:flex-row sm:items-end">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-2xl font-bold text-text">{activeNavigationSection?.title ?? 'The Vault'}</h2>
-              <div className="text-sm font-medium text-muted">
-                <TextScramble text="Secure private collection" />
+          <motion.section
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 24 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col gap-8 rounded-3xl border border-border/55 bg-surface/80 p-5 shadow-2xl shadow-black/30 sm:p-8"
+          >
+            <div className="flex flex-col gap-6 border-b border-border/35 pb-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-warm-accent">Private archive</p>
+                <h2 className="mt-3 text-4xl font-bold tracking-tight text-text sm:text-5xl">
+                  {activeNavigationSection?.title ?? 'The Vault'}
+                </h2>
+                <div className="mt-3 text-sm font-medium text-muted">
+                  <TextScramble text="Locked notes, photos, and private context" />
+                </div>
+                <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#8E927F]">
+                  Private notes and photos stay locked away. DM @ur_bro_jz if you need access.
+                </p>
               </div>
-              <p className="max-w-md text-xs leading-relaxed text-[#8E927F]">
-                Private content loads from Supabase only after the access key is verified server-side.
-              </p>
-            </div>
-            <button
-              onClick={onLock}
-              className="group flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-xs font-bold text-accent transition-all hover:bg-accent/20"
-            >
-              <Lock size={14} className="transition-transform group-hover:scale-110" />
-              Lock Archive
-            </button>
-          </div>
 
-          <div className="grid grid-cols-3 gap-2 px-4">
-            {sections.map((section) => {
-              const Icon = icons[section.icon];
-              const isActive = section.id === activeSectionId;
-
-              return (
+              <div className="flex items-center gap-3 self-start">
                 <button
-                  key={section.id}
-                  onClick={() => onSelectSection(section.id)}
-                  className={`rounded-2xl border px-3 py-4 text-left transition-all active:scale-[0.98] ${
-                    isActive
-                      ? 'border-accent/50 bg-accent-soft text-text shadow-lg shadow-black/10'
-                      : 'border-border/45 bg-surface/75 text-muted hover:border-accent/25 hover:text-text'
-                  }`}
+                  onClick={onLock}
+                  className="group flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-3 text-xs font-bold text-accent transition-all hover:bg-accent/20 active:scale-95"
                 >
-                  <Icon size={18} className={isActive ? 'text-accent' : 'text-muted'} />
-                  <div className="mt-3 text-sm font-bold">{section.title.replace(' Archive', '')}</div>
-                  <div className="mt-1 hidden text-[10px] font-semibold uppercase tracking-wider text-[#8E927F] sm:block">
-                    Server-checked
-                  </div>
+                  <Lock size={14} className="transition-transform group-hover:scale-110" />
+                  Lock
                 </button>
-              );
-            })}
-          </div>
+                <button
+                  onClick={onClose}
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-border/45 bg-accent-soft text-accent transition-all hover:border-accent/35 hover:bg-[#2A3125] active:scale-95"
+                  aria-label="Close archive"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+            </div>
 
-          <div className="pb-12">
+            <div className="grid gap-3 sm:grid-cols-3">
+              {sections.map((section) => {
+                const Icon = icons[section.icon];
+                const isActive = section.id === activeSectionId;
+
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => onSelectSection(section.id)}
+                    className={`rounded-2xl border p-4 text-left transition-all active:scale-[0.98] ${
+                      isActive
+                        ? 'border-accent/50 bg-accent-soft text-text shadow-lg shadow-black/10'
+                        : 'border-border/45 bg-bg/55 text-muted hover:border-accent/25 hover:bg-accent-soft/50 hover:text-text'
+                    }`}
+                  >
+                    <Icon size={20} className={isActive ? 'text-accent' : 'text-muted'} />
+                    <div className="mt-3 text-base font-bold">{section.title.replace(' Archive', '')}</div>
+                    <div className="mt-2 text-xs leading-relaxed text-[#8E927F]">
+                      {section.subtitle}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pb-4">
             {isLoading ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 {Array.from({ length: 4 }).map((_, index) => (
@@ -175,11 +198,12 @@ export function ArchiveVault({
               </motion.article>
             ) : (
               <div className="rounded-2xl border border-border/45 bg-surface p-6 text-muted">
-                Enter the access key to load this private archive section.
+                Enter the access key to open this private archive section.
               </div>
             )}
-          </div>
-        </motion.section>
+            </div>
+          </motion.section>
+        </motion.div>
       )}
     </AnimatePresence>
   );
