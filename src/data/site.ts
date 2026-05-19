@@ -28,6 +28,7 @@ export type ProfileTrack = {
   provider: string;
   artworkSrc: string;
   sources: ProfileTrackSource[];
+  lyrics?: string;
 };
 
 export type StoryItem = {
@@ -165,6 +166,8 @@ export const profileData: ProfileData = {
         bitrateKbps: 96,
       },
     ],
+    // local TTML lyrics file (dev)
+    lyrics: new URL('../../local-audio/So Easy (To Fall In Love) - Olivia Dean.ttml', import.meta.url).href,
   },
 };
 

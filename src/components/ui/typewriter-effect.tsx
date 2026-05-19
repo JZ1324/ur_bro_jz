@@ -88,7 +88,11 @@ export function TypewriterEffectSmooth({
 
   useLayoutEffect(() => {
     const duration = Math.max(totalTextRevealTime, revealDuration);
-    const controls = animate(widthMV, measuredWidth, { duration, easing: [0.33, 1, 0.68, 1] });
+    const controls = animate(widthMV.get(), measuredWidth, {
+      duration,
+      ease: [0.33, 1, 0.68, 1],
+      onUpdate: (latest) => widthMV.set(latest),
+    });
     return () => controls.cancel();
   }, [measuredWidth, revealDuration, totalTextRevealTime, widthMV]);
   return (
