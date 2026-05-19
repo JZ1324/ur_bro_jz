@@ -1,41 +1,12 @@
-import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { X } from 'lucide-react';
+import { Lock, X } from 'lucide-react';
 
 type SecretPuzzleOverlayProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-const clues = [
-  {
-    label: '01 / known',
-    value: 'The track is the entry point, but the title is not the answer.',
-  },
-  {
-    label: '02 / filter',
-    value: 'Ignore public stats. The signal sits in music, timing, and what gets hidden.',
-  },
-  {
-    label: '03 / rule',
-    value: 'Do not brute force. Think like a developer: remove noise, keep repeated patterns.',
-  },
-  {
-    label: '04 / checksum',
-    value: 'If the answer feels too obvious, it is probably a decoy.',
-  },
-];
-
 export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProps) {
-  const [guess, setGuess] = useState('');
-  const normalizedGuess = guess.trim();
-
-  const message = useMemo(() => {
-    if (normalizedGuess.length === 0) return 'Enter a candidate when the pattern feels clear.';
-    if (normalizedGuess.length < 4) return 'Too short. That is probably only noise.';
-    return 'Possible signal. Not confirmed here.';
-  }, [normalizedGuess]);
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -57,7 +28,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-warm-accent">Classified puzzle</p>
                 <h2 className="mt-2 text-3xl font-bold tracking-tight text-text sm:text-4xl">Find the name</h2>
                 <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-                  A private clue trail for the track. The answer is not printed in the source.
+                  The answer stays private. It is not printed in the public page or bundled source.
                 </p>
               </div>
               <button
@@ -70,39 +41,21 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
               </button>
             </div>
 
-            <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">
-              {clues.map((clue) => (
-                <div key={clue.label} className="rounded-2xl border border-border/45 bg-bg/45 p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-warm-accent">{clue.label}</p>
-                  <p className="mt-3 text-sm font-semibold leading-relaxed text-text">{clue.value}</p>
+            <div className="p-5 sm:p-6">
+              <div className="flex flex-col items-center rounded-3xl border border-border/45 bg-bg/45 px-6 py-10 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-border/60 bg-accent-soft text-accent">
+                  <Lock size={28} strokeWidth={2.4} />
                 </div>
-              ))}
-            </div>
-
-            <div className="border-t border-border/35 p-5 sm:p-6">
-              <label htmlFor="secret-name-guess" className="text-[10px] font-bold uppercase tracking-[0.22em] text-muted">
-                Candidate
-              </label>
-              <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-                <input
-                  id="secret-name-guess"
-                  value={guess}
-                  onChange={(event) => setGuess(event.target.value)}
-                  placeholder="type a name..."
-                  autoComplete="off"
-                  className="min-h-12 flex-1 rounded-2xl border border-border/55 bg-bg px-4 text-base font-semibold text-text outline-none transition-colors placeholder:text-muted/55 focus:border-warm-accent"
-                />
-                <button
-                  type="button"
-                  onClick={() => setGuess('')}
-                  className="rounded-2xl border border-border/55 px-5 py-3 text-sm font-bold text-muted transition-colors hover:border-accent/40 hover:text-text"
-                >
-                  Clear
-                </button>
+                <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">
+                  Private signal
+                </p>
+                <p className="mt-3 max-w-md text-base font-semibold leading-relaxed text-text">
+                  No public guesses here. If you know, you know.
+                </p>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">
+                  The saved answer belongs in the private archive, not inside the visible UI.
+                </p>
               </div>
-              <p className="mt-3 rounded-2xl border border-warm-accent/25 bg-warm-accent/10 px-4 py-3 text-sm font-semibold leading-relaxed text-warm-accent">
-                {message}
-              </p>
             </div>
           </motion.div>
         </motion.div>

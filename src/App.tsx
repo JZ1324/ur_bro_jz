@@ -350,8 +350,8 @@ export default function App() {
               >
                 <Step>
                   <div className="flex flex-col items-center gap-5 text-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-soft text-warm-accent ring-1 ring-border/80">
-                      <Lock size={32} fill="currentColor" />
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-soft text-accent ring-1 ring-border/80">
+                      <Lock size={34} strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col gap-2">
                       <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">Private archive</p>
@@ -425,7 +425,7 @@ export default function App() {
                       ) : accessStatus === 'approved' ? (
                         <span className="text-3xl font-black">✓</span>
                       ) : (
-                        <Lock size={30} fill="currentColor" className="text-warm-accent" />
+                        <Lock size={30} strokeWidth={2.5} className="text-warm-accent" />
                       )}
                     </div>
 
