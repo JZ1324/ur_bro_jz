@@ -1,5 +1,13 @@
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-import { createClient } from 'npm:@supabase/supabase-js@2';
+// Load Supabase client dynamically at runtime to avoid static type-resolution
+// errors in this environment.
+let createClient: any;
+
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined;
+  };
+  serve: (handler: (req: Request) => Promise<Response>) => void;
+};
 
 type ArchiveSectionId = 'school' | 'music' | 'leadership';
 
