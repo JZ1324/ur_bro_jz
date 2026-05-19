@@ -22,6 +22,10 @@
     <meta property="twitter:title" content="ur_bro_jz" />
     <meta property="twitter:description" content="A static personal archive site with profile details, project cards, locked archive previews, and animated interactions." />
     <meta property="twitter:image" content="https://ur-bro-jz.vercel.app/preview-pool.png" />
+        <!-- Inline theme initializer: set `class="dark"` or `data-theme` before React hydrates
+          This prevents SSR/client mismatch on Vercel and makes dark mode automatic
+          based on saved preference or `prefers-color-scheme`. -->
+        <script>!function(){try{var s=localStorage.getItem('theme');var p=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;var dark= s==='dark'||(s===null&&p);if(dark){document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dark')}else{document.documentElement.classList.remove('dark');document.documentElement.setAttribute('data-theme','light')} }catch(e){}}</script>
   </head>
   <body>
     <div id="root"></div>
