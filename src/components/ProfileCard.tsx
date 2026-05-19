@@ -85,8 +85,8 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
             ]}
             className="justify-center text-3xl md:justify-start md:text-[2.35rem]"
             cursorClassName="bg-warm-accent"
-            characterDelay={0.2}
-            revealDuration={3.8}
+            characterDelay={0.34}
+            revealDuration={4.6}
           />
         </h1>
         <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-muted md:justify-start">
