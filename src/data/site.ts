@@ -128,6 +128,10 @@ const supabasePublicVideoUrl = `${(import.meta.env.VITE_SUPABASE_URL || 'https:/
   /\/$/,
   '',
 )}/storage/v1/object/public/public-video-previews`;
+const supabaseFunctionsUrl = `${(import.meta.env.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
+  /\/$/,
+  '',
+)}/functions/v1`;
 
 export const profileData: ProfileData = {
   displayName: 'ur_bro_jz',
@@ -166,8 +170,7 @@ export const profileData: ProfileData = {
         bitrateKbps: 96,
       },
     ],
-    // local TTML lyrics file (dev)
-    lyrics: new URL('../../local-audio/So Easy (To Fall In Love) - Olivia Dean.ttml', import.meta.url).href,
+    lyrics: `${supabaseFunctionsUrl}/get-track-lyrics`,
   },
 };
 
