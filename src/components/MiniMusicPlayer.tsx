@@ -282,8 +282,9 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
 
     (async () => {
       let raw = track.lyrics as string;
+      const trimmedRaw = raw.trim();
       try {
-        if (/^https?:\/\//.test(raw)) {
+        if (!trimmedRaw.startsWith('<') && !trimmedRaw.startsWith('[')) {
           const res = await fetch(raw);
           if (res.ok) raw = await res.text();
         }
