@@ -1,5 +1,7 @@
-import { Music2, Pause, Play } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Music2, Pause, Play, X } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { ProfileTrack, ProfileTrackSource } from '../data/site';
 
 type MiniMusicPlayerProps = {
@@ -15,6 +17,7 @@ type LyricToken = {
   begin: number;
   end: number;
   text: string;
+  trailingSpace?: boolean;
 };
 
 type LyricLine = {
@@ -23,6 +26,11 @@ type LyricLine = {
   text: string;
   part?: string;
   tokens: LyricToken[];
+};
+
+type VisibleLyric = {
+  line: LyricLine;
+  index: number;
 };
 
 function getConnection(): NetworkInformation | undefined {
@@ -91,18 +99,22 @@ function parseLyrics(raw: string): LyricLine[] {
     const paragraphNodes = Array.from(xml.getElementsByTagName('p'));
     const parsed = paragraphNodes
       .map((paragraph): LyricLine | null => {
-        const begin = parseTimecode(paragraph.getAttribute('begin'));
+        const paragraphBegin = parseTimecode(paragraph.getAttribute('begin'));
         const end = parseTimecode(paragraph.getAttribute('end'));
         const part = paragraph.parentElement?.getAttribute('itunes:song-part') ?? undefined;
         const spanNodes = Array.from(paragraph.getElementsByTagName('span'));
 
         // build tokens and normalise them
         let tokens: LyricToken[] = spanNodes
-          .map((span) => ({
-            begin: parseTimecode(span.getAttribute('begin')),
-            end: parseTimecode(span.getAttribute('end')),
-            text: (span.textContent ?? '').replace(/\s+/g, ' ').trim(),
-          }))
+          .map((span) => {
+            const rawText = (span.textContent ?? '').replace(/\s+/g, ' ');
+            return {
+              begin: parseTimecode(span.getAttribute('begin')),
+              end: parseTimecode(span.getAttribute('end')),
+              text: rawText.trim(),
+              trailingSpace: /\s$/.test(rawText),
+            };
+          })
           .filter((t) => t.text.length > 0 && Number.isFinite(t.begin));
 
         // sort by begin time and remove exact duplicates (same begin + text)
@@ -125,11 +137,12 @@ function parseLyrics(raw: string): LyricLine[] {
         }
 
         const text = tokens.length > 0
-          ? tokens.map((token) => token.text).join(' ')
+          ? tokens.map((token) => `${token.text}${token.trailingSpace ? ' ' : ''}`).join('').trim()
           : (paragraph.textContent ?? '').replace(/\s+/g, ' ').trim();
 
         if (!text) return null;
 
+        const begin = tokens.length > 0 ? tokens[0].begin : paragraphBegin;
         const lineEnd = tokens.length > 0 ? tokens[tokens.length - 1].end : (end || begin);
 
         return {
@@ -170,7 +183,7 @@ function parseLyrics(raw: string): LyricLine[] {
         begin,
         end: begin,
         text,
-        tokens: [{ begin, end: begin, text }],
+        tokens: [{ begin, end: begin, text, trailingSpace: false }],
       });
     }
   }
@@ -199,6 +212,7 @@ function getActiveTokenIndex(line: LyricLine, time: number) {
 
 export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const shouldReduceMotion = useReducedMotion();
   const selectedSource = useMemo(() => chooseSource(track.sources), [track.sources]);
   const [isPlaying, setIsPlaying] = useState(false);
   const playRequestTimeRef = useRef<number | null>(null);
@@ -208,6 +222,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [hasAudioError, setHasAudioError] = useState(false);
+  const [showExpandedPlayer, setShowExpandedPlayer] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
@@ -235,6 +250,15 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     currentTokenIndexRef.current = currentTokenIndex;
     currentTokenProgressRef.current = currentTokenProgress;
   }, [currentTime, seekValue, isSeeking, playbackLatency, currentTokenIndex, currentTokenProgress]);
+
+  useEffect(() => {
+    if (!showExpandedPlayer) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [showExpandedPlayer]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -281,6 +305,12 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
 
     // apply latency compensation so highlighting matches perceived audio
     const effectiveTime = time + playbackLatency;
+    if (effectiveTime + 0.0001 < lyrics[0].begin) {
+      setCurrentLyricIndex(0);
+      setCurrentTokenIndex(-1);
+      setCurrentTokenProgress(0);
+      return;
+    }
 
     let i = lyrics.length - 1;
     while (i >= 0 && effectiveTime < lyrics[i].begin) i -= 1;
@@ -343,18 +373,47 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     }
   }, [currentTime]);
 
-  // Auto-scroll (marquee) the active lyric line when it's wider than the container
-  type VisibleLyric = { line: LyricLine; index: number };
-  const visibleLyrics = useMemo<VisibleLyric[]>(() => {
-    if (lyrics.length === 0) return [];
+  // Auto-scroll (marquee) the active lyric line when it's wider than the mini player container.
+  const effectiveLyricTime = (isSeeking ? seekValue : currentTime) + playbackLatency;
+  const hasStartedLyrics = isPlaying || isSeeking || currentTime > 0.12;
+  const hasReachedFirstLyric = lyrics.length > 0 && hasStartedLyrics && effectiveLyricTime + 0.0001 >= lyrics[0].begin;
 
-    const effectiveTime = (isSeeking ? seekValue : currentTime) + playbackLatency;
+  const visibleLyrics = useMemo<VisibleLyric[]>(() => {
+    if (lyrics.length === 0 || !hasReachedFirstLyric) return [];
+
     const idx = Math.min(Math.max(0, currentLyricIndex), lyrics.length - 1);
     const line = lyrics[idx];
-    // only show the line if it's within 2s before start or has started
-    if (effectiveTime + 0.0001 < line.begin - 2) return [];
+    if (effectiveLyricTime + 0.0001 < line.begin) return [];
     return [{ line, index: idx }];
-  }, [currentLyricIndex, lyrics, isSeeking, seekValue, currentTime, playbackLatency]);
+  }, [currentLyricIndex, effectiveLyricTime, hasReachedFirstLyric, lyrics]);
+
+  const expandedLyrics = useMemo<VisibleLyric[]>(() => {
+    if (lyrics.length === 0) return [];
+    if (!hasReachedFirstLyric) return [{ line: lyrics[0], index: 0 }];
+
+    const start = Math.max(0, currentLyricIndex - 4);
+    const end = Math.min(lyrics.length, currentLyricIndex + 5);
+    return lyrics.slice(start, end).map((line, offset) => ({ line, index: start + offset }));
+  }, [currentLyricIndex, hasReachedFirstLyric, lyrics]);
+
+  const getTokenFillStyle = (tokenIndex: number, activeTokenIndex: number) => (
+    tokenIndex === activeTokenIndex
+      ? {
+        backgroundImage: `linear-gradient(90deg, rgb(228 154 120) 0%, rgb(201 211 176) ${currentTokenProgress * 100}%, rgb(183 187 168 / 0.5) ${currentTokenProgress * 100}%, rgb(183 187 168 / 0.5) 100%)`,
+        WebkitBackgroundClip: 'text',
+        backgroundClip: 'text',
+        textShadow: currentTokenProgress > 0.02 ? '0 0 18px rgba(228,154,120,0.22)' : 'none',
+      }
+      : undefined
+  );
+
+  const getTokenClassName = (tokenIndex: number, activeTokenIndex: number) => (
+    tokenIndex < activeTokenIndex
+      ? 'text-warm-accent/90'
+      : tokenIndex === activeTokenIndex
+        ? 'text-transparent'
+        : 'text-muted/55'
+  );
 
   // Auto-scroll follow loop: smoothly follow active token using syllable timing
   useEffect(() => {
@@ -433,18 +492,6 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     };
   }, [currentLyricIndex, visibleLyrics.length, isPlaying]);
 
-  useEffect(() => {
-    // scroll active lyric into view inside the lyric container
-    const el = lyricRefs.current[currentLyricIndex];
-    if (el && typeof el.scrollIntoView === 'function') {
-      try {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } catch {
-        el.scrollIntoView();
-      }
-    }
-  }, [currentLyricIndex]);
-
   if (!selectedSource) return null;
 
   const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
@@ -478,8 +525,32 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     setIsSeeking(false);
   };
 
+  const previewSeekFromPointer = (event: PointerEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+    if (!duration) return;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+    const nextValue = ratio * duration;
+    setSeekValue(nextValue);
+    setIsSeeking(true);
+  };
+
   return (
-    <div className="relative z-10 mt-3 min-h-[6.25rem] w-full max-w-[13rem] overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl">
+    <>
+    <div
+      className="relative z-10 mt-3 min-h-[6.25rem] w-full max-w-[13rem] cursor-pointer overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl transition-transform hover:-translate-y-0.5"
+      role="button"
+      tabIndex={0}
+      onClick={() => setShowExpandedPlayer(true)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setShowExpandedPlayer(true);
+        }
+      }}
+      aria-label={`Open expanded player for ${track.title}`}
+    >
       <audio
         ref={audioRef}
         preload="metadata"
@@ -537,7 +608,10 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
 
         <button
           type="button"
-          onClick={togglePlayback}
+          onClick={(event) => {
+            event.stopPropagation();
+            void togglePlayback();
+          }}
           disabled={hasAudioError}
           className="flex h-[2.2rem] w-[2.2rem] shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-lg shadow-accent/10 transition-all hover:bg-accent-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
           aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
@@ -555,22 +629,28 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
             max={duration || 0}
             step={0.01}
             value={isSeeking ? seekValue : currentTime}
+            onClick={(event) => event.stopPropagation()}
+            onPointerDown={previewSeekFromPointer}
             onChange={(e) => {
+              e.stopPropagation();
               const v = Number(e.currentTarget.value);
               setSeekValue(v);
               setIsSeeking(true);
             }}
             onPointerUp={(e) => {
+              e.stopPropagation();
               const v = Number(e.currentTarget.value);
               commitSeek(v);
             }}
-            onMouseUp={() => {
+            onMouseUp={(event) => {
+              event.stopPropagation();
               // record seek request time to measure seek application latency
               seekRequestTimeRef.current = typeof performance !== 'undefined' ? performance.now() : null;
               targetSeekTimeRef.current = seekValue;
               commitSeek();
             }}
-            onTouchEnd={() => {
+            onTouchEnd={(event) => {
+              event.stopPropagation();
               commitSeek();
             }}
             onKeyUp={(e) => {
@@ -609,7 +689,6 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
               {visibleLyrics.map(({ line, index }) => {
                 const isActive = index === currentLyricIndex;
                 const activeTokenIndex = isActive ? currentTokenIndex : -1;
-                const activeProgress = isActive ? Math.round(currentTokenProgress * 100) : 0;
                 return (
                   <div
                     key={`${line.begin}-${index}`}
@@ -631,21 +710,10 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                               ref={(el) => {
                                 tokenRefs.current[tokenIndex] = el;
                               }}
-                              className={
-                                tokenIndex < activeTokenIndex
-                                  ? 'text-accent/90'
-                                  : tokenIndex === activeTokenIndex
-                                    ? 'text-transparent'
-                                    : 'text-muted/45'
-                              }
-                              style={tokenIndex === activeTokenIndex ? {
-                                backgroundImage: `linear-gradient(90deg, rgb(201 211 176) 0%, rgb(201 211 176) ${activeProgress}%, rgb(142 146 127 / 0.45) ${activeProgress}%, rgb(142 146 127 / 0.45) 100%)`,
-                                WebkitBackgroundClip: 'text',
-                                backgroundClip: 'text',
-                              } : undefined}
+                              className={`${token.trailingSpace ? 'mr-[0.22em]' : ''} inline-block ${getTokenClassName(tokenIndex, activeTokenIndex)}`}
+                              style={getTokenFillStyle(tokenIndex, activeTokenIndex)}
                             >
                               {token.text}
-                              {' '}
                             </span>
                           ))}
                         </span>
@@ -669,5 +737,226 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
         </p>
       )}
     </div>
+    {typeof document !== 'undefined' ? createPortal((
+    <AnimatePresence>
+      {showExpandedPlayer && (
+        <motion.div
+          className="fixed inset-0 z-[90] overflow-y-auto bg-bg"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setShowExpandedPlayer(false)}
+        >
+          <motion.div
+            initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
+            transition={{ duration: shouldReduceMotion ? 0.18 : 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="relative flex min-h-[100dvh] w-full flex-col overflow-hidden bg-surface md:grid md:min-h-screen md:grid-cols-[minmax(25rem,0.86fr)_minmax(0,1.14fr)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(201,211,176,0.18),transparent_32%),radial-gradient(circle_at_76%_35%,rgba(228,154,120,0.11),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.035),transparent_38%)]" />
+            {!shouldReduceMotion && (
+              <>
+                <motion.div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -left-24 top-1/4 h-72 w-72 rounded-full bg-accent/10 blur-3xl"
+                  animate={isPlaying ? { opacity: [0.3, 0.58, 0.3], scale: [1, 1.14, 1] } : { opacity: 0.26, scale: 1 }}
+                  transition={{ duration: 5.8, repeat: isPlaying ? Infinity : 0, ease: 'easeInOut' }}
+                />
+                <motion.div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-0 top-10 h-64 w-64 rounded-full bg-warm-accent/10 blur-3xl"
+                  animate={isPlaying ? { opacity: [0.18, 0.42, 0.18], x: [0, -18, 0], y: [0, 14, 0] } : { opacity: 0.16, x: 0, y: 0 }}
+                  transition={{ duration: 7.2, repeat: isPlaying ? Infinity : 0, ease: 'easeInOut' }}
+                />
+              </>
+            )}
+            <button
+              type="button"
+              onClick={() => setShowExpandedPlayer(false)}
+              className="absolute right-5 top-5 z-30 rounded-full border border-accent/10 bg-accent-soft/90 p-3 text-accent shadow-xl shadow-black/20 backdrop-blur-xl transition-colors hover:bg-accent/15"
+              aria-label="Close expanded player"
+            >
+              <X size={22} />
+            </button>
+
+            <section className="relative flex shrink-0 flex-col justify-center border-b border-border/45 px-5 pb-4 pt-16 md:min-h-screen md:border-b-0 md:border-r md:px-10 md:py-20 lg:px-14">
+              <div className="mx-auto flex w-full max-w-[28rem] flex-col gap-4 md:mx-0 md:gap-7">
+                <p className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em] text-warm-accent md:text-[10px]">
+                  <Music2 size={13} />
+                  Now playing
+                </p>
+                <motion.div
+                  className="w-[min(42vw,10rem)] overflow-hidden rounded-[1.25rem] border border-white/10 bg-bg/40 shadow-2xl shadow-black/30 md:w-full md:rounded-[1.65rem]"
+                  animate={isPlaying && !shouldReduceMotion
+                    ? {
+                      scale: [1, 1.012, 1],
+                      boxShadow: [
+                        '0 26px 60px rgba(0,0,0,0.32), 0 0 0 rgba(201,211,176,0)',
+                        '0 30px 72px rgba(0,0,0,0.38), 0 0 42px rgba(201,211,176,0.12)',
+                        '0 26px 60px rgba(0,0,0,0.32), 0 0 0 rgba(201,211,176,0)',
+                      ],
+                    }
+                    : { scale: 1 }}
+                  transition={{ duration: 4.8, repeat: isPlaying && !shouldReduceMotion ? Infinity : 0, ease: 'easeInOut' }}
+                >
+                  <img
+                    src={track.artworkSrc}
+                    alt={`${track.title} cover`}
+                    className="aspect-square w-full object-cover opacity-90"
+                  />
+                </motion.div>
+
+                <div>
+                  <h2 className="text-3xl font-bold leading-none tracking-tight text-text sm:text-4xl md:text-5xl">
+                    {track.title}
+                  </h2>
+                  <p className="mt-1 text-base font-medium text-muted md:mt-2 md:text-xl">{track.artist}</p>
+                </div>
+
+              <div className="w-full rounded-[1.35rem] border border-white/10 bg-bg/40 p-3.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.04] backdrop-blur-xl md:rounded-[1.6rem] md:p-4">
+                <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-3 md:grid-cols-[3.75rem_minmax(0,1fr)] md:gap-4">
+                  <motion.button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      void togglePlayback();
+                    }}
+                    disabled={hasAudioError}
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-xl shadow-accent/10 transition-all hover:bg-accent-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-45 md:h-[3.75rem] md:w-[3.75rem]"
+                    aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
+                    whileTap={shouldReduceMotion ? undefined : { scale: 0.92 }}
+                    animate={isPlaying && !shouldReduceMotion
+                      ? { boxShadow: ['0 10px 28px rgba(201,211,176,0.12)', '0 14px 42px rgba(201,211,176,0.24)', '0 10px 28px rgba(201,211,176,0.12)'] }
+                      : { boxShadow: '0 10px 28px rgba(201,211,176,0.1)' }}
+                    transition={{ duration: 3.5, repeat: isPlaying && !shouldReduceMotion ? Infinity : 0, ease: 'easeInOut' }}
+                  >
+                    {isPlaying ? <Pause size={23} fill="currentColor" /> : <Play size={23} fill="currentColor" className="translate-x-0.5" />}
+                  </motion.button>
+                  <div className="min-w-0 flex-1">
+                    <input
+                      aria-label={`Seek ${track.title}`}
+                      type="range"
+                      min={0}
+                      max={duration || 0}
+                      step={0.01}
+                      value={isSeeking ? seekValue : currentTime}
+                      onClick={(event) => event.stopPropagation()}
+                      onPointerDown={previewSeekFromPointer}
+                      onChange={(event) => {
+                        event.stopPropagation();
+                        const value = Number(event.currentTarget.value);
+                        setSeekValue(value);
+                        setIsSeeking(true);
+                      }}
+                      onPointerUp={(event) => {
+                        event.stopPropagation();
+                        const value = Number(event.currentTarget.value);
+                        commitSeek(value);
+                      }}
+                      onMouseUp={(event) => {
+                        event.stopPropagation();
+                        seekRequestTimeRef.current = typeof performance !== 'undefined' ? performance.now() : null;
+                        targetSeekTimeRef.current = seekValue;
+                        commitSeek();
+                      }}
+                      onTouchEnd={(event) => {
+                        event.stopPropagation();
+                        commitSeek();
+                      }}
+                      disabled={!duration}
+                      className="mini-range w-full"
+                      style={{
+                        background: `linear-gradient(90deg, rgba(201,211,176,1) ${progress}%, rgba(255,255,255,0.06) ${progress}%)`,
+                      }}
+                    />
+                    <div className="mt-2 grid grid-cols-3 text-[10px] font-semibold text-muted md:text-xs">
+                      <span>{formatTime(isSeeking ? seekValue : currentTime)}</span>
+                      <span className="text-center text-subtle">{selectedSource.bitrateKbps} kbps</span>
+                      <span className="text-right">{formatTime(duration)}</span>
+                    </div>
+                  </div>
+                </div>
+                {hasAudioError && (
+                  <p className="mt-4 rounded-2xl border border-warm-accent/25 bg-warm-accent/10 px-4 py-3 text-sm font-semibold text-warm-accent">
+                    Audio is not available from the selected source.
+                  </p>
+                )}
+              </div>
+              </div>
+            </section>
+
+            <section className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-5 pb-7 pt-3 md:min-h-screen md:px-10 md:py-20 lg:px-16">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface via-surface/70 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-surface via-surface/70 to-transparent" />
+              <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-20 bg-gradient-to-r from-surface to-transparent md:block" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-20 bg-gradient-to-l from-surface to-transparent md:block" />
+              <div className="relative mx-auto h-full min-h-[12rem] w-full max-w-4xl overflow-hidden py-3 md:h-[min(68vh,42rem)] md:py-8">
+                {lyrics.length > 0 ? (
+                  expandedLyrics.map(({ line, index }) => {
+                    const isActive = hasReachedFirstLyric && index === currentLyricIndex;
+                    const activeTokenIndex = isActive ? currentTokenIndex : -1;
+                    const signedDistance = hasReachedFirstLyric ? index - currentLyricIndex : 1;
+                    const distance = Math.abs(signedDistance);
+                    const lineOpacity = isActive ? 1 : Math.max(0.08, 0.44 - distance * 0.085);
+                    const blur = Math.min(6.5, distance * 1.25);
+                    const lineOffset = signedDistance * 96;
+                    return (
+                      <motion.div
+                        key={`${line.begin}-${index}`}
+                        ref={(el: HTMLDivElement | null) => {
+                          lyricRefs.current[index] = el;
+                        }}
+                        initial={shouldReduceMotion
+                          ? { opacity: 0, x: '-50%', y: `calc(-50% + ${lineOffset}px)` }
+                          : { opacity: 0, x: '-50%', y: `calc(-50% + ${lineOffset + 26}px)`, filter: 'blur(8px)' }}
+                        animate={{
+                          opacity: lineOpacity,
+                          x: '-50%',
+                          y: `calc(-50% + ${lineOffset}px)`,
+                          scale: shouldReduceMotion ? 1 : isActive ? 1 : Math.max(0.88, 0.98 - distance * 0.025),
+                          filter: shouldReduceMotion ? 'blur(0px)' : `blur(${isActive ? 0 : blur}px)`,
+                        }}
+                        transition={{ duration: shouldReduceMotion ? 0.18 : 0.72, ease: [0.16, 1, 0.3, 1] }}
+                        className={`absolute left-1/2 top-1/2 w-full origin-center text-center text-balance text-xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl lg:text-[2.85rem] ${
+                          isActive ? 'text-text' : 'text-muted'
+                        }`}
+                      >
+                        {line.tokens.length > 0 ? (
+                          line.tokens.map((token, tokenIndex) => (
+                            <span
+                              key={`${token.begin}-${tokenIndex}`}
+                              className={`${token.trailingSpace ? 'mr-[0.22em]' : ''} inline-block ${isActive ? getTokenClassName(tokenIndex, activeTokenIndex) : 'text-muted/50'}`}
+                              style={isActive ? {
+                                ...getTokenFillStyle(tokenIndex, activeTokenIndex),
+                                opacity: tokenIndex > activeTokenIndex ? 0.72 : 1,
+                                transform: tokenIndex === activeTokenIndex && !shouldReduceMotion
+                                  ? 'translateY(-0.045em) scale(1.035)'
+                                  : 'translateY(0) scale(1)',
+                                transition: shouldReduceMotion
+                                  ? 'opacity 180ms ease'
+                                  : 'transform 520ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms ease, text-shadow 520ms ease',
+                                willChange: tokenIndex === activeTokenIndex ? 'transform' : undefined,
+                              } : undefined}
+                            >
+                              {token.text}
+                            </span>
+                          ))
+                        ) : (
+                          line.text
+                        )}
+                      </motion.div>
+                    );
+                  })
+                ) : null}
+              </div>
+            </section>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+    ), document.body) : null}
+    </>
   );
 }

@@ -2,3 +2,6 @@ project_id = "uajpewjagduzdpwlynrv"
 
 [functions.get-private-archive]
 verify_jwt = false
+
+[functions.check-secret-name]
+verify_jwt = false

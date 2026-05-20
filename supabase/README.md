@@ -66,6 +66,7 @@ Set Supabase Edge Function secrets:
 
 ```bash
 supabase secrets set ARCHIVE_ACCESS_KEY_HASH="paste-hash-here"
+supabase secrets set SECRET_NAME_HASH="paste-normalized-name-hash-here"
 supabase secrets set ARCHIVE_BUCKET="private-archive"
 supabase secrets set SIGNED_URL_TTL_SECONDS="600"
 supabase secrets set ALLOWED_ORIGINS="https://your-site.example,http://localhost:3000"
@@ -79,6 +80,7 @@ The function uses its own access-key check, so deploy it as a public Edge Functi
 
 ```bash
 supabase functions deploy get-private-archive --no-verify-jwt
+supabase functions deploy check-secret-name --no-verify-jwt
 ```
 
 The endpoint will be:
