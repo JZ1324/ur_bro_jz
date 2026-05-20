@@ -392,8 +392,8 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     if (lyrics.length === 0) return [];
     if (!hasReachedFirstLyric) return [{ line: lyrics[0], index: 0 }];
 
-    const start = Math.max(0, currentLyricIndex - 4);
-    const end = Math.min(lyrics.length, currentLyricIndex + 5);
+    const start = Math.max(0, currentLyricIndex - 2);
+    const end = Math.min(lyrics.length, currentLyricIndex + 3);
     return lyrics.slice(start, end).map((line, offset) => ({ line, index: start + offset }));
   }, [currentLyricIndex, hasReachedFirstLyric, lyrics]);
 
@@ -893,34 +893,37 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-surface via-surface/70 to-transparent" />
               <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-20 bg-gradient-to-r from-surface to-transparent md:block" />
               <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-20 bg-gradient-to-l from-surface to-transparent md:block" />
-              <div className="relative mx-auto h-full min-h-[12rem] w-full max-w-4xl overflow-hidden py-3 md:h-[min(68vh,42rem)] md:py-8">
+              <div className="relative mx-auto flex h-[min(45dvh,24rem)] min-h-[13rem] w-full max-w-4xl flex-col justify-center gap-3 overflow-hidden py-3 md:h-[min(68vh,42rem)] md:gap-5 md:py-8">
                 {lyrics.length > 0 ? (
                   expandedLyrics.map(({ line, index }) => {
                     const isActive = hasReachedFirstLyric && index === currentLyricIndex;
                     const activeTokenIndex = isActive ? currentTokenIndex : -1;
                     const signedDistance = hasReachedFirstLyric ? index - currentLyricIndex : 1;
                     const distance = Math.abs(signedDistance);
-                    const lineOpacity = isActive ? 1 : Math.max(0.08, 0.44 - distance * 0.085);
-                    const blur = Math.min(6.5, distance * 1.25);
-                    const lineOffset = signedDistance * 96;
+                    const lineOpacity = isActive ? 1 : Math.max(0.05, 0.3 - distance * 0.08);
+                    const blur = Math.min(9, 2.8 + distance * 1.8);
                     return (
                       <motion.div
+                        layout
                         key={`${line.begin}-${index}`}
                         ref={(el: HTMLDivElement | null) => {
                           lyricRefs.current[index] = el;
                         }}
                         initial={shouldReduceMotion
-                          ? { opacity: 0, x: '-50%', y: `calc(-50% + ${lineOffset}px)` }
-                          : { opacity: 0, x: '-50%', y: `calc(-50% + ${lineOffset + 26}px)`, filter: 'blur(8px)' }}
+                          ? { opacity: 0, y: 0 }
+                          : { opacity: 0, y: signedDistance >= 0 ? 24 : -24, filter: 'blur(8px)' }}
                         animate={{
                           opacity: lineOpacity,
-                          x: '-50%',
-                          y: `calc(-50% + ${lineOffset}px)`,
+                          y: 0,
                           scale: shouldReduceMotion ? 1 : isActive ? 1 : Math.max(0.88, 0.98 - distance * 0.025),
                           filter: shouldReduceMotion ? 'blur(0px)' : `blur(${isActive ? 0 : blur}px)`,
                         }}
                         transition={{ duration: shouldReduceMotion ? 0.18 : 0.72, ease: [0.16, 1, 0.3, 1] }}
-                        className={`absolute left-1/2 top-1/2 w-full origin-center text-center text-balance text-xl font-bold leading-tight tracking-tight sm:text-3xl md:text-4xl lg:text-[2.85rem] ${
+                        className={`w-full origin-center text-center text-balance font-bold leading-tight tracking-tight ${
+                          isActive
+                            ? 'text-2xl sm:text-3xl md:text-4xl lg:text-[2.85rem]'
+                            : 'text-lg sm:text-2xl md:text-3xl lg:text-4xl'
+                        } ${
                           isActive ? 'text-text' : 'text-muted'
                         }`}
                       >
