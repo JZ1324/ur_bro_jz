@@ -102,6 +102,32 @@
     animation: shimmer 1.5s infinite;
   }
 
+  @keyframes avatar-shine {
+    0%, 18% {
+      opacity: 0;
+      transform: translateX(-145%) rotate(42deg);
+    }
+    30% {
+      opacity: 0.72;
+    }
+    42%, 56% {
+      opacity: 0;
+      transform: translateX(145%) rotate(42deg);
+    }
+    68% {
+      opacity: 0.62;
+    }
+    82%, 100% {
+      opacity: 0;
+      transform: translateX(-145%) rotate(42deg);
+    }
+  }
+
+  .profile-avatar-shine {
+    animation: avatar-shine 7.5s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+    will-change: transform, opacity;
+  }
+
   @keyframes pulse {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }

@@ -33,6 +33,8 @@ type VisibleLyric = {
   index: number;
 };
 
+type LyricStatus = 'idle' | 'loading' | 'ready' | 'unavailable';
+
 function getConnection(): NetworkInformation | undefined {
   if (typeof navigator === 'undefined') return undefined;
   return (navigator as Navigator & { connection?: NetworkInformation }).connection;
@@ -226,6 +228,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
+  const [lyricsStatus, setLyricsStatus] = useState<LyricStatus>('idle');
   const [currentLyricIndex, setCurrentLyricIndex] = useState(0);
   const [currentTokenIndex, setCurrentTokenIndex] = useState(0);
   const [currentTokenProgress, setCurrentTokenProgress] = useState(0);
@@ -274,11 +277,15 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   useEffect(() => {
     if (!track.lyrics) {
       setLyrics([]);
+      setLyricsStatus('idle');
       setCurrentLyricIndex(0);
       setCurrentTokenIndex(0);
       setCurrentTokenProgress(0);
       return;
     }
+
+    let didCancel = false;
+    setLyricsStatus('loading');
 
     (async () => {
       let raw = track.lyrics as string;
@@ -286,18 +293,30 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
       try {
         if (!trimmedRaw.startsWith('<') && !trimmedRaw.startsWith('[')) {
           const res = await fetch(raw);
-          if (res.ok) raw = await res.text();
+          if (!res.ok) throw new Error('lyrics_request_failed');
+          raw = await res.text();
         }
-      } catch {
-        // ignore fetch errors and fall back to raw value
-      }
 
-      const parsed = parseLyrics(raw);
-      setLyrics(parsed);
-      setCurrentLyricIndex(0);
-      setCurrentTokenIndex(0);
-      setCurrentTokenProgress(0);
+        if (didCancel) return;
+        const parsed = parseLyrics(raw);
+        setLyrics(parsed);
+        setLyricsStatus(parsed.length > 0 ? 'ready' : 'unavailable');
+        setCurrentLyricIndex(0);
+        setCurrentTokenIndex(0);
+        setCurrentTokenProgress(0);
+      } catch {
+        if (didCancel) return;
+        setLyrics([]);
+        setLyricsStatus('unavailable');
+        setCurrentLyricIndex(0);
+        setCurrentTokenIndex(0);
+        setCurrentTokenProgress(0);
+      }
     })();
+
+    return () => {
+      didCancel = true;
+    };
   }, [track.lyrics]);
 
   useEffect(() => {
@@ -537,13 +556,20 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     setIsSeeking(true);
   };
 
+  const shouldIgnoreOpen = (target: EventTarget | null) => (
+    target instanceof Element && Boolean(target.closest('[data-player-control="true"]'))
+  );
+
   return (
     <>
     <div
       className="relative z-10 mt-3 min-h-[6.25rem] w-full max-w-[13rem] cursor-pointer overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl transition-transform hover:-translate-y-0.5"
       role="button"
       tabIndex={0}
-      onClick={() => setShowExpandedPlayer(true)}
+      onClick={(event) => {
+        if (shouldIgnoreOpen(event.target)) return;
+        setShowExpandedPlayer(true);
+      }}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
@@ -609,6 +635,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
 
         <button
           type="button"
+          data-player-control="true"
           onClick={(event) => {
             event.stopPropagation();
             void togglePlayback();
@@ -624,6 +651,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
       <div className="relative mt-2.5">
         <div className="flex items-center gap-2">
           <input
+            data-player-control="true"
             aria-label={`Seek ${track.title}`}
             type="range"
             min={0}
@@ -641,6 +669,8 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
             onPointerUp={(e) => {
               e.stopPropagation();
               const v = Number(e.currentTarget.value);
+              seekRequestTimeRef.current = typeof performance !== 'undefined' ? performance.now() : null;
+              targetSeekTimeRef.current = v;
               commitSeek(v);
             }}
             onMouseUp={(event) => {
@@ -742,7 +772,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     <AnimatePresence>
       {showExpandedPlayer && (
         <motion.div
-          className="fixed inset-0 z-[90] overflow-y-auto bg-bg"
+          className="fixed inset-0 z-[90] overflow-hidden bg-bg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -753,7 +783,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
             transition={{ duration: shouldReduceMotion ? 0.18 : 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="relative flex min-h-[100dvh] w-full flex-col overflow-hidden bg-surface md:grid md:min-h-screen md:grid-cols-[minmax(25rem,0.86fr)_minmax(0,1.14fr)]"
+            className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-surface md:grid md:h-screen md:grid-cols-[minmax(25rem,0.86fr)_minmax(0,1.14fr)]"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_22%,rgba(201,211,176,0.18),transparent_32%),radial-gradient(circle_at_76%_35%,rgba(228,154,120,0.11),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.035),transparent_38%)]" />
@@ -782,14 +812,14 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
               <X size={22} />
             </button>
 
-            <section className="relative flex shrink-0 flex-col justify-center border-b border-border/45 px-5 pb-4 pt-16 md:min-h-screen md:border-b-0 md:border-r md:px-10 md:py-20 lg:px-14">
-              <div className="mx-auto flex w-full max-w-[28rem] flex-col gap-4 md:mx-0 md:gap-7">
+            <section className="relative flex shrink-0 flex-col justify-center border-b border-border/45 px-5 pb-3 pt-14 md:min-h-screen md:border-b-0 md:border-r md:px-10 md:py-20 lg:px-14">
+              <div className="mx-auto flex w-full max-w-[28rem] flex-col gap-3.5 md:mx-0 md:gap-7">
                 <p className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em] text-warm-accent md:text-[10px]">
                   <Music2 size={13} />
                   Now playing
                 </p>
                 <motion.div
-                  className="w-[min(42vw,10rem)] overflow-hidden rounded-[1.25rem] border border-white/10 bg-bg/40 shadow-2xl shadow-black/30 md:w-full md:rounded-[1.65rem]"
+                  className="w-[min(38vw,9rem)] overflow-hidden rounded-[1.25rem] border border-white/10 bg-bg/40 shadow-2xl shadow-black/30 md:w-full md:rounded-[1.65rem]"
                   animate={isPlaying && !shouldReduceMotion
                     ? {
                       scale: [1, 1.012, 1],
@@ -810,7 +840,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                 </motion.div>
 
                 <div>
-                  <h2 className="text-3xl font-bold leading-none tracking-tight text-text sm:text-4xl md:text-5xl">
+                  <h2 className="text-2xl font-bold leading-none tracking-tight text-text sm:text-4xl md:text-5xl">
                     {track.title}
                   </h2>
                   <p className="mt-1 text-base font-medium text-muted md:mt-2 md:text-xl">{track.artist}</p>
@@ -888,20 +918,20 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
               </div>
             </section>
 
-            <section className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-5 pb-7 pt-3 md:min-h-screen md:px-10 md:py-20 lg:px-16">
+            <section className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-5 pb-6 pt-2 md:min-h-screen md:px-10 md:py-20 lg:px-16">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface via-surface/70 to-transparent" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-surface via-surface/70 to-transparent" />
               <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-20 bg-gradient-to-r from-surface to-transparent md:block" />
               <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-20 bg-gradient-to-l from-surface to-transparent md:block" />
-              <div className="relative mx-auto flex h-[min(45dvh,24rem)] min-h-[13rem] w-full max-w-4xl flex-col justify-center gap-3 overflow-hidden py-3 md:h-[min(68vh,42rem)] md:gap-5 md:py-8">
+              <div className="relative mx-auto flex h-[min(42dvh,22rem)] min-h-[11rem] w-full max-w-4xl flex-col justify-center gap-2.5 overflow-hidden py-3 md:h-[min(68vh,42rem)] md:gap-5 md:py-8">
                 {lyrics.length > 0 ? (
                   expandedLyrics.map(({ line, index }) => {
                     const isActive = hasReachedFirstLyric && index === currentLyricIndex;
                     const activeTokenIndex = isActive ? currentTokenIndex : -1;
                     const signedDistance = hasReachedFirstLyric ? index - currentLyricIndex : 1;
                     const distance = Math.abs(signedDistance);
-                    const lineOpacity = isActive ? 1 : Math.max(0.05, 0.3 - distance * 0.08);
-                    const blur = Math.min(9, 2.8 + distance * 1.8);
+                    const lineOpacity = isActive ? 1 : Math.max(0.08, 0.28 - distance * 0.07);
+                    const blur = Math.min(9, 3.2 + distance * 1.7);
                     return (
                       <motion.div
                         layout
@@ -921,8 +951,8 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                         transition={{ duration: shouldReduceMotion ? 0.18 : 0.72, ease: [0.16, 1, 0.3, 1] }}
                         className={`w-full origin-center text-center text-balance font-bold leading-tight tracking-tight ${
                           isActive
-                            ? 'text-2xl sm:text-3xl md:text-4xl lg:text-[2.85rem]'
-                            : 'text-lg sm:text-2xl md:text-3xl lg:text-4xl'
+                            ? 'text-xl sm:text-3xl md:text-4xl lg:text-[2.7rem]'
+                            : 'text-base sm:text-2xl md:text-3xl lg:text-[2.35rem]'
                         } ${
                           isActive ? 'text-text' : 'text-muted'
                         }`}
@@ -953,7 +983,17 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                       </motion.div>
                     );
                   })
-                ) : null}
+                ) : (
+                  <motion.p
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mx-auto max-w-md text-center text-sm font-semibold leading-relaxed text-muted/60 md:text-base"
+                  >
+                    {lyricsStatus === 'loading'
+                      ? 'Loading lyrics...'
+                      : 'Lyrics are quiet right now.'}
+                  </motion.p>
+                )}
               </div>
             </section>
           </motion.div>

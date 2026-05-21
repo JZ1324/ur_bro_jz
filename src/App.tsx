@@ -19,6 +19,7 @@ import { StoryHighlights } from './components/StoryHighlights';
 import { TextScramble } from './components/TextScramble';
 import Stepper, { Step } from './components/ui/Stepper';
 import { ThemeToggle, type Theme } from './components/ui/ThemeToggle';
+import { useBodyScrollLock } from './hooks/useBodyScrollLock';
 import {
   aboutSections,
   archiveSections,
@@ -64,6 +65,8 @@ export default function App() {
   const [archiveErrorMessage, setArchiveErrorMessage] = useState<string | null>(null);
   const [placeholderContent, setPlaceholderContent] = useState<PlaceholderContent | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
+
+  useBodyScrollLock(showModal);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -209,6 +212,11 @@ export default function App() {
     setArchiveErrorMessage(null);
     setPasswordInput('');
     setShowArchiveOverlay(false);
+  };
+
+  const closeLockedAbout = () => {
+    setShowAbout(false);
+    lockArchive();
   };
 
   const handleArchiveSectionSelect = (sectionId: ArchiveSectionId) => {
@@ -474,7 +482,7 @@ export default function App() {
         archiveStyleItems={archiveStyleItems}
         faithHover={faithHover}
         onFaithClick={() => setShowJesus(true)}
-        onClose={() => setShowAbout(false)}
+        onClose={closeLockedAbout}
       />
 
       <JesusOverlay

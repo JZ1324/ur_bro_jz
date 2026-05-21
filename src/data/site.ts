@@ -1,5 +1,5 @@
 export type ProfileStat = {
-  label: 'Posts' | 'Following';
+  label: 'Posts' | 'Relationship';
   value: number;
 };
 
@@ -142,7 +142,7 @@ export const profileData: ProfileData = {
   dumpsUrl: 'https://www.instagram.com/ur_bro._.jz',
   stats: [
     { label: 'Posts', value: 1 },
-    { label: 'Following', value: 1 },
+    { label: 'Relationship', value: 1 },
   ],
   track: {
     title: 'So Easy',
@@ -201,6 +201,19 @@ export const faithSections: FaithSection[] = [
     ],
   },
   {
+    id: 'why-saving',
+    title: 'Why We Need Saving',
+    body: [
+      'A lot of people think Christianity is mainly about being a good person. But the Bible goes deeper than comparing ourselves to other people. It says the real problem is sin: our hearts, motives, pride, selfishness, and the ways we fall short of God.',
+      'That is why we need saving. Not because every person is as bad as possible, but because even our best efforts cannot make us clean before a holy God. We do not just need advice; we need forgiveness, a new heart, and peace with God.',
+    ],
+    verses: [
+      { reference: 'Romans 3:23', text: 'All have sinned, and come short of the glory of God.' },
+      { reference: 'Isaiah 64:6', text: 'All our righteousnesses are as filthy rags.' },
+      { reference: 'Romans 6:23', text: 'The gift of God is eternal life through Jesus Christ.' },
+    ],
+  },
+  {
     id: 'gospel',
     title: 'What the Gospel Is',
     body: [
@@ -214,16 +227,42 @@ export const faithSections: FaithSection[] = [
     ],
   },
   {
+    id: 'not-good-enough',
+    title: 'Not Just Good Enough',
+    body: [
+      'Being kind, respectful, generous, or religious is good, but it cannot erase sin. If salvation depended on being good enough, nobody could know where the line is, and nobody could honestly say they have never failed.',
+      'The Gospel is different. Jesus does not save people because they proved themselves worthy. He saves by grace. He takes the guilt, gives forgiveness, and changes people from the inside out.',
+    ],
+    verses: [
+      { reference: 'Titus 3:5', text: 'Not by works of righteousness which we have done.' },
+      { reference: '2 Corinthians 5:21', text: 'That we might be made the righteousness of God in him.' },
+      { reference: 'John 6:37', text: 'Him that cometh to me I will in no wise cast out.' },
+    ],
+  },
+  {
     id: 'following',
     title: 'What Following Him Means',
     body: [
       'Following Jesus means belonging to Him, learning His ways, and letting His love shape how we live. It is not just a label; it changes what we value and how we treat people.',
-      'Romans 12:16-21 points toward humility, peace, patience, mercy, and overcoming evil with good. That is the direction behind the bio and the reason the Following count is one.',
+      'Romans 12:16-21 points toward humility, peace, patience, mercy, and overcoming evil with good. That is the direction behind the bio and the reason the relationship count is one.',
     ],
     verses: [
       { reference: 'Luke 9:23', text: 'Take up his cross daily, and follow me.' },
       { reference: 'Romans 12:18', text: 'Live peaceably with all men.' },
       { reference: 'Romans 12:21', text: 'Overcome evil with good.' },
+    ],
+  },
+  {
+    id: 'response',
+    title: 'How We Respond',
+    body: [
+      'The response is not to pretend we are already fine. It is to come honestly to God: repent, trust Jesus, and receive the mercy He offers.',
+      'Faith is not just knowing facts about Jesus. It is trusting Him as Lord and Saviour, and letting that trust shape the way we live.',
+    ],
+    verses: [
+      { reference: 'Mark 1:15', text: 'Repent ye, and believe the gospel.' },
+      { reference: 'Romans 10:9', text: 'Confess the Lord Jesus, and believe.' },
+      { reference: 'Acts 16:31', text: 'Believe on the Lord Jesus Christ.' },
     ],
   },
   {
@@ -267,13 +306,13 @@ export const storyItems: StoryItem[] = [
 export const nowItems: NowItem[] = [
   {
     label: 'Site',
-    title: 'ur_bro_jz',
-    body: 'This is the main place for my projects, profile, and the private archive sections.',
+    title: 'Main archive',
+    body: 'Projects, music, and the parts that do not really fit inside a normal bio.',
   },
   {
     label: 'School',
-    title: 'Locked notes',
-    body: 'School stuff stays private unless you have the access key.',
+    title: 'Kept private',
+    body: 'School notes and personal stuff stay locked. If you are meant to see it, you will know the key.',
   },
   {
     label: 'Music',
@@ -309,11 +348,11 @@ export const archiveSections: ArchiveSection[] = [
 export const aboutSections: AboutSection[] = [
   {
     id: 'about-intro',
-    title: 'JZ archive, built from the feed up.',
+    title: 'A longer version of the profile.',
     level: 2,
     body: [
-      'This space mirrors the public Instagram profile: a small archive around identity, faith, creative work, and the projects that are still taking shape.',
-      'The goal is to feel like a profile that has room to breathe: part portfolio, part private archive, part place to collect the details that do not fit cleanly inside a single post.',
+      'This site is the longer version of @ur_bro_jz: the profile, the projects, the music, and a few locked places that are not meant to sit out in public.',
+      'It is still simple on purpose. Some things can be public, and some things are better kept behind a key.',
     ],
   },
   {
@@ -322,22 +361,22 @@ export const aboutSections: AboutSection[] = [
     level: 3,
     body: [
       'Romans 12:16-21',
-      'The profile is private, so the site keeps the public-facing details tight and intentional instead of pretending to show content that is not publicly visible.',
-      'Romans 12:16-21 points the page toward humility, peace, patience, and doing good even when the internet rewards the opposite. That makes the About page quieter on purpose: less performance, more signal.',
+      'The public side stays light: a handle, one verse, one song, and a few sections.',
+      'Romans 12:16-21 is there because it points toward peace, patience, and doing good even when it would be easier to be loud.',
     ],
   },
   {
     id: 'about-focus',
     title: 'Focus',
     level: 3,
-    body: ['Faith, friends, creative projects, and design experiments are the core threads that shape this archive.'],
+    body: ['Faith, people I care about, school, music, and things I am building are the main threads here.'],
   },
   {
     id: 'about-faith',
     title: 'Faith',
     level: 4,
     body: [
-      'Faith is the anchor for the page. It shows up in the bio, but it also shapes the restraint of the design: simple copy, warm colors, and room for reflection.',
+      'Faith is not just decoration on the page. It is why the bio points back to Romans 12:16-21.',
     ],
   },
   {
@@ -345,7 +384,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Friends',
     level: 4,
     body: [
-      'The profile picture centers a shared moment instead of a solo portrait. The site keeps that same feeling by making the archive personal without turning it into a loud showcase.',
+      'The profile picture is a shared moment, not a solo portrait. That fits the whole site: personal, but not trying too hard.',
     ],
   },
   {
@@ -353,7 +392,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Creative Projects',
     level: 4,
     body: [
-      'The archive is built for experiments: interface ideas, small tools, design systems, music notes, and unfinished concepts that are still worth saving.',
+      'The project section is where the things I make can live without needing to become a whole serious portfolio.',
     ],
   },
   {
@@ -361,7 +400,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Archive Style',
     level: 3,
     body: [
-      'The site borrows from Instagram stories, private collections, and portfolio grids. Locked highlights create a sense of discovery, while the project grid gives the page a more interactive layer.',
+      'The layout comes from the feeling of a private folder: profile first, locked sections, and a few things you can open when you want to look closer.',
     ],
   },
   {
@@ -369,8 +408,8 @@ export const aboutSections: AboutSection[] = [
     title: 'Now',
     level: 3,
     body: [
-      'Right now the page is focused on turning a simple profile into a fuller digital identity. The foundation is already here: a profile, an archive, project cards, and a few interactions that make the site feel custom.',
-      'The private archive keeps sensitive notes and photos out of the public source bundle, with access reserved for people who get the password directly from @ur_bro_jz.',
+      'Right now this page is mostly about making the profile feel finished: the music player, project cards, locked stories, and the small details that make it feel mine.',
+      'Private notes and photos stay out of the public code. If someone needs access, they can ask @ur_bro_jz directly.',
     ],
   },
   {
@@ -378,12 +417,12 @@ export const aboutSections: AboutSection[] = [
     title: 'Links',
     level: 3,
     body: [
-      'Instagram is the source profile for this page. The site keeps a local copy of the profile image and uses only the public profile details that were visible without logging in.',
+      'Instagram is still the main contact point. This site just gives the profile more room than a bio link can.',
     ],
   },
 ];
 
-export const focusItems = ['Faith', 'Friends', 'Creative projects', 'Design experiments'];
+export const focusItems = ['Faith', 'Friends', 'Projects', 'Music'];
 
 export const profileFacts = [
   { title: 'Public name', value: 'JZ' },
@@ -393,10 +432,10 @@ export const profileFacts = [
 ];
 
 export const archiveStyleItems = [
-  'Profile-first layout with an Instagram-style stat row.',
-  'Server-checked vault behavior for sections that should stay out of the public bundle.',
-  'Animated text moments that make the archive feel alive.',
-  'Local profile image storage so the page does not depend on expiring social CDN links.',
+  'Profile-first layout with a private-archive mood.',
+  'Locked sections for things that should not sit in the public bundle.',
+  'Small motion details without turning the page into a dashboard.',
+  'Local profile image storage so the page does not depend on social CDN links.',
 ];
 
 const liveScreenshot = (url: string) => {
@@ -499,21 +538,21 @@ export const projects: Project[] = [
 export const placeholders: Record<string, PlaceholderContent> = {
   create: {
     eyebrow: 'Archive Tool',
-    title: 'Capture an entry',
-    description: 'A quiet sketch of the archive publishing flow: decide what the entry is, where it belongs, and whether it should stay private.',
-    items: ['Draft title and short note', 'Choose section: School, Music, Leadership, or Projects', 'Attach image, link, or private reference'],
+    title: 'New entry',
+    description: 'A small sketch of how new archive entries could be saved later without making the page feel crowded.',
+    items: ['Write a short note', 'Pick where it belongs', 'Keep private things private'],
   },
   grid: {
     eyebrow: 'View Control',
-    title: 'Display modes',
-    description: 'The public archive is currently tuned for the clean project grid. These modes describe how the same entries can be scanned later.',
-    items: ['Project grid: active', 'Compact cards: saved as a future view', 'Timeline list: reserved for dated entries'],
+    title: 'Archive views',
+    description: 'The clean grid is the main view for now. Other views can come later if the archive grows enough to need them.',
+    items: ['Project grid: active', 'Compact view: saved for later', 'Timeline: only if dated entries matter'],
   },
   menu: {
     eyebrow: 'Quick Menu',
     title: 'Archive controls',
-    description: 'A compact place for settings and quick links without crowding the profile card.',
-    items: ['Theme toggle lives in the header', 'Archive access uses the story lock', 'Instagram remains the public contact link'],
+    description: 'A quiet place for controls that should not compete with the profile card.',
+    items: ['Theme toggle stays in the header', 'Locked sections open from stories', 'Instagram is the public contact link'],
   },
   resume: {
     eyebrow: 'Resume',
