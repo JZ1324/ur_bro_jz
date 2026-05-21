@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
 import { FaithHoverCard } from './ui/faith-hover-card';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import type { AboutSection, FaithHover, ProfileData, ProfileStat } from '../data/site';
 
 type AboutOverlayProps = {
@@ -35,6 +36,8 @@ export function AboutOverlay({
   onFaithClick,
   onClose,
 }: AboutOverlayProps) {
+  useBodyScrollLock(isOpen);
+
   const intro = sections.find((section) => section.id === 'about-intro');
   const bio = sections.find((section) => section.id === 'about-bio');
   const focus = sections.find((section) => section.id === 'about-focus');
@@ -52,7 +55,7 @@ export function AboutOverlay({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 bg-bg/95 backdrop-blur-2xl"
         >
-          <article id="about-panel" className="h-screen overflow-y-auto px-5 pb-8 sm:px-8">
+          <article id="about-panel" className="h-screen overflow-y-auto overscroll-contain px-5 pb-8 sm:px-8">
             <div className="sticky top-0 z-[60] -mx-5 border-b border-border/35 bg-bg/88 px-5 py-4 backdrop-blur-xl sm:-mx-8 sm:px-8">
               <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
                 <div>
@@ -109,7 +112,7 @@ export function AboutOverlay({
                     )}
 
                     <section className="grid grid-cols-2 gap-3">
-                      {profile.stats.map((stat) => stat.label === 'Following' ? (
+                      {profile.stats.map((stat) => stat.label === 'Relationship' ? (
                         <span key={stat.label}>
                           <FaithHoverCard
                             faith={faithHover}

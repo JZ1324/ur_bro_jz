@@ -108,14 +108,22 @@ export function DynamicIslandTOC({
 
     const handleScroll = () => {
       const rootTop = scrollRoot?.getBoundingClientRect().top ?? 0;
+      const total = scrollRoot
+        ? scrollRoot.scrollHeight - scrollRoot.clientHeight
+        : document.documentElement.scrollHeight - window.innerHeight;
+      const current = scrollRoot ? scrollRoot.scrollTop : window.scrollY;
       let currentActiveId: string | null = null;
 
-      for (const heading of headings) {
-        const top = heading.element.getBoundingClientRect().top - rootTop;
-        if (top <= 120) {
-          currentActiveId = heading.id;
-        } else {
-          break;
+      if (headings.length > 0 && total > 0 && current >= total - 16) {
+        currentActiveId = headings[headings.length - 1].id;
+      } else {
+        for (const heading of headings) {
+          const top = heading.element.getBoundingClientRect().top - rootTop;
+          if (top <= 120) {
+            currentActiveId = heading.id;
+          } else {
+            break;
+          }
         }
       }
 
@@ -125,10 +133,6 @@ export function DynamicIslandTOC({
 
       setActiveId(currentActiveId);
 
-      const total = scrollRoot
-        ? scrollRoot.scrollHeight - scrollRoot.clientHeight
-        : document.documentElement.scrollHeight - window.innerHeight;
-      const current = scrollRoot ? scrollRoot.scrollTop : window.scrollY;
       setProgress(total > 0 ? Math.min(100, Math.max(0, (current / total) * 100)) : 0);
     };
 

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
 import { LinkPreview } from './ui/link-preview';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import type { Project } from '../data/site';
 
 type ProjectOverlaysProps = {
@@ -21,6 +22,7 @@ export function ProjectOverlays({
   onCloseProject,
 }: ProjectOverlaysProps) {
   const selectedProject = projects.find((project) => project.id === expandedProjectId);
+  useBodyScrollLock(showBento || Boolean(selectedProject));
 
   return (
     <>
@@ -30,7 +32,7 @@ export function ProjectOverlays({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 overflow-y-auto bg-bg/96 px-4 py-8 backdrop-blur-xl sm:px-6 sm:py-10"
+            className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-bg/96 px-4 py-8 backdrop-blur-xl sm:px-6 sm:py-10"
           >
             <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-8 pb-12">
               <div className="flex items-start justify-between gap-4 pr-16 sm:pr-20">
@@ -38,7 +40,7 @@ export function ProjectOverlays({
                   <p className="text-xs font-bold uppercase tracking-[0.24em] text-warm-accent">Project Archive</p>
                   <h2 className="text-4xl font-bold tracking-tight text-text sm:text-5xl">Projects</h2>
                   <p className="text-base font-medium leading-relaxed text-muted sm:text-lg">
-                    Real builds from GitHub, live pages, and experiments. Click a project to open the full notes.
+                    Some fun projects that I built with AI.
                   </p>
                   <span className="w-fit rounded-full border border-border/50 bg-surface px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-accent">
                     {projects.length} entries
@@ -114,7 +116,7 @@ export function ProjectOverlays({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-bg/82 p-4 backdrop-blur-xl sm:p-6"
+            className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto overscroll-contain bg-bg/82 p-4 backdrop-blur-xl sm:p-6"
             onClick={onCloseProject}
           >
             <motion.div

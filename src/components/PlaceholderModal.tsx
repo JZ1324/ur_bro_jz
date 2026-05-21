@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import type { PlaceholderContent } from '../data/site';
 
 type PlaceholderModalProps = {
@@ -8,6 +9,8 @@ type PlaceholderModalProps = {
 };
 
 export function PlaceholderModal({ content, onClose }: PlaceholderModalProps) {
+  useBodyScrollLock(Boolean(content));
+
   return (
     <AnimatePresence>
       {content && (

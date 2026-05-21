@@ -84,12 +84,10 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                   Sealed note
                 </div>
                 <p className="mt-7 text-balance text-3xl font-semibold leading-tight text-text sm:text-5xl sm:leading-[1.08]">
-                  You make quiet moments feel alive,
-                  <br />
-                  like <SunlightSparkles /> finding a window at the right time.
+                  Some things stay locked until the right name opens them.
                 </p>
                 <p className="mx-auto mt-5 max-w-2xl text-sm font-medium leading-7 text-muted lg:mx-0">
-                  There is one name this opens for. The answer is not stored in the page.
+                  There is one name this opens for. The answer is checked away from the page.
                 </p>
               </div>
 
@@ -133,7 +131,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       Opened
                     </>
                   ) : (
-                    'Open sealed line'
+                    'Open'
                   )}
                 </button>
                 <AnimatePresence mode="wait">
@@ -145,7 +143,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       exit={{ opacity: 0, y: -6 }}
                       className="mt-4 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm font-semibold text-accent"
                     >
-                      Yeah. That is the one.
+                      Opened.
                     </motion.p>
                   )}
                   {status === 'missed' && (
@@ -156,7 +154,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       exit={{ opacity: 0, y: -6 }}
                       className="mt-4 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 px-4 py-3 text-sm font-semibold text-warm-accent"
                     >
-                      Not that one.
+                      Not it.
                     </motion.p>
                   )}
                   {status === 'error' && (
@@ -177,72 +175,5 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-// SunlightSparkles: renders the word "sunlight" with animated PNG images
-function SunlightSparkles({
-  imageUrls = ['/sunshine.png'],
-  count = 8,
-}: {
-  imageUrls?: string[];
-  count?: number;
-}) {
-  type Particle = {
-    id: string;
-    x: string;
-    y: string;
-    delay: number;
-    scale: number;
-    rotate: number;
-    duration: number;
-    repeatDelay: number;
-    src: string;
-  };
-
-  const [particles, setParticles] = useState<Particle[]>([]);
-
-  useEffect(() => {
-      const gen = (): Particle => {
-      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-      const x = `${10 + Math.random() * 80}%`;
-      const y = `${5 + Math.random() * 70}%`;
-      const delay = Math.random() * 3.5;
-      const scale = 0.6 + Math.random() * 0.9;
-      const rotate = -15 + Math.random() * 30;
-      const duration = 1.0 + Math.random() * 0.8; // shorter visible time
-      const repeatDelay = 6 + Math.random() * 6; // less frequent
-      const src = imageUrls[Math.floor(Math.random() * imageUrls.length)];
-      return { id, x, y, delay, scale, rotate, duration, repeatDelay, src };
-    };
-
-    const initial = Array.from({ length: count }).map(() => gen());
-    setParticles(initial);
-
-    const interval = setInterval(() => {
-      setParticles((curr) => curr.map((p) => ({ ...p, delay: Math.random() * 3.5 })));
-    }, 8000);
-
-    return () => clearInterval(interval);
-    // Intentionally only depend on `count` so callers can pass `imageUrls` inline
-    // without causing the effect to re-run on every render.
-  }, [count]);
-
-  return (
-    <span className="relative inline-block align-baseline overflow-visible" style={{ fontSize: 'inherit', lineHeight: 'inherit' }}>
-      <span className="relative z-10 select-text font-semibold" style={{ fontSize: 'inherit', lineHeight: 'inherit' }}>sunlight</span>
-      {particles.map((p) => (
-        <motion.img
-          key={p.id}
-          src={p.src.startsWith('/') ? p.src : `/${p.src}`}
-          alt="spark"
-          className="pointer-events-none absolute z-[30]"
-          style={{ left: p.x, top: p.y, width: '1.3em', height: '1.3em', transform: 'translate(-50%, -50%)' }}
-          initial={{ opacity: 0, scale: 0.45, rotate: p.rotate }}
-          animate={{ opacity: [0, 0.9, 0], scale: [0.45, p.scale, 0.45], y: [0, -8, 0], rotate: p.rotate }}
-          transition={{ duration: p.duration, repeat: Infinity, repeatDelay: p.repeatDelay ?? 6, delay: p.delay, ease: 'easeInOut' }}
-        />
-      ))}
-    </span>
   );
 }

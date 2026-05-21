@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { GraduationCap, Lock, Music, ShieldAlert, Users, X } from 'lucide-react';
 import { TextScramble } from './TextScramble';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import type { ArchiveSection, ArchiveSectionId, PrivateArchiveSection } from '../data/site';
 
 const icons = {
@@ -34,6 +35,8 @@ export function ArchiveVault({
   onClose,
   onLock,
 }: ArchiveVaultProps) {
+  useBodyScrollLock(isOpen && isUnlocked);
+
   const activeNavigationSection = sections.find((section) => section.id === activeSectionId) ?? sections[0];
 
   return (
@@ -43,7 +46,7 @@ export function ArchiveVault({
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: '100vh' }}
           exit={{ opacity: 0, height: 0 }}
-          className="fixed inset-0 z-50 overflow-y-auto bg-bg/96 px-4 py-8 text-text backdrop-blur-xl scrollbar-hide sm:px-6"
+          className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-bg/96 px-4 py-8 text-text backdrop-blur-xl scrollbar-hide sm:px-6"
         >
           <motion.section
             initial={{ opacity: 0, y: 24 }}

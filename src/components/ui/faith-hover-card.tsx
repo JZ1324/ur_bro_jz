@@ -14,6 +14,23 @@ type FaithHoverCardProps = {
 export function FaithHoverCard({ children, faith, className, onOpenPage }: FaithHoverCardProps) {
   const [isOpen, setOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    const closeHover = () => setOpen(false);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') closeHover();
+    };
+
+    window.addEventListener('blur', closeHover);
+    window.addEventListener('pagehide', closeHover);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('blur', closeHover);
+      window.removeEventListener('pagehide', closeHover);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   const handleOpenPage = () => {
     setOpen(false);
     window.requestAnimationFrame(() => {
@@ -34,7 +51,7 @@ export function FaithHoverCard({ children, faith, className, onOpenPage }: Faith
           side="top"
           align="center"
           sideOffset={8}
-          className="z-[80] [transform-origin:var(--radix-hover-card-content-transform-origin)]"
+          className="z-[60] [transform-origin:var(--radix-hover-card-content-transform-origin)]"
         >
           <AnimatePresence>
             {isOpen && (
@@ -68,7 +85,7 @@ export function FaithHoverCard({ children, faith, className, onOpenPage }: Faith
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-3">
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-warm-accent">Following</p>
+                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-warm-accent">Relationship</p>
                     <h3 className="mt-1 text-sm font-bold leading-tight text-text">{faith.title}</h3>
                     <span className="mt-1 inline-block text-[11px] font-bold text-accent">Read why</span>
                   </div>
