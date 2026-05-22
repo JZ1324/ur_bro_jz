@@ -26,7 +26,7 @@ export function NowSection({ items, onSecretClick }: NowSectionProps) {
           <h2 className="mt-2 text-[15px] font-bold leading-tight text-text">{item.title}</h2>
           {item.label === 'Music' ? (
             <p className="mt-2 text-[13px] leading-6 text-muted">
-              This song is staying here for a reason. Maybe it is about{' '}
+              A small personal detail tucked under the main profile. Maybe it is about{' '}
               <button
                 type="button"
                 onClick={onSecretClick}

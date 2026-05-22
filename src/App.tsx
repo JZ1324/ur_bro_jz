@@ -3,15 +3,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LayoutGrid, Lock, Menu, Plus } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useScroll } from 'motion/react';
 import { ArchiveVault } from './components/ArchiveVault';
 import { AboutOverlay } from './components/AboutOverlay';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from './components/InputOTP';
 import { JesusOverlay } from './components/JesusOverlay';
 import { NowSection } from './components/NowSection';
 import { PlaceholderModal } from './components/PlaceholderModal';
+import { ParallaxLayer } from './components/ParallaxLayer';
 import { ProfileCard } from './components/ProfileCard';
 import { ProjectOverlays } from './components/ProjectOverlays';
 import { SecretPuzzleOverlay } from './components/SecretPuzzleOverlay';
@@ -41,7 +42,10 @@ import {
 } from './data/site';
 import { fetchPrivateArchiveSection, PrivateArchiveError } from './lib/privateArchive';
 
+type UnlockDestination = 'archive' | 'about';
+
 export default function App() {
+  const homeRef = useRef<HTMLElement>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
@@ -57,14 +61,18 @@ export default function App() {
   const [showJesus, setShowJesus] = useState(false);
   const [showSecretPuzzle, setShowSecretPuzzle] = useState(false);
   const [showArchiveOverlay, setShowArchiveOverlay] = useState(false);
-  const [pendingUnlockDestination, setPendingUnlockDestination] = useState<'archive' | 'about'>('archive');
   const [activeArchiveSectionId, setActiveArchiveSectionId] = useState<ArchiveSectionId | null>('school');
   const [pendingArchiveSectionId, setPendingArchiveSectionId] = useState<ArchiveSectionId | null>(null);
+  const [pendingUnlockDestination, setPendingUnlockDestination] = useState<UnlockDestination>('archive');
   const [privateArchiveSections, setPrivateArchiveSections] = useState<Partial<Record<ArchiveSectionId, PrivateArchiveSection>>>({});
   const [archiveAccessKey, setArchiveAccessKey] = useState<string | null>(null);
   const [archiveErrorMessage, setArchiveErrorMessage] = useState<string | null>(null);
   const [placeholderContent, setPlaceholderContent] = useState<PlaceholderContent | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const { scrollYProgress: homeScrollProgress } = useScroll({
+    target: homeRef,
+    offset: ['start start', 'end start'],
+  });
 
   useBodyScrollLock(showModal);
 
@@ -90,18 +98,18 @@ export default function App() {
   }, [showModal]);
 
   const showArchive = () => {
+    setPendingUnlockDestination('archive');
     setActiveArchiveSectionId((current) => current ?? 'school');
     if (isUnlocked && archiveAccessKey) {
       setShowArchiveOverlay(true);
     } else {
-      setPendingUnlockDestination('archive');
       setPendingArchiveSectionId(activeArchiveSectionId ?? 'school');
       setArchiveErrorMessage(null);
       setShowModal(true);
     }
   };
 
-  const showAboutLocked = () => {
+  const openAbout = () => {
     if (isUnlocked && archiveAccessKey) {
       setShowAbout(true);
       return;
@@ -111,6 +119,10 @@ export default function App() {
     setPendingArchiveSectionId(activeArchiveSectionId ?? 'school');
     setArchiveErrorMessage(null);
     setShowModal(true);
+  };
+
+  const revealAbout = () => {
+    setShowAbout(true);
   };
 
   const loadArchiveSection = async (sectionId: ArchiveSectionId, accessKey: string) => {
@@ -162,8 +174,8 @@ export default function App() {
     setArchiveAccessKey(verifiedAccessKey);
     setShowModal(false);
     if (pendingUnlockDestination === 'about') {
-      setShowAbout(true);
       setShowArchiveOverlay(false);
+      revealAbout();
     } else {
       setShowArchiveOverlay(true);
     }
@@ -187,10 +199,11 @@ export default function App() {
       return;
     }
     if (story.action === 'about') {
-      showAboutLocked();
+      openAbout();
       return;
     }
     const sectionId = story.id as ArchiveSectionId;
+    setPendingUnlockDestination('archive');
     setActiveArchiveSectionId(sectionId);
     if (isUnlocked && archiveAccessKey) {
       if (!privateArchiveSections[sectionId]) {
@@ -200,7 +213,6 @@ export default function App() {
       return;
     }
     setPendingArchiveSectionId(sectionId);
-    setPendingUnlockDestination('archive');
     setArchiveErrorMessage(null);
     setShowModal(true);
   };
@@ -214,7 +226,7 @@ export default function App() {
     setShowArchiveOverlay(false);
   };
 
-  const closeLockedAbout = () => {
+  const closeAbout = () => {
     setShowAbout(false);
     lockArchive();
   };
@@ -280,14 +292,29 @@ export default function App() {
         </div>
       </header>
 
-      <main className="w-full max-w-container-max px-4 flex flex-col gap-12 flex-grow">
+      <main ref={homeRef} className="w-full max-w-container-max px-4 flex flex-col gap-12 flex-grow">
         <ProfileCard
           profile={profileData}
           faithHover={faithHover}
           onFaithClick={() => setShowJesus(true)}
         />
-        <StoryHighlights stories={storyItems} isUnlocked={isUnlocked} onStoryClick={handleStoryClick} />
-        <NowSection items={nowItems} onSecretClick={() => setShowSecretPuzzle(true)} />
+        <ParallaxLayer
+          progress={homeScrollProgress}
+          inputRange={[0.12, 0.58]}
+          y={[18, -26]}
+          opacity={[1, 0.98]}
+        >
+          <StoryHighlights stories={storyItems} isUnlocked={isUnlocked} onStoryClick={handleStoryClick} />
+        </ParallaxLayer>
+        <ParallaxLayer
+          progress={homeScrollProgress}
+          inputRange={[0.2, 0.72]}
+          y={[26, -30]}
+          scale={[0.99, 1.01]}
+          opacity={[0.96, 1]}
+        >
+          <NowSection items={nowItems} onSecretClick={() => setShowSecretPuzzle(true)} />
+        </ParallaxLayer>
 
         <motion.hr
           initial={{ opacity: 0 }}
@@ -305,7 +332,7 @@ export default function App() {
               Open Archive
             </button>
             <button
-              onClick={showAboutLocked}
+              onClick={openAbout}
               className="rounded-full border border-accent/30 bg-accent-soft px-6 py-3 text-sm font-bold text-text transition-all hover:bg-[#2A3125] active:scale-95"
             >
               Read About
@@ -480,9 +507,7 @@ export default function App() {
         facts={profileFacts}
         focusItems={focusItems}
         archiveStyleItems={archiveStyleItems}
-        faithHover={faithHover}
-        onFaithClick={() => setShowJesus(true)}
-        onClose={closeLockedAbout}
+        onClose={closeAbout}
       />
 
       <JesusOverlay

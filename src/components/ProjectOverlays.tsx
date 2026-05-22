@@ -40,7 +40,7 @@ export function ProjectOverlays({
                   <p className="text-xs font-bold uppercase tracking-[0.24em] text-warm-accent">Project Archive</p>
                   <h2 className="text-4xl font-bold tracking-tight text-text sm:text-5xl">Projects</h2>
                   <p className="text-base font-medium leading-relaxed text-muted sm:text-lg">
-                    Some fun projects that I built with AI.
+                    Small web tools, live pages, and UI experiments with notes on what each one does.
                   </p>
                   <span className="w-fit rounded-full border border-border/50 bg-surface px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-accent">
                     {projects.length} entries

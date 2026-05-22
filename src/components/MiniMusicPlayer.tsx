@@ -197,6 +197,8 @@ function getActiveTokenIndex(line: LyricLine, time: number) {
   if (line.tokens.length === 0) return -1;
 
   const EPS = 0.05;
+  let lastStartedIndex = -1;
+
   for (let i = 0; i < line.tokens.length; i += 1) {
     const t = line.tokens[i];
     const next = line.tokens[i + 1];
@@ -206,10 +208,14 @@ function getActiveTokenIndex(line: LyricLine, time: number) {
         ? next.begin
         : line.end || t.begin + 0.25;
 
-    if (time + EPS >= t.begin && time < tokenEnd - EPS) return i;
+    if (time + EPS < t.begin) return lastStartedIndex;
+
+    lastStartedIndex = i;
+
+    if (time < tokenEnd + EPS) return i;
   }
 
-  return Math.max(0, line.tokens.length - 1);
+  return lastStartedIndex;
 }
 
 export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
@@ -217,15 +223,12 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   const shouldReduceMotion = useReducedMotion();
   const selectedSource = useMemo(() => chooseSource(track.sources), [track.sources]);
   const [isPlaying, setIsPlaying] = useState(false);
-  const playRequestTimeRef = useRef<number | null>(null);
-  const seekRequestTimeRef = useRef<number | null>(null);
-  const targetSeekTimeRef = useRef<number | null>(null);
-  const [playbackLatency, setPlaybackLatency] = useState(0); // seconds
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [hasAudioError, setHasAudioError] = useState(false);
   const [showExpandedPlayer, setShowExpandedPlayer] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
+  const [isCompactViewport, setIsCompactViewport] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
   const [lyricsStatus, setLyricsStatus] = useState<LyricStatus>('idle');
@@ -241,7 +244,6 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   const currentTimeRef = useRef(0);
   const seekValueRef = useRef(0);
   const isSeekingRef = useRef(false);
-  const playbackLatencyRef = useRef(0);
   const currentTokenIndexRef = useRef(0);
   const currentTokenProgressRef = useRef(0);
 
@@ -249,10 +251,17 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     currentTimeRef.current = currentTime;
     seekValueRef.current = seekValue;
     isSeekingRef.current = isSeeking;
-    playbackLatencyRef.current = playbackLatency;
     currentTokenIndexRef.current = currentTokenIndex;
     currentTokenProgressRef.current = currentTokenProgress;
-  }, [currentTime, seekValue, isSeeking, playbackLatency, currentTokenIndex, currentTokenProgress]);
+  }, [currentTime, seekValue, isSeeking, currentTokenIndex, currentTokenProgress]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const syncViewport = () => setIsCompactViewport(mediaQuery.matches);
+    syncViewport();
+    mediaQuery.addEventListener('change', syncViewport);
+    return () => mediaQuery.removeEventListener('change', syncViewport);
+  }, []);
 
   useEffect(() => {
     if (!showExpandedPlayer) return;
@@ -323,8 +332,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     const time = isSeeking ? seekValue : currentTime;
     if (lyrics.length === 0) return;
 
-    // apply latency compensation so highlighting matches perceived audio
-    const effectiveTime = time + playbackLatency;
+    const effectiveTime = time;
     if (effectiveTime + 0.0001 < lyrics[0].begin) {
       setCurrentLyricIndex(0);
       setCurrentTokenIndex(-1);
@@ -350,7 +358,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
         setCurrentTokenProgress(0);
       }
     }
-  }, [currentTime, isSeeking, seekValue, lyrics, playbackLatency]);
+  }, [currentTime, isSeeking, seekValue, lyrics]);
 
   // Use requestAnimationFrame while playing for smoother token highlighting
   useEffect(() => {
@@ -375,26 +383,8 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     };
   }, [isPlaying]);
 
-  // Measure seek latency: when we requested a seek, wait until currentTime reflects it
-  useEffect(() => {
-    try {
-      if (seekRequestTimeRef.current == null || targetSeekTimeRef.current == null) return;
-      const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      const target = targetSeekTimeRef.current;
-      if (Math.abs(currentTime - target) < 0.15) {
-        const measured = (now - seekRequestTimeRef.current) / 1000;
-        const clamped = Math.max(0, Math.min(1, measured));
-        setPlaybackLatency((prev) => (prev ? prev * 0.6 + clamped * 0.4 : clamped));
-        seekRequestTimeRef.current = null;
-        targetSeekTimeRef.current = null;
-      }
-    } catch {
-      // ignore measurement errors
-    }
-  }, [currentTime]);
-
   // Auto-scroll (marquee) the active lyric line when it's wider than the mini player container.
-  const effectiveLyricTime = (isSeeking ? seekValue : currentTime) + playbackLatency;
+  const effectiveLyricTime = isSeeking ? seekValue : currentTime;
   const hasStartedLyrics = isPlaying || isSeeking || currentTime > 0.12;
   const hasReachedFirstLyric = lyrics.length > 0 && hasStartedLyrics && effectiveLyricTime + 0.0001 >= lyrics[0].begin;
 
@@ -409,10 +399,10 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
 
   const expandedLyrics = useMemo<VisibleLyric[]>(() => {
     if (lyrics.length === 0) return [];
-    if (!hasReachedFirstLyric) return [{ line: lyrics[0], index: 0 }];
 
-    const start = Math.max(0, currentLyricIndex - 2);
-    const end = Math.min(lyrics.length, currentLyricIndex + 3);
+    const centerIndex = hasReachedFirstLyric ? currentLyricIndex : 0;
+    const start = Math.max(0, centerIndex - 2);
+    const end = Math.min(lyrics.length, centerIndex + 3);
     return lyrics.slice(start, end).map((line, offset) => ({ line, index: start + offset }));
   }, [currentLyricIndex, hasReachedFirstLyric, lyrics]);
 
@@ -466,7 +456,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
       const tokenIndex = currentTokenIndexRef.current;
       const tokenEl = tokenRefs.current[tokenIndex] || null;
       const nextEl = tokenRefs.current[tokenIndex + 1] || null;
-      const effectiveTime = (isSeekingRef.current ? seekValueRef.current : currentTimeRef.current) + playbackLatencyRef.current;
+      const effectiveTime = isSeekingRef.current ? seekValueRef.current : currentTimeRef.current;
       const currentLine = visibleLyrics[0]?.line;
       const currentToken = currentLine?.tokens[tokenIndex];
       const tokenProgress = currentToken && Number.isFinite(currentToken.end) && currentToken.end > currentToken.begin
@@ -523,8 +513,6 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
 
     if (audio.paused) {
       try {
-        // record when we requested play so we can measure startup latency
-        playRequestTimeRef.current = typeof performance !== 'undefined' ? performance.now() : null;
         await audio.play();
       } catch {
         setHasAudioError(true);
@@ -540,6 +528,9 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     const nextValue = typeof value === 'number' ? value : seekValue;
     if (audio && Number.isFinite(nextValue)) {
       audio.currentTime = nextValue;
+    }
+    if (Number.isFinite(nextValue)) {
+      setCurrentTime(nextValue);
     }
     setSeekValue(nextValue);
     setIsSeeking(false);
@@ -582,27 +573,14 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
         ref={audioRef}
         preload="metadata"
         onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
-        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+        onTimeUpdate={(event) => {
+          if (!isPlaying && !isSeeking) {
+            setCurrentTime(event.currentTarget.currentTime);
+          }
+        }}
         onSeeked={() => setIsSeeking(false)}
         onPlay={() => {
           setIsPlaying(true);
-          // if we recorded a play request, compute latency
-          try {
-            const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-            if (playRequestTimeRef.current != null) {
-              const measured = (now - playRequestTimeRef.current) / 1000; // seconds
-              // clamp to reasonable range
-              const clamped = Math.max(0, Math.min(1, measured));
-              setPlaybackLatency((prev) => {
-                // smooth the latency estimate
-                if (!prev) return clamped;
-                return prev * 0.6 + clamped * 0.4;
-              });
-              playRequestTimeRef.current = null;
-            }
-          } catch {
-            // ignore
-          }
         }}
         onPause={() => setIsPlaying(false)}
         onEnded={() => setIsPlaying(false)}
@@ -669,15 +647,10 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
             onPointerUp={(e) => {
               e.stopPropagation();
               const v = Number(e.currentTarget.value);
-              seekRequestTimeRef.current = typeof performance !== 'undefined' ? performance.now() : null;
-              targetSeekTimeRef.current = v;
               commitSeek(v);
             }}
             onMouseUp={(event) => {
               event.stopPropagation();
-              // record seek request time to measure seek application latency
-              seekRequestTimeRef.current = typeof performance !== 'undefined' ? performance.now() : null;
-              targetSeekTimeRef.current = seekValue;
               commitSeek();
             }}
             onTouchEnd={(event) => {
@@ -888,8 +861,6 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                       }}
                       onMouseUp={(event) => {
                         event.stopPropagation();
-                        seekRequestTimeRef.current = typeof performance !== 'undefined' ? performance.now() : null;
-                        targetSeekTimeRef.current = seekValue;
                         commitSeek();
                       }}
                       onTouchEnd={(event) => {
@@ -923,64 +894,69 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-surface via-surface/70 to-transparent" />
               <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-20 bg-gradient-to-r from-surface to-transparent md:block" />
               <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-20 bg-gradient-to-l from-surface to-transparent md:block" />
-              <div className="relative mx-auto flex h-[min(42dvh,22rem)] min-h-[11rem] w-full max-w-4xl flex-col justify-center gap-2.5 overflow-hidden py-3 md:h-[min(68vh,42rem)] md:gap-5 md:py-8">
+              <div className="relative mx-auto h-[min(42dvh,22rem)] min-h-[11rem] w-full max-w-4xl overflow-hidden py-3 md:h-[min(68vh,42rem)] md:py-8">
                 {lyrics.length > 0 ? (
                   expandedLyrics.map(({ line, index }) => {
                     const isActive = hasReachedFirstLyric && index === currentLyricIndex;
                     const activeTokenIndex = isActive ? currentTokenIndex : -1;
-                    const signedDistance = hasReachedFirstLyric ? index - currentLyricIndex : 1;
+                    const signedDistance = hasReachedFirstLyric ? index - currentLyricIndex : index;
                     const distance = Math.abs(signedDistance);
-                    const lineOpacity = isActive ? 1 : Math.max(0.08, 0.28 - distance * 0.07);
+                    const lineOffset = isCompactViewport ? 68 : 116;
+                    const targetY = signedDistance * lineOffset;
+                    const lineOpacity = isActive ? 1 : Math.max(0.08, 0.34 - distance * 0.08);
                     const blur = Math.min(9, 3.2 + distance * 1.7);
                     return (
-                      <motion.div
-                        layout
+                      <div
                         key={`${line.begin}-${index}`}
-                        ref={(el: HTMLDivElement | null) => {
-                          lyricRefs.current[index] = el;
-                        }}
-                        initial={shouldReduceMotion
-                          ? { opacity: 0, y: 0 }
-                          : { opacity: 0, y: signedDistance >= 0 ? 24 : -24, filter: 'blur(8px)' }}
-                        animate={{
-                          opacity: lineOpacity,
-                          y: 0,
-                          scale: shouldReduceMotion ? 1 : isActive ? 1 : Math.max(0.88, 0.98 - distance * 0.025),
-                          filter: shouldReduceMotion ? 'blur(0px)' : `blur(${isActive ? 0 : blur}px)`,
-                        }}
-                        transition={{ duration: shouldReduceMotion ? 0.18 : 0.72, ease: [0.16, 1, 0.3, 1] }}
-                        className={`w-full origin-center text-center text-balance font-bold leading-tight tracking-tight ${
-                          isActive
-                            ? 'text-xl sm:text-3xl md:text-4xl lg:text-[2.7rem]'
-                            : 'text-base sm:text-2xl md:text-3xl lg:text-[2.35rem]'
-                        } ${
-                          isActive ? 'text-text' : 'text-muted'
-                        }`}
+                        className="pointer-events-none absolute left-0 right-0 top-1/2 -translate-y-1/2"
                       >
-                        {line.tokens.length > 0 ? (
-                          line.tokens.map((token, tokenIndex) => (
-                            <span
-                              key={`${token.begin}-${tokenIndex}`}
-                              className={`${token.trailingSpace ? 'mr-[0.22em]' : ''} inline-block ${isActive ? getTokenClassName(tokenIndex, activeTokenIndex) : 'text-muted/50'}`}
-                              style={isActive ? {
-                                ...getTokenFillStyle(tokenIndex, activeTokenIndex),
-                                opacity: tokenIndex > activeTokenIndex ? 0.72 : 1,
-                                transform: tokenIndex === activeTokenIndex && !shouldReduceMotion
-                                  ? 'translateY(-0.045em) scale(1.035)'
-                                  : 'translateY(0) scale(1)',
-                                transition: shouldReduceMotion
-                                  ? 'opacity 180ms ease'
-                                  : 'transform 520ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms ease, text-shadow 520ms ease',
-                                willChange: tokenIndex === activeTokenIndex ? 'transform' : undefined,
-                              } : undefined}
-                            >
-                              {token.text}
-                            </span>
-                          ))
-                        ) : (
-                          line.text
-                        )}
-                      </motion.div>
+                        <motion.div
+                          ref={(el: HTMLDivElement | null) => {
+                            lyricRefs.current[index] = el;
+                          }}
+                          initial={shouldReduceMotion
+                            ? { opacity: 0, y: targetY }
+                            : { opacity: 0, y: targetY + (signedDistance >= 0 ? 18 : -18), filter: 'blur(8px)' }}
+                          animate={{
+                            opacity: lineOpacity,
+                            y: targetY,
+                            scale: shouldReduceMotion ? 1 : isActive ? 1 : Math.max(0.88, 0.98 - distance * 0.025),
+                            filter: shouldReduceMotion ? 'blur(0px)' : `blur(${isActive ? 0 : blur}px)`,
+                          }}
+                          transition={{ duration: shouldReduceMotion ? 0.18 : 0.58, ease: [0.16, 1, 0.3, 1] }}
+                          className={`mx-auto w-full origin-center text-center text-balance font-bold leading-tight tracking-tight ${
+                            isActive
+                              ? 'text-xl sm:text-3xl md:text-4xl lg:text-[2.7rem]'
+                              : 'text-base sm:text-2xl md:text-3xl lg:text-[2.35rem]'
+                          } ${
+                            isActive ? 'text-text' : 'text-muted'
+                          }`}
+                        >
+                          {line.tokens.length > 0 ? (
+                            line.tokens.map((token, tokenIndex) => (
+                              <span
+                                key={`${token.begin}-${tokenIndex}`}
+                                className={`${token.trailingSpace ? 'mr-[0.22em]' : ''} inline-block ${isActive ? getTokenClassName(tokenIndex, activeTokenIndex) : 'text-muted/50'}`}
+                                style={isActive ? {
+                                  ...getTokenFillStyle(tokenIndex, activeTokenIndex),
+                                  opacity: tokenIndex > activeTokenIndex ? 0.72 : 1,
+                                  transform: tokenIndex === activeTokenIndex && !shouldReduceMotion
+                                    ? 'translateY(-0.045em) scale(1.035)'
+                                    : 'translateY(0) scale(1)',
+                                  transition: shouldReduceMotion
+                                    ? 'opacity 180ms ease'
+                                    : 'transform 520ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms ease, text-shadow 520ms ease',
+                                  willChange: tokenIndex === activeTokenIndex ? 'transform' : undefined,
+                                } : undefined}
+                              >
+                                {token.text}
+                              </span>
+                            ))
+                          ) : (
+                            line.text
+                          )}
+                        </motion.div>
+                      </div>
                     );
                   })
                 ) : (

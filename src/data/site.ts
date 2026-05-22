@@ -305,18 +305,18 @@ export const storyItems: StoryItem[] = [
 
 export const nowItems: NowItem[] = [
   {
-    label: 'Site',
-    title: 'Main archive',
-    body: 'Projects, music, and the parts that do not really fit inside a normal bio.',
+    label: 'Building',
+    title: 'Portfolio archive',
+    body: 'A dark profile site for projects, notes, music, and the pieces that need more room than a normal bio.',
   },
   {
-    label: 'School',
-    title: 'Kept private',
-    body: 'School notes and personal stuff stay locked. If you are meant to see it, you will know the key.',
+    label: 'Projects',
+    title: 'Pinned builds',
+    body: 'Live pages and small tools with enough context to show what each one does and why it exists.',
   },
   {
     label: 'Music',
-    title: 'Classified track',
+    title: 'Small side note',
     body: 'This song is staying here for a reason. Maybe it is about someone.',
   },
 ];
@@ -348,11 +348,11 @@ export const archiveSections: ArchiveSection[] = [
 export const aboutSections: AboutSection[] = [
   {
     id: 'about-intro',
-    title: 'A longer version of the profile.',
+    title: 'A clearer version of the profile.',
     level: 2,
     body: [
-      'This site is the longer version of @ur_bro_jz: the profile, the projects, the music, and a few locked places that are not meant to sit out in public.',
-      'It is still simple on purpose. Some things can be public, and some things are better kept behind a key.',
+      'This site is the longer version of @ur_bro_jz: a place for projects, small experiments, music, and a few private sections that do not belong in a public bio.',
+      'The public side is meant to be useful and readable. The private side stays behind a key.',
     ],
   },
   {
@@ -360,23 +360,23 @@ export const aboutSections: AboutSection[] = [
     title: 'Bio',
     level: 3,
     body: [
-      'Romans 12:16-21',
-      'The public side stays light: a handle, one verse, one song, and a few sections.',
-      'Romans 12:16-21 is there because it points toward peace, patience, and doing good even when it would be easier to be loud.',
+      'Small web projects, private archive design, and UI experiments.',
+      'I like building interfaces that feel personal without becoming messy. This page keeps the visual style dark and private, but the projects and contact paths are clear.',
+      'Romans 12:16-21 still matters to me, but the faith content has its own page instead of taking over the portfolio path.',
     ],
   },
   {
     id: 'about-focus',
     title: 'Focus',
     level: 3,
-    body: ['Faith, people I care about, school, music, and things I am building are the main threads here.'],
+    body: ['The main threads are web projects, cleaner UI, private-by-default content, music, and faith kept in its own intentional space.'],
   },
   {
     id: 'about-faith',
     title: 'Faith',
     level: 4,
     body: [
-      'Faith is not just decoration on the page. It is why the bio points back to Romans 12:16-21.',
+      'Faith has its own page so it can be direct without making every part of the portfolio about it.',
     ],
   },
   {
@@ -392,7 +392,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Creative Projects',
     level: 4,
     body: [
-      'The project section is where the things I make can live without needing to become a whole serious portfolio.',
+      'The project section is the main public proof: live builds, short notes, tools used, and what each project was trying to solve.',
     ],
   },
   {
@@ -400,7 +400,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Archive Style',
     level: 3,
     body: [
-      'The layout comes from the feeling of a private folder: profile first, locked sections, and a few things you can open when you want to look closer.',
+      'The archive style is the identity: dark olive panels, rounded cards, quiet motion, locked sections, and a profile-first layout.',
     ],
   },
   {
@@ -408,8 +408,8 @@ export const aboutSections: AboutSection[] = [
     title: 'Now',
     level: 3,
     body: [
-      'Right now this page is mostly about making the profile feel finished: the music player, project cards, locked stories, and the small details that make it feel mine.',
-      'Private notes and photos stay out of the public code. If someone needs access, they can ask @ur_bro_jz directly.',
+      'Right now the site is about making the profile feel finished and making the projects easier to understand.',
+      'Private notes and photos stay out of the public code. If someone needs access, they can ask directly.',
     ],
   },
   {
@@ -417,25 +417,25 @@ export const aboutSections: AboutSection[] = [
     title: 'Links',
     level: 3,
     body: [
-      'Instagram is still the main contact point. This site just gives the profile more room than a bio link can.',
+      'Instagram is the main contact point. Projects stay visible here so the site works as more than a bio link.',
     ],
   },
 ];
 
-export const focusItems = ['Faith', 'Friends', 'Projects', 'Music'];
+export const focusItems = ['Web projects', 'UI polish', 'Privacy', 'Music'];
 
 export const profileFacts = [
   { title: 'Public name', value: 'JZ' },
   { title: 'Handle', value: '@ur_bro_jz' },
   { title: 'Profile state', value: 'Private' },
-  { title: 'Current bio', value: 'Romans 12:16-21' },
+  { title: 'Current bio', value: 'Small web projects and archive UI' },
 ];
 
 export const archiveStyleItems = [
-  'Profile-first layout with a private-archive mood.',
-  'Locked sections for things that should not sit in the public bundle.',
-  'Small motion details without turning the page into a dashboard.',
-  'Local profile image storage so the page does not depend on social CDN links.',
+  'Profile-first layout with a private archive mood.',
+  'Projects are public; personal notes and photos stay locked.',
+  'Motion stays subtle so the site feels polished instead of busy.',
+  'Local public assets keep the first impression reliable.',
 ];
 
 const liveScreenshot = (url: string) => {
@@ -456,65 +456,26 @@ const liveScreenshot = (url: string) => {
 
 export const projects: Project[] = [
   {
-    id: 'ur-bro-jz',
-    title: 'ur_bro_jz',
-    description: 'This dark private archive site, built around the @ur_bro_jz profile, locked stories, and project grid.',
-    longDescription: 'The current About Me archive site. It combines an Instagram-inspired profile, animated handle, locked story sections, Supabase-backed private archive flow, and a cinematic project grid.',
-    what: 'A Vite + React personal archive for @ur_bro_jz with public profile content and private sections kept behind an access-key flow.',
-    why: 'A normal link page felt too plain, so this repo turns the profile into a more personal archive with stronger visual identity.',
-    status: 'Live on GitHub Pages and actively being polished.',
-    image: liveScreenshot('https://jz1324.github.io/ur_bro_jz/'),
-    tags: ['Live', 'Archive', 'React'],
-    tech: ['Vite', 'React', 'TypeScript', 'Tailwind CSS', 'Supabase'],
-    link: 'https://jz1324.github.io/ur_bro_jz/',
-  },
-  {
-    id: 'about-me',
-    title: 'about-me',
-    description: 'A newer TypeScript about-me experiment with a live GitHub Pages deployment.',
-    longDescription: 'A recent TypeScript personal site repo. It works as another about-me direction and shows the path that led into the more cinematic ur_bro_jz archive.',
-    what: 'A TypeScript personal website experiment deployed as a static GitHub Pages site.',
-    why: 'It is a quick place to test layout ideas, profile copy, and how a personal homepage should feel before moving the best parts into the main archive.',
-    status: 'Live on GitHub Pages. Still has some starter-project traces, but it is useful as a design checkpoint.',
-    image: liveScreenshot('https://jz1324.github.io/about-me/'),
-    tags: ['Live', 'About', 'TypeScript'],
-    tech: ['TypeScript', 'Next.js', 'React', 'GitHub Pages'],
-    link: 'https://jz1324.github.io/about-me/',
-  },
-  {
     id: 'pro-timetable',
     title: 'Pro Timetable',
-    description: 'A standalone premium timetable app with its own live Vercel deployment.',
-    longDescription: 'A dedicated timetable project focused on making school schedule planning feel cleaner and more premium. The repo description marks it as a standalone copy of Premium Timetable.',
-    what: 'A live web timetable app for viewing and managing schedule information in a cleaner interface.',
-    why: 'Timetables are usually ugly or hard to scan, so this project turns the schedule into something faster and nicer to use.',
-    status: 'Live on Vercel. Last pushed April 2026.',
+    description: 'A cleaner school timetable app with a live Vercel deployment and a more focused schedule UI.',
+    longDescription: 'A standalone timetable build focused on making school schedule planning easier to scan. It is one of the more complete public projects because it has a real live deployment and a clear use case.',
+    what: 'A web timetable app for viewing and managing class schedule information in a cleaner interface.',
+    why: 'School schedules are easy to make cluttered. This project tests how far a timetable can feel polished while still being practical.',
+    status: 'Live on Vercel and treated as one of the main pinned builds.',
     image: `${import.meta.env.BASE_URL}project-pro-timetable.png`,
     tags: ['Live', 'Timetable', 'Web App'],
     tech: ['JavaScript', 'Vercel', 'Frontend UI', 'Deployment'],
     link: 'https://pro-timetable.vercel.app',
   },
   {
-    id: 'premium-timetable',
-    title: 'Premium Timetable',
-    description: 'The original timetable project behind the newer Pro Timetable version.',
-    longDescription: 'The earlier timetable build and documentation base. Its README includes docs for parser work, deployment, setup, features, and fixes, which makes it the foundation for the later standalone Pro Timetable app.',
-    what: 'A timetable web project and documentation base for schedule features, deployment, and parser improvements.',
-    why: 'It captures the original timetable idea and the rougher build process before the standalone version was split out.',
-    status: 'Live on GitHub Pages as an older build.',
-    image: liveScreenshot('https://jz1324.github.io/Premium-Timetable/'),
-    tags: ['Live', 'Timetable', 'Docs'],
-    tech: ['JavaScript', 'GitHub Pages', 'Documentation', 'Frontend'],
-    link: 'https://jz1324.github.io/Premium-Timetable/',
-  },
-  {
     id: 'imessaging',
     title: 'iMessage Stats',
-    description: 'A local iMessage analytics project that turns chat.db into readable stats and reports.',
-    longDescription: 'A Swift and local-report project for generating iMessage stats without AI analysis. The README describes totals, sent and received counts, response-time stats, left-on-read counts, per-chat breakdowns, and standalone HTML reports.',
-    what: 'A local macOS/iMessage stats tool with a product page and report-generation workflow.',
-    why: 'Messages data is interesting when it is visual and private, so this keeps analysis local while still producing useful summaries.',
-    status: 'Live product page on GitHub Pages. The repo includes Swift/macOS app direction and local report tooling.',
+    description: 'A local analytics project that turns iMessage data into readable stats and private reports.',
+    longDescription: 'A local-report project for generating iMessage stats without sending message data to an external AI service. It focuses on counts, response timing, per-chat breakdowns, and standalone HTML reports.',
+    what: 'A local stats tool and product page for turning chat data into readable summaries.',
+    why: 'Message data is personal, so the interesting part is making the report useful while keeping the workflow local and controlled.',
+    status: 'Live product page on GitHub Pages, with local reporting work behind it.',
     image: liveScreenshot('https://jz1324.github.io/Imessaging/'),
     tags: ['Live', 'macOS', 'Stats'],
     tech: ['Swift', 'SwiftUI', 'Python', 'HTML Reports', 'GitHub Pages'],
@@ -523,15 +484,54 @@ export const projects: Project[] = [
   {
     id: 'clipboard-manager',
     title: 'Clipboard Manager',
-    description: 'A macOS clipboard manager concept with history, passcode protection, search, and themes.',
-    longDescription: 'A macOS clipboard manager project focused on making clipboard history easier to search, protect, and reuse. The README lists passcode protection, full history, custom themes, dark mode, smart search, and rich content support.',
-    what: 'A clipboard management app concept with a public GitHub Pages project page.',
-    why: 'Clipboard history is useful but usually hidden. This project makes it feel more controlled, searchable, and personal.',
-    status: 'Live on GitHub Pages as a project page. Repo last pushed January 2026.',
+    description: 'A macOS clipboard manager concept for history, search, passcode protection, and themes.',
+    longDescription: 'A macOS clipboard manager concept focused on making copied content easier to find, protect, and reuse. The public page explains the product idea and the feature direction.',
+    what: 'A clipboard history utility concept with a public project page and macOS-focused interaction ideas.',
+    why: 'Clipboard history is useful but usually hidden. This project explores a more controlled and searchable version of it.',
+    status: 'Live on GitHub Pages as a project page and useful as a product-direction prototype.',
     image: liveScreenshot('https://jz1324.github.io/ClipBoard-Manager/'),
     tags: ['Live', 'macOS', 'Utility'],
     tech: ['CSS', 'macOS UI', 'GitHub Pages', 'Frontend'],
     link: 'https://jz1324.github.io/ClipBoard-Manager/',
+  },
+  {
+    id: 'ur-bro-jz',
+    title: 'ur_bro_jz',
+    description: 'This site: a dark profile archive with projects, music, locked sections, and private Supabase-backed access.',
+    longDescription: 'The current portfolio archive. It combines an Instagram-inspired profile, project cards, a music player, locked story sections, and Supabase-backed private archive access.',
+    what: 'A Vite + React personal archive with public profile/project content and private sections kept outside the static bundle.',
+    why: 'A normal bio link felt too flat. This turns the profile into a more memorable archive while keeping private content separated.',
+    status: 'Live and actively being polished as the main personal site.',
+    image: liveScreenshot('https://jz1324.github.io/ur_bro_jz/'),
+    tags: ['Live', 'Archive', 'React'],
+    tech: ['Vite', 'React', 'TypeScript', 'Tailwind CSS', 'Supabase'],
+    link: 'https://jz1324.github.io/ur_bro_jz/',
+  },
+  {
+    id: 'premium-timetable',
+    title: 'Premium Timetable',
+    description: 'The original timetable build that led into the newer Pro Timetable direction.',
+    longDescription: 'The earlier timetable project and documentation base. It captures setup, deployment notes, parser work, and the first version of the schedule interface.',
+    what: 'An older timetable web project with docs and feature experiments that became the base for later timetable work.',
+    why: 'It shows the rougher first pass and the iteration path before the cleaner standalone version.',
+    status: 'Live on GitHub Pages as an older but useful checkpoint.',
+    image: liveScreenshot('https://jz1324.github.io/Premium-Timetable/'),
+    tags: ['Live', 'Timetable', 'Docs'],
+    tech: ['JavaScript', 'GitHub Pages', 'Documentation', 'Frontend'],
+    link: 'https://jz1324.github.io/Premium-Timetable/',
+  },
+  {
+    id: 'about-me',
+    title: 'about-me',
+    description: 'A TypeScript personal-site experiment used to test earlier about-me layout ideas.',
+    longDescription: 'A smaller TypeScript personal site that works as an earlier design checkpoint. It helped test profile copy, layout structure, and what a personal homepage should feel like.',
+    what: 'A static personal website experiment deployed on GitHub Pages.',
+    why: 'It gave a quick place to test the about-me direction before moving the stronger ideas into this archive.',
+    status: 'Live on GitHub Pages as a design checkpoint.',
+    image: liveScreenshot('https://jz1324.github.io/about-me/'),
+    tags: ['Live', 'About', 'TypeScript'],
+    tech: ['TypeScript', 'Next.js', 'React', 'GitHub Pages'],
+    link: 'https://jz1324.github.io/about-me/',
   },
 ];
 

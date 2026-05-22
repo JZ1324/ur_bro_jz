@@ -1,8 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
-import { FaithHoverCard } from './ui/faith-hover-card';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
-import type { AboutSection, FaithHover, ProfileData, ProfileStat } from '../data/site';
+import type { AboutSection, ProfileData, ProfileStat } from '../data/site';
 
 type AboutOverlayProps = {
   isOpen: boolean;
@@ -11,8 +10,6 @@ type AboutOverlayProps = {
   facts: Array<{ title: string; value: string }>;
   focusItems: string[];
   archiveStyleItems: string[];
-  faithHover: FaithHover;
-  onFaithClick: () => void;
   onClose: () => void;
 };
 
@@ -32,8 +29,6 @@ export function AboutOverlay({
   facts,
   focusItems,
   archiveStyleItems,
-  faithHover,
-  onFaithClick,
   onClose,
 }: AboutOverlayProps) {
   useBodyScrollLock(isOpen);
@@ -112,17 +107,7 @@ export function AboutOverlay({
                     )}
 
                     <section className="grid grid-cols-2 gap-3">
-                      {profile.stats.map((stat) => stat.label === 'Relationship' ? (
-                        <span key={stat.label}>
-                          <FaithHoverCard
-                            faith={faithHover}
-                            onOpenPage={onFaithClick}
-                            className="block rounded-lg transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                          >
-                            <AboutStatCard stat={stat} />
-                          </FaithHoverCard>
-                        </span>
-                      ) : (
+                      {profile.stats.map((stat) => (
                         <span key={stat.label}>
                           <AboutStatCard stat={stat} />
                         </span>
