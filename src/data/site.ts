@@ -316,8 +316,8 @@ export const nowItems: NowItem[] = [
   },
   {
     label: 'Music',
-    title: 'Small side note',
-    body: 'This song is staying here for a reason. Maybe it is about someone.',
+    title: 'Classified track',
+    body: 'This song is staying here for a reason. Maybe it is about a crush.',
   },
 ];
 
@@ -348,11 +348,11 @@ export const archiveSections: ArchiveSection[] = [
 export const aboutSections: AboutSection[] = [
   {
     id: 'about-intro',
-    title: 'A clearer version of the profile.',
+    title: 'The longer version.',
     level: 2,
     body: [
-      'This site is the longer version of @ur_bro_jz: a place for projects, small experiments, music, and a few private sections that do not belong in a public bio.',
-      'The public side is meant to be useful and readable. The private side stays behind a key.',
+      'This is the part of the site that explains me a bit more than the front page does.',
+      'I still keep it locked because I do not want every detail about me sitting out in public. The outside page can stay simple. This page can have a little more context.',
     ],
   },
   {
@@ -360,23 +360,23 @@ export const aboutSections: AboutSection[] = [
     title: 'Bio',
     level: 3,
     body: [
-      'Small web projects, private archive design, and UI experiments.',
-      'I like building interfaces that feel personal without becoming messy. This page keeps the visual style dark and private, but the projects and contact paths are clear.',
-      'Romans 12:16-21 still matters to me, but the faith content has its own page instead of taking over the portfolio path.',
+      'I build small websites, app ideas, and random UI experiments.',
+      'Most of my projects start because I see something that could look or feel better, then I mess with it until it feels right.',
+      'I like things that are clean, a bit cinematic, and not too loud. That is why this site feels more like a private archive than a normal portfolio.',
     ],
   },
   {
     id: 'about-focus',
     title: 'Focus',
     level: 3,
-    body: ['The main threads are web projects, cleaner UI, private-by-default content, music, and faith kept in its own intentional space.'],
+    body: ['Right now I am mostly focused on web projects, better layouts, smoother motion, music details, and keeping private stuff actually private.'],
   },
   {
     id: 'about-faith',
     title: 'Faith',
     level: 4,
     body: [
-      'Faith has its own page so it can be direct without making every part of the portfolio about it.',
+      'My faith matters to me, but I gave it its own page so it does not feel randomly shoved into every section.',
     ],
   },
   {
@@ -384,7 +384,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Friends',
     level: 4,
     body: [
-      'The profile picture is a shared moment, not a solo portrait. That fits the whole site: personal, but not trying too hard.',
+      'The profile photo is not a solo photo, and I like that. It makes the page feel less like I am trying to sell myself.',
     ],
   },
   {
@@ -392,7 +392,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Creative Projects',
     level: 4,
     body: [
-      'The project section is the main public proof: live builds, short notes, tools used, and what each project was trying to solve.',
+      'The projects are mostly things I built while learning, testing ideas, or trying to make a better version of something I wanted to use.',
     ],
   },
   {
@@ -400,7 +400,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Archive Style',
     level: 3,
     body: [
-      'The archive style is the identity: dark olive panels, rounded cards, quiet motion, locked sections, and a profile-first layout.',
+      'I wanted the site to feel private without looking unfinished. Dark panels, rounded sections, soft motion, and locked areas just fit that better than a plain white portfolio.',
     ],
   },
   {
@@ -408,8 +408,8 @@ export const aboutSections: AboutSection[] = [
     title: 'Now',
     level: 3,
     body: [
-      'Right now the site is about making the profile feel finished and making the projects easier to understand.',
-      'Private notes and photos stay out of the public code. If someone needs access, they can ask directly.',
+      'Right now I am still cleaning the site up: making the music player smoother, making projects clearer, and removing anything that feels like filler.',
+      'Private notes and photos stay out of the public code. If someone needs access, they can ask me.',
     ],
   },
   {
@@ -417,25 +417,25 @@ export const aboutSections: AboutSection[] = [
     title: 'Links',
     level: 3,
     body: [
-      'Instagram is the main contact point. Projects stay visible here so the site works as more than a bio link.',
+      'Instagram is still the easiest way to reach me. The project section is here so the site is not just another bio link.',
     ],
   },
 ];
 
-export const focusItems = ['Web projects', 'UI polish', 'Privacy', 'Music'];
+export const focusItems = ['Web projects', 'Better UI', 'Private stuff', 'Music'];
 
 export const profileFacts = [
   { title: 'Public name', value: 'JZ' },
   { title: 'Handle', value: '@ur_bro_jz' },
-  { title: 'Profile state', value: 'Private' },
-  { title: 'Current bio', value: 'Small web projects and archive UI' },
+  { title: 'Profile state', value: 'Locked down' },
+  { title: 'Current bio', value: 'Projects, music, and private notes' },
 ];
 
 export const archiveStyleItems = [
-  'Profile-first layout with a private archive mood.',
-  'Projects are public; personal notes and photos stay locked.',
-  'Motion stays subtle so the site feels polished instead of busy.',
-  'Local public assets keep the first impression reliable.',
+  'The front page stays simple so it does not explain too much at once.',
+  'Projects can be public. Personal notes and photos do not need to be.',
+  'Motion should make the site feel alive, not annoying.',
+  'The whole thing should feel like me, not a template.',
 ];
 
 const liveScreenshot = (url: string) => {

@@ -57,6 +57,14 @@ function timingSafeEqual(a: string, b: string) {
   return diff === 0;
 }
 
+function phrase(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
 Deno.serve(async (req) => {
   const corsOrigin = resolveCorsOrigin(req);
 
@@ -73,11 +81,24 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'not_configured' }, 503, corsOrigin);
   }
 
-  let body: { name?: unknown };
+  let body: { name?: unknown; revealProof?: unknown };
   try {
     body = await req.json();
   } catch {
     return jsonResponse({ error: 'invalid_request' }, 400, corsOrigin);
+  }
+
+  if (typeof body.revealProof === 'string') {
+    const revealName = Deno.env.get('SECRET_NAME_REVEAL');
+    if (!revealName) {
+      return jsonResponse({ error: 'reveal_not_configured' }, 503, corsOrigin);
+    }
+
+    if (phrase(body.revealProof) !== 'the right name is the one the song is about') {
+      return jsonResponse({ error: 'invalid_reveal_proof' }, 403, corsOrigin);
+    }
+
+    return jsonResponse({ name: revealName }, 200, corsOrigin);
   }
 
   if (typeof body.name !== 'string') {

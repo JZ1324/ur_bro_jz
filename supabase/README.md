@@ -67,6 +67,7 @@ Set Supabase Edge Function secrets:
 ```bash
 supabase secrets set ARCHIVE_ACCESS_KEY_HASH="paste-hash-here"
 supabase secrets set SECRET_NAME_HASH="paste-normalized-name-hash-here"
+supabase secrets set SECRET_NAME_REVEAL="paste-display-name-here"
 supabase secrets set ARCHIVE_BUCKET="private-archive"
 supabase secrets set SIGNED_URL_TTL_SECONDS="600"
 supabase secrets set ALLOWED_ORIGINS="https://your-site.example,http://localhost:3000"
