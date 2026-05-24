@@ -396,6 +396,14 @@ export const aboutSections: AboutSection[] = [
     ],
   },
   {
+    id: 'about-hyperframes',
+    title: 'Website Videos',
+    level: 4,
+    body: [
+      'I am also interested in turning websites into short cinematic videos: quick demos, project reels, and archive-style clips that show the work better than a static screenshot.',
+    ],
+  },
+  {
     id: 'about-archive',
     title: 'Archive Style',
     level: 3,

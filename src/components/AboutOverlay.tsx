@@ -36,7 +36,7 @@ export function AboutOverlay({
   const intro = sections.find((section) => section.id === 'about-intro');
   const bio = sections.find((section) => section.id === 'about-bio');
   const focus = sections.find((section) => section.id === 'about-focus');
-  const nestedFocus = sections.filter((section) => ['about-faith', 'about-friends', 'about-projects'].includes(section.id));
+  const nestedFocus = sections.filter((section) => ['about-faith', 'about-friends', 'about-projects', 'about-hyperframes'].includes(section.id));
   const archive = sections.find((section) => section.id === 'about-archive');
   const now = sections.find((section) => section.id === 'about-now');
   const links = sections.find((section) => section.id === 'about-links');

@@ -3,6 +3,13 @@ type SecretNameErrorCode =
   | 'invalid_response'
   | 'request_failed';
 
+export type SecretPuzzleStage = 'fragment' | 'hex' | 'cipher';
+
+type SecretPuzzleResponse = {
+  matched: boolean;
+  name?: string;
+};
+
 export class SecretNameError extends Error {
   code: SecretNameErrorCode;
 
@@ -34,12 +41,12 @@ function isSecretNameResponse(value: unknown): value is { matched: boolean } {
   );
 }
 
-function isSecretNameRevealResponse(value: unknown): value is { name: string } {
+function isSecretPuzzleResponse(value: unknown): value is SecretPuzzleResponse {
   return Boolean(
     value
     && typeof value === 'object'
-    && 'name' in value
-    && typeof (value as { name: unknown }).name === 'string',
+    && 'matched' in value
+    && typeof (value as { matched: unknown }).matched === 'boolean',
   );
 }
 
@@ -74,7 +81,7 @@ export async function checkSecretName(name: string) {
   return payload.matched;
 }
 
-export async function revealSecretName(proof: string) {
+export async function submitSecretPuzzleStep(stage: SecretPuzzleStage, answer: string) {
   const functionUrl = getSecretNameFunctionUrl();
   if (!functionUrl) {
     throw new SecretNameError(
@@ -88,7 +95,7 @@ export async function revealSecretName(proof: string) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ revealProof: proof }),
+    body: JSON.stringify({ puzzleStage: stage, puzzleAnswer: answer }),
   });
 
   let payload: unknown;
@@ -98,9 +105,9 @@ export async function revealSecretName(proof: string) {
     throw new SecretNameError('invalid_response', 'The sealed entry returned an unreadable response.');
   }
 
-  if (!response.ok || !isSecretNameRevealResponse(payload)) {
-    throw new SecretNameError('request_failed', 'The sealed entry could not be opened right now.');
+  if (!response.ok || !isSecretPuzzleResponse(payload)) {
+    throw new SecretNameError('request_failed', 'The puzzle step could not be checked right now.');
   }
 
-  return payload.name;
+  return payload;
 }

@@ -68,10 +68,15 @@ Set Supabase Edge Function secrets:
 supabase secrets set ARCHIVE_ACCESS_KEY_HASH="paste-hash-here"
 supabase secrets set SECRET_NAME_HASH="paste-normalized-name-hash-here"
 supabase secrets set SECRET_NAME_REVEAL="paste-display-name-here"
+supabase secrets set SECRET_PUZZLE_FRAGMENT_HASH="paste-fragment-payload-hash-here"
+supabase secrets set SECRET_PUZZLE_HEX_HASH="paste-normalized-cipher-name-hash-here"
+supabase secrets set SECRET_PUZZLE_CIPHER_HASH="paste-normalized-cipher-answer-hash-here"
 supabase secrets set ARCHIVE_BUCKET="private-archive"
 supabase secrets set SIGNED_URL_TTL_SECONDS="600"
 supabase secrets set ALLOWED_ORIGINS="https://your-site.example,http://localhost:3000"
 ```
+
+The sealed-note puzzle hashes should be generated from the normalized answer for each step. Do not commit the real puzzle answers or the final name.
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are provided to hosted Edge Functions by Supabase. The service role key must never appear in frontend code.
 

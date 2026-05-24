@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, Download, Loader2, Lock, X } from 'lucide-react';
-import { type FormEvent, useEffect, useState } from 'react';
-import { checkSecretName, revealSecretName } from '../lib/secretName';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { checkSecretName, submitSecretPuzzleStep } from '../lib/secretName';
 import { ShinyText } from './ui/ShinyText';
+import { DecodedText } from './ui/DecodedText';
 
 type SecretPuzzleOverlayProps = {
   isOpen: boolean;
@@ -10,13 +11,11 @@ type SecretPuzzleOverlayProps = {
 };
 
 type PuzzleStage = 'manual' | 'fragment' | 'hex' | 'cipher' | 'name';
-type PuzzleStatus = 'idle' | 'wrong';
+type PuzzleStatus = 'idle' | 'checking' | 'wrong' | 'error';
 
-const fragmentHex = '726f7431333a2067757220657674756720616e7a722076662067757220626172206775722066626174207666206e6f626867';
-const cipherName = 'rot13';
-const cipherAnswer = 'the right name is the one the song is about';
 const fragmentSrc = `${import.meta.env.BASE_URL}archive-fragment.png`;
 const defaultSunlightImages = ['/sunshine.png'];
+const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*';
 
 const stageLabels: Record<PuzzleStage, string> = {
   manual: 'private line',
@@ -25,18 +24,6 @@ const stageLabels: Record<PuzzleStage, string> = {
   cipher: '03 / cipher',
   name: '04 / reveal',
 };
-
-function findHexPayload(value: string) {
-  return value.toLowerCase().match(/[a-f0-9]{40,}/)?.[0] || '';
-}
-
-function phrase(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim()
-    .replace(/\s+/g, ' ');
-}
 
 export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProps) {
   const [secretName, setSecretName] = useState('');
@@ -85,43 +72,38 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     moveToStage('fragment');
   };
 
-  const revealName = async () => {
-    setStatus('checking');
-    setRevealedName('');
-    moveToStage('name');
-    try {
-      const name = await revealSecretName(cipherAnswer);
-      setRevealedName(name);
-      setStatus('matched');
-    } catch {
-      setStatus('error');
-    }
-  };
-
   const handlePuzzleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const value = puzzleInput.trim();
-    if (!value) return;
+    if (!value || stage === 'manual' || stage === 'name' || puzzleStatus === 'checking') return;
 
-    if (stage === 'fragment' && findHexPayload(value) === fragmentHex) {
-      moveToStage('hex');
-      return;
-    }
+    setPuzzleStatus('checking');
 
-    if (stage === 'hex') {
-      const normalizedValue = phrase(value);
-      if (normalizedValue === cipherName || normalizedValue.startsWith(`${cipherName} `)) {
+    try {
+      const result = await submitSecretPuzzleStep(stage, value);
+      if (!result.matched) {
+        setPuzzleStatus('wrong');
+        return;
+      }
+
+      if (stage === 'fragment') {
+        moveToStage('hex');
+        return;
+      }
+
+      if (stage === 'hex') {
         moveToStage('cipher');
         return;
       }
-    }
 
-    if (stage === 'cipher' && phrase(value) === cipherAnswer) {
-      await revealName();
-      return;
+      setRevealedName(result.name || '');
+      setStatus(result.name ? 'matched' : 'error');
+      setStage('name');
+      setPuzzleInput('');
+      setPuzzleStatus('idle');
+    } catch {
+      setPuzzleStatus('error');
     }
-
-    setPuzzleStatus('wrong');
   };
 
   const handleManualSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -223,80 +205,80 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                 </div>
 
                 {stage === 'manual' && (
-                  <form onSubmit={handleManualSubmit}>
-                    <label htmlFor="secret-name" className="block text-2xl font-bold text-text">
-                      Put the name here.
-                    </label>
-                    <div className="mt-5 rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
-                      <input
-                        id="secret-name"
-                        type="password"
-                        value={secretName}
-                        onChange={(event) => {
-                          setSecretName(event.target.value);
-                          if (status !== 'idle' && status !== 'checking') setStatus('idle');
-                        }}
-                        autoComplete="off"
-                        autoCapitalize="none"
-                        spellCheck={false}
-                        className="w-full bg-transparent text-2xl font-bold tracking-wide text-text outline-none"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={!secretName.trim() || status === 'checking'}
-                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-all hover:bg-accent-dark active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {status === 'checking' ? (
-                        <>
-                          <Loader2 size={18} className="animate-spin" />
-                          Checking
-                        </>
-                      ) : status === 'matched' ? (
-                        <>
-                          <Check size={18} />
-                          Opened
-                        </>
-                      ) : (
-                        'Open'
-                      )}
-                    </button>
-                    <AnimatePresence mode="wait">
-                      {status === 'matched' && (
-                        <motion.p
-                          key="matched"
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          className="mt-4 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm font-semibold text-accent"
+                  <AnimatePresence mode="wait">
+                    {status === 'matched' ? (
+                      <CutesyOpenedNote key="opened-note" onLockAgain={() => {
+                        setSecretName('');
+                        setStatus('idle');
+                      }} />
+                    ) : (
+                      <motion.form
+                        key="manual-form"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: 0.22 }}
+                        onSubmit={handleManualSubmit}
+                      >
+                        <label htmlFor="secret-name" className="block text-2xl font-bold text-text">
+                          Put the name here.
+                        </label>
+                        <div className="mt-5 rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
+                          <input
+                            id="secret-name"
+                            type="password"
+                            value={secretName}
+                            onChange={(event) => {
+                              setSecretName(event.target.value);
+                              if (status !== 'idle' && status !== 'checking') setStatus('idle');
+                            }}
+                            autoComplete="off"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            className="w-full bg-transparent text-2xl font-bold tracking-wide text-text outline-none"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={!secretName.trim() || status === 'checking'}
+                          className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-all hover:bg-accent-dark active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          Opened.
-                        </motion.p>
-                      )}
-                      {status === 'missed' && (
-                        <motion.p
-                          key="missed"
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          className="mt-4 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 px-4 py-3 text-sm font-semibold text-warm-accent"
-                        >
-                          Not it.
-                        </motion.p>
-                      )}
-                      {status === 'error' && (
-                        <motion.p
-                          key="error"
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          className="mt-4 rounded-2xl border border-border bg-surface/70 px-4 py-3 text-sm font-semibold text-muted"
-                        >
-                          This sealed entry is not connected right now.
-                        </motion.p>
-                      )}
-                    </AnimatePresence>
-                  </form>
+                          {status === 'checking' ? (
+                            <>
+                              <Loader2 size={18} className="animate-spin" />
+                              Checking
+                            </>
+                          ) : (
+                            'Open'
+                          )}
+                        </button>
+                        <AnimatePresence mode="wait">
+                          {status === 'missed' && (
+                            <motion.p
+                              key="missed"
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -6 }}
+                              className="mt-4 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 px-4 py-3 text-sm font-semibold text-warm-accent"
+                            >
+                              Not it.
+                            </motion.p>
+                          )}
+                          {status === 'error' && (
+                            <motion.p
+                              key="error"
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -6 }}
+                              className="mt-4 rounded-2xl border border-border bg-surface/70 px-4 py-3 text-sm font-semibold text-muted"
+                            >
+                              This sealed entry is not connected right now.
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
                 )}
 
                 {stage === 'fragment' && (
@@ -335,8 +317,9 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         className="w-full bg-transparent text-base font-bold tracking-wide text-text outline-none"
                       />
                     </div>
-                    <PuzzleSubmitButton disabled={!puzzleInput.trim()} />
+                    <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
                     {puzzleStatus === 'wrong' && <PuzzleError>Wrong fragment.</PuzzleError>}
+                    {puzzleStatus === 'error' && <PuzzleError>The fragment could not be checked right now.</PuzzleError>}
                   </form>
                 )}
 
@@ -363,8 +346,9 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         className="w-full bg-transparent text-xl font-bold tracking-wide text-text outline-none"
                       />
                     </div>
-                    <PuzzleSubmitButton disabled={!puzzleInput.trim()} />
+                    <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
                     {puzzleStatus === 'wrong' && <PuzzleError>Not that cipher.</PuzzleError>}
+                    {puzzleStatus === 'error' && <PuzzleError>The cipher could not be checked right now.</PuzzleError>}
                   </form>
                 )}
 
@@ -391,18 +375,19 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         className="w-full bg-transparent text-base font-bold tracking-wide text-text outline-none"
                       />
                     </div>
-                    <PuzzleSubmitButton disabled={!puzzleInput.trim()} />
+                    <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
                     {puzzleStatus === 'wrong' && <PuzzleError>Line does not match.</PuzzleError>}
+                    {puzzleStatus === 'error' && <PuzzleError>The line could not be checked right now.</PuzzleError>}
                   </form>
                 )}
 
                 {stage === 'name' && (
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-warm-accent">Private line</p>
-                    <h3 className="mt-4 text-2xl font-bold text-text">
+                    <h3 className="mt-3 text-xl font-bold text-text">
                       {status === 'matched' ? 'The name is:' : 'Opening the sealed line.'}
                     </h3>
-                    <div className="mt-5 rounded-2xl border border-border/70 bg-surface/70 px-4 py-5">
+                    <div className="mt-4 rounded-2xl border border-border/70 bg-bg/35 px-4 py-4">
                       {status === 'checking' && (
                         <div className="flex items-center gap-3 text-base font-bold text-muted">
                           <Loader2 size={18} className="animate-spin" />
@@ -419,14 +404,14 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       )}
                     </div>
                     {status === 'matched' && (
-                      <p className="mt-4 rounded-2xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm font-semibold text-accent">
-                        Solved.
+                      <p className="mt-4 rounded-2xl border border-border/60 bg-surface/45 px-4 py-3 text-sm font-semibold leading-6">
+                        <DecodedText text="Some things are only meant to open once." />
                       </p>
                     )}
                     {status === 'error' && (
                       <button
                         type="button"
-                        onClick={revealName}
+                        onClick={() => moveToStage('cipher')}
                         className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-all hover:bg-accent-dark active:scale-[0.99]"
                       >
                         Try again
@@ -443,14 +428,60 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
   );
 }
 
-function PuzzleSubmitButton({ disabled }: { disabled: boolean }) {
+function CutesyOpenedNote({ onLockAgain }: { onLockAgain: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-[1.75rem] border border-warm-accent/25 bg-warm-accent/[0.07] p-5 shadow-inner shadow-black/10"
+    >
+      <div className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent">
+        <Check size={13} />
+        Sealed line opened
+      </div>
+      <h3 className="mt-5 text-2xl font-bold leading-tight text-text">
+        A little note unlocked.
+      </h3>
+      <p className="mt-3 text-sm font-medium leading-7 text-muted">
+        You found the right name. Keep it soft, keep it quiet.
+      </p>
+
+      <div className="mt-5 rounded-3xl border border-border/55 bg-bg/45 p-5">
+        <p className="text-xl font-semibold leading-9 text-text">
+          quiet things,
+          <br />
+          soft timing,
+          <br />
+          the right name.
+        </p>
+      </div>
+
+      <p className="mt-4 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-3 text-sm font-semibold leading-6 text-accent">
+        <DecodedText text="Some things are only meant to open once." />
+      </p>
+
+      <button
+        type="button"
+        onClick={onLockAgain}
+        className="mt-4 w-full rounded-full border border-border/65 bg-surface/70 px-5 py-3 text-sm font-bold text-muted transition-all hover:border-accent/40 hover:bg-accent/10 hover:text-text active:scale-[0.99]"
+      >
+        Lock it again
+      </button>
+    </motion.div>
+  );
+}
+
+function PuzzleSubmitButton({ disabled, loading = false }: { disabled: boolean; loading?: boolean }) {
   return (
     <button
       type="submit"
       disabled={disabled}
-      className="mt-4 flex w-full items-center justify-center rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-all hover:bg-accent-dark active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+      className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-all hover:bg-accent-dark active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
     >
-      Continue
+      {loading && <Loader2 size={18} className="animate-spin" />}
+      {loading ? 'Checking' : 'Continue'}
     </button>
   );
 }
@@ -458,25 +489,78 @@ function PuzzleSubmitButton({ disabled }: { disabled: boolean }) {
 function RevealedName({ name }: { name: string }) {
   return (
     <div
-      className="flex flex-wrap items-center gap-[0.04em] text-4xl font-black tracking-wide sm:text-5xl"
-      aria-label={name}
+      className="flex flex-wrap items-center gap-1.5 text-2xl font-black tracking-[0.08em] sm:text-3xl"
+      aria-label="Encrypted name. Hover or focus each character to reveal it."
     >
       {Array.from(name).map((character, index) => (
-        <span aria-hidden="true" key={`${character}-${index}`}>
-          <ShinyText
-            text={character === ' ' ? '\u00a0' : character}
-            color="#E49A78"
-            shineColor="#FFF4CF"
-            speed={3.2}
-            delay={index * 0.08}
-            yoyo
-            pauseOnHover
-            className="font-black"
-          />
-        </span>
+        <ScrambleRevealLetter character={character} index={index} key={`${character}-${index}`} />
       ))}
     </div>
   );
+}
+
+function ScrambleRevealLetter({ character, index }: { character: string; index: number }) {
+  const [displayCharacter, setDisplayCharacter] = useState(() => getScrambleCharacter(index));
+  const [isRevealed, setIsRevealed] = useState(false);
+  const intervalRef = useRef<number | null>(null);
+
+  const clearScramble = () => {
+    if (intervalRef.current) {
+      window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const reveal = () => {
+    if (character === ' ') return;
+
+    clearScramble();
+    setIsRevealed(true);
+    setDisplayCharacter(character);
+  };
+
+  const encrypt = () => {
+    if (character === ' ') return;
+
+    setIsRevealed(false);
+  };
+
+  useEffect(() => {
+    if (character === ' ' || isRevealed) {
+      clearScramble();
+      return clearScramble;
+    }
+
+    let frame = 0;
+    intervalRef.current = window.setInterval(() => {
+      frame += 1;
+      setDisplayCharacter(getScrambleCharacter(index + frame));
+    }, 90);
+
+    return clearScramble;
+  }, [character, index, isRevealed]);
+
+  if (character === ' ') {
+    return <span aria-hidden="true" className="w-[0.35em]">&nbsp;</span>;
+  }
+
+  return (
+    <button
+      type="button"
+      aria-label={`Reveal character ${index + 1}`}
+      onMouseEnter={reveal}
+      onMouseLeave={encrypt}
+      onFocus={reveal}
+      onBlur={encrypt}
+      className="grid h-12 min-w-10 place-items-center rounded-xl border border-border/55 bg-surface/55 px-2 font-mono text-accent/75 shadow-inner shadow-black/10 outline-none transition-all duration-200 hover:-translate-y-0.5 hover:border-warm-accent/55 hover:bg-warm-accent/10 hover:text-warm-accent focus-visible:-translate-y-0.5 focus-visible:border-warm-accent/60 focus-visible:bg-warm-accent/10 focus-visible:text-warm-accent focus-visible:ring-2 focus-visible:ring-accent/50 sm:h-14 sm:min-w-11"
+    >
+      {displayCharacter}
+    </button>
+  );
+}
+
+function getScrambleCharacter(index: number) {
+  return SCRAMBLE_CHARS[index % SCRAMBLE_CHARS.length];
 }
 
 function SunlightSparkles({
