@@ -20,23 +20,41 @@ type CommandmentQuestion = {
   question: string;
   brokenLabel: string;
   note?: string;
+  challenge: string;
 };
 
 const commandmentQuestions: CommandmentQuestion[] = [
-  { id: 'lie', question: 'Have you ever lied?', brokenLabel: 'lying' },
-  { id: 'steal', question: 'Have you ever stolen anything?', brokenLabel: 'stealing' },
-  { id: 'vain', question: 'Have you ever used God’s name in vain?', brokenLabel: 'using God’s name in vain' },
+  {
+    id: 'lie',
+    question: 'Have you ever lied?',
+    brokenLabel: 'lying',
+    challenge: 'Even one lie counts. Think honestly before God, not compared to other people.',
+  },
+  {
+    id: 'steal',
+    question: 'Have you ever stolen anything?',
+    brokenLabel: 'stealing',
+    challenge: 'Even something small, copied, kept, or taken without permission still counts.',
+  },
+  {
+    id: 'vain',
+    question: 'Have you ever used God’s name in vain?',
+    brokenLabel: 'using God’s name in vain',
+    challenge: 'Using God’s name carelessly or as a swear word is still dishonoring Him.',
+  },
   {
     id: 'lust',
     question: 'Have you ever looked with lust?',
     brokenLabel: 'adultery of the heart',
     note: 'Jesus says lust is adultery in the heart.',
+    challenge: 'Jesus said lust is adultery in the heart, so this is about the heart, not just outward actions.',
   },
   {
     id: 'hate',
     question: 'Have you ever hated someone?',
     brokenLabel: 'murder in the heart',
     note: 'Jesus connects hatred with murder in the heart.',
+    challenge: 'Jesus connects hatred and anger with murder in the heart, so the heart matters here too.',
   },
 ];
 
@@ -61,6 +79,11 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
     : null;
   const brokenCommandments = commandmentQuestions.filter((question) => commandmentAnswers[question.id] === 'yes');
   const hasBrokenLaw = brokenCommandments.length > 0;
+  const isBlockedCommandmentAnswer = currentCommandment !== null && commandmentAnswers[currentCommandment.id] === 'no';
+  const isBlockedJudgmentAnswer = quizStep === judgmentStep && judgmentAnswer === 'innocent';
+  const isBlockedDestinationAnswer =
+    quizStep === destinationStep && (destinationAnswer === 'heaven' || destinationAnswer === 'not-sure');
+  const isBlockedAnswer = isBlockedCommandmentAnswer || isBlockedJudgmentAnswer || isBlockedDestinationAnswer;
 
   const resetQuiz = () => {
     setQuizStep(0);
@@ -77,6 +100,29 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
     (quizStep === judgmentStep && judgmentAnswer !== null) ||
     (quizStep === destinationStep && destinationAnswer !== null)
   );
+
+  const handleContinue = () => {
+    if (currentCommandment && commandmentAnswers[currentCommandment.id] === 'no') {
+      setCommandmentAnswers((current) => {
+        const next = { ...current };
+        delete next[currentCommandment.id];
+        return next;
+      });
+      return;
+    }
+
+    if (quizStep === judgmentStep && judgmentAnswer === 'innocent') {
+      setJudgmentAnswer(null);
+      return;
+    }
+
+    if (quizStep === destinationStep && (destinationAnswer === 'heaven' || destinationAnswer === 'not-sure')) {
+      setDestinationAnswer(null);
+      return;
+    }
+
+    setQuizStep((step) => Math.min(gospelStep, step + 1));
+  };
 
   const OptionButton = ({
     isSelected,
@@ -131,40 +177,6 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                     A simple summary of who Jesus is, what the Gospel is, and why Romans 12:16-21 sits in the bio.
                   </p>
                 </header>
-
-                <section className="rounded-3xl border border-border/50 bg-surface p-6 shadow-2xl shadow-black/20 sm:p-8">
-                  <p className="text-xl font-semibold leading-relaxed text-text">
-                    The Gospel is good news: Jesus came to save sinners, died for our sins, rose again, and gives forgiveness and new life to everyone who trusts in Him.
-                  </p>
-                </section>
-
-                <div className="flex flex-col gap-10">
-                  {sections.map((section, index) => (
-                    <section key={section.id} className="flex flex-col gap-4">
-                      <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">0{index + 1}</p>
-                      <h2 data-toc id={section.id} className="text-3xl font-bold text-text">
-                        {section.title}
-                      </h2>
-                      {section.body.map((paragraph) => (
-                        <p key={paragraph} className="text-lg leading-relaxed text-muted">
-                          {paragraph}
-                        </p>
-                      ))}
-                      {section.verses && (
-                        <div className="mt-2 grid gap-3 sm:grid-cols-3">
-                          {section.verses.map((verse) => (
-                            <div key={verse.reference} className="rounded-2xl border border-border/45 bg-surface px-4 py-3">
-                              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-warm-accent">
-                                {verse.reference}
-                              </p>
-                              <p className="mt-2 text-sm font-semibold leading-relaxed text-text">{verse.text}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </section>
-                  ))}
-                </div>
 
                 <section className="rounded-3xl border border-warm-accent/35 bg-surface p-6 shadow-2xl shadow-black/20 sm:p-8">
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -239,6 +251,16 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                               No
                             </OptionButton>
                           </div>
+                          {commandmentAnswers[currentCommandment.id] === 'no' && (
+                            <div className="mt-5 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 p-4">
+                              <p className="text-xs font-bold uppercase tracking-[0.18em] text-warm-accent">
+                                Are you sure?
+                              </p>
+                              <p className="mt-2 text-sm font-semibold leading-relaxed text-text">
+                                {currentCommandment.challenge}
+                              </p>
+                            </div>
+                          )}
                         </>
                       )}
 
@@ -273,11 +295,14 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                               Guilty
                             </OptionButton>
                           </div>
-                          {hasBrokenLaw && judgmentAnswer === 'innocent' && (
+                          {isBlockedJudgmentAnswer && (
                             <div className="mt-5 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 p-4">
-                              <p className="text-sm font-semibold leading-relaxed text-text">
+                              <p className="text-xs font-bold uppercase tracking-[0.18em] text-warm-accent">
+                                Are you sure?
+                              </p>
+                              <p className="mt-2 text-sm font-semibold leading-relaxed text-text">
                                 If the Law has been broken, “innocent” does not really fit. A good judge does not call
-                                someone innocent by ignoring the evidence.
+                                someone innocent by ignoring the evidence. Think about the verdict again.
                               </p>
                             </div>
                           )}
@@ -305,11 +330,14 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                               Not sure
                             </OptionButton>
                           </div>
-                          {hasBrokenLaw && destinationAnswer === 'heaven' && (
+                          {destinationAnswer === 'heaven' && (
                             <div className="mt-5 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 p-4">
-                              <p className="text-sm font-semibold leading-relaxed text-text">
+                              <p className="text-xs font-bold uppercase tracking-[0.18em] text-warm-accent">
+                                Are you sure?
+                              </p>
+                              <p className="mt-2 text-sm font-semibold leading-relaxed text-text">
                                 If God is just, heaven cannot come from pretending guilt is small. That is why the answer
-                                has to be mercy through Christ, not earning it by being “good enough.”
+                                has to be mercy through Christ, not earning it by being “good enough.” Think about it again.
                               </p>
                             </div>
                           )}
@@ -319,9 +347,15 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                             </p>
                           )}
                           {destinationAnswer === 'not-sure' && (
-                            <p className="mt-4 text-sm leading-relaxed text-muted">
-                              The courtroom picture helps here: if guilt is real, justice cannot just look away from it.
-                            </p>
+                            <div className="mt-5 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 p-4">
+                              <p className="text-xs font-bold uppercase tracking-[0.18em] text-warm-accent">
+                                Are you sure?
+                              </p>
+                              <p className="mt-2 text-sm font-semibold leading-relaxed text-text">
+                                The courtroom picture helps here: if guilt is real, justice cannot just look away from it.
+                                The question is what sin deserves before a holy God.
+                              </p>
+                            </div>
                           )}
                         </>
                       )}
@@ -374,11 +408,11 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                     {quizStep < gospelStep && (
                       <button
                         type="button"
-                        onClick={() => setQuizStep((step) => Math.min(gospelStep, step + 1))}
+                        onClick={handleContinue}
                         disabled={!canContinue}
                         className="rounded-full bg-accent px-6 py-3 font-bold text-bg transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45"
                       >
-                        Continue
+                        {isBlockedAnswer ? 'Ask again' : 'Continue'}
                       </button>
                     )}
                     <button
@@ -390,6 +424,40 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                     </button>
                   </div>
                 </section>
+
+                <section className="rounded-3xl border border-border/50 bg-surface p-6 shadow-2xl shadow-black/20 sm:p-8">
+                  <p className="text-xl font-semibold leading-relaxed text-text">
+                    The Gospel is good news: Jesus came to save sinners, died for our sins, rose again, and gives forgiveness and new life to everyone who trusts in Him.
+                  </p>
+                </section>
+
+                <div className="flex flex-col gap-10">
+                  {sections.map((section, index) => (
+                    <section key={section.id} className="flex flex-col gap-4">
+                      <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">0{index + 1}</p>
+                      <h2 data-toc id={section.id} className="text-3xl font-bold text-text">
+                        {section.title}
+                      </h2>
+                      {section.body.map((paragraph) => (
+                        <p key={paragraph} className="text-lg leading-relaxed text-muted">
+                          {paragraph}
+                        </p>
+                      ))}
+                      {section.verses && (
+                        <div className="mt-2 grid gap-3 sm:grid-cols-3">
+                          {section.verses.map((verse) => (
+                            <div key={verse.reference} className="rounded-2xl border border-border/45 bg-surface px-4 py-3">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-warm-accent">
+                                {verse.reference}
+                              </p>
+                              <p className="mt-2 text-sm font-semibold leading-relaxed text-text">{verse.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+                  ))}
+                </div>
               </div>
             </DynamicIslandTOC>
           </article>

@@ -165,7 +165,7 @@ export function AboutOverlay({
                       </section>
                     )}
 
-                    <section className="relative overflow-hidden rounded-3xl border border-warm-accent/20 bg-[linear-gradient(135deg,rgba(228,154,120,0.08),transparent_28%),radial-gradient(circle_at_85%_12%,rgba(201,211,176,0.1),transparent_22rem),var(--color-surface)] p-5 shadow-xl shadow-black/10 sm:p-6">
+                    <section className="archive-paper relative overflow-hidden rounded-3xl border border-warm-accent/20 p-5 shadow-xl shadow-black/10 sm:p-6">
                       <span className="pointer-events-none absolute right-8 top-8 hidden h-3 w-3 rotate-45 rounded-[2px] border border-warm-accent/45 sm:block" />
                       <span className="pointer-events-none absolute bottom-10 left-8 hidden h-px w-16 rotate-[-8deg] bg-warm-accent/35 sm:block" />
                       <span className="pointer-events-none absolute right-10 bottom-12 hidden text-xs font-black text-warm-accent/35 sm:block">+</span>
@@ -181,7 +181,7 @@ export function AboutOverlay({
                             </h3>
                           </div>
                           <span className="rounded-full border border-border/45 bg-bg/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
-                            locked note
+                            scanned note
                           </span>
                         </div>
 

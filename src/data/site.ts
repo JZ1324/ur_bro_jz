@@ -310,13 +310,13 @@ export const storyItems: StoryItem[] = [
 export const nowItems: NowItem[] = [
   {
     label: 'Building',
-    title: 'Portfolio archive',
-    body: 'A dark profile site for projects, notes, music, and the pieces that need more room than a normal bio.',
+    title: 'This archive',
+    body: 'A small profile site with projects, music, and a few locked parts that do not need to sit in public.',
   },
   {
     label: 'Projects',
     title: 'Pinned builds',
-    body: 'Live pages and small tools with enough context to show what each one does and why it exists.',
+    body: 'Small tools and live pages, with just enough context to show what they do.',
   },
   {
     label: 'Music',
@@ -444,10 +444,10 @@ export const profileFacts = [
 ];
 
 export const archiveStyleItems = [
-  'The front page stays simple so it does not explain too much at once.',
-  'Projects can be public. Personal notes and photos do not need to be.',
-  'Motion should make the site feel alive, not annoying.',
-  'The whole thing should feel like me, not a template.',
+  'The front page should give the shape, not every detail.',
+  'Projects can be public. Personal notes and photos can stay locked.',
+  'Motion should feel quiet and alive, not distracting.',
+  'If something feels like filler, it should probably go.',
 ];
 
 export const journalEntries: JournalEntry[] = [

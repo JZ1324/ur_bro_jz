@@ -88,7 +88,7 @@ function ArchiveSignalOverlay({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.96 }}
             transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-            className="w-full max-w-xl rounded-3xl border border-border/60 bg-surface p-6 shadow-2xl shadow-black/35 sm:p-7"
+            className="archive-corner-panel w-full max-w-xl rounded-3xl border border-border/60 bg-surface p-6 shadow-2xl shadow-black/35 sm:p-7"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -109,13 +109,13 @@ function ArchiveSignalOverlay({
               <div className="rounded-2xl border border-border/45 bg-bg/50 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8E927F]">Updated</p>
                 <p className="mt-2 text-base font-semibold leading-relaxed text-text">
-                  Header tools are becoming part of the archive: quick signals, project browsing, and a proper map.
+                  The header now works like a small control shelf: signal, projects, and map.
                 </p>
               </div>
               <div className="rounded-2xl border border-warm-accent/25 bg-warm-accent/10 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-warm-accent">Current signal</p>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-muted">
-                  The site is being tightened around cleaner navigation, better project browsing, and a quieter private archive flow.
+                  Tightening the public side so it feels calmer, cleaner, and less like a random link page.
                 </p>
               </div>
             </div>
@@ -138,6 +138,24 @@ function ArchiveSignalOverlay({
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function ArchiveRail() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.46, delay: 0.12, ease: [0.23, 1, 0.32, 1] }}
+      className="relative mx-auto -mt-5 -mb-6 flex w-full max-w-4xl items-center gap-3 px-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted"
+      aria-hidden="true"
+    >
+      <span className="h-px flex-1 bg-linear-to-r from-transparent via-border/65 to-border/20" />
+      <span className="archive-rail-pill">JZ / Archive / 2026</span>
+      <span className="archive-rail-dot" />
+      <span className="hidden text-[#8E927F] sm:inline">public front / private notes</span>
+      <span className="h-px flex-1 bg-linear-to-l from-transparent via-border/65 to-border/20" />
+    </motion.div>
   );
 }
 
@@ -563,6 +581,7 @@ export default function App() {
           faithHover={faithHover}
           onFaithClick={() => setShowJesus(true)}
         />
+        <ArchiveRail />
         <ParallaxLayer
           progress={homeScrollProgress}
           inputRange={[0.12, 0.58]}

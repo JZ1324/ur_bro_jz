@@ -90,11 +90,11 @@ export function ProjectOverlays({
                 </button>
               </div>
 
-              <section className="rounded-3xl border border-border/40 bg-surface/55 p-4 shadow-lg shadow-black/10">
+              <section className="archive-corner-panel rounded-3xl border border-border/40 bg-surface/55 p-4 shadow-lg shadow-black/10">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#8E927F]">Tool shelf</p>
-                    <p className="mt-1 text-sm font-semibold text-muted">The stack behind most of these builds.</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#8E927F]">Tool shelf / stack</p>
+                    <p className="mt-1 text-sm font-semibold text-muted">Small tools I keep reaching for while building these.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {toolItems.map((tool) => (
@@ -110,7 +110,7 @@ export function ProjectOverlays({
                 </div>
               </section>
 
-              <div className="grid gap-3 rounded-3xl border border-border/45 bg-surface/70 p-3 shadow-xl shadow-black/10 md:grid-cols-[1fr_auto] md:items-center">
+              <div className="archive-corner-panel grid gap-3 rounded-3xl border border-border/45 bg-surface/70 p-3 shadow-xl shadow-black/10 md:grid-cols-[1fr_auto] md:items-center">
                 <label className="relative block">
                   <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
                   <input
@@ -194,9 +194,9 @@ export function ProjectOverlays({
               </div>
 
               {filteredProjects.length === 0 && (
-                <div className="rounded-3xl border border-border/45 bg-surface p-8 text-center">
-                  <p className="text-lg font-bold text-text">No projects matched that view.</p>
-                  <p className="mt-2 text-sm font-medium text-muted">Clear the search or switch back to All.</p>
+                <div className="archive-corner-panel rounded-3xl border border-border/45 bg-surface p-8 text-center">
+                  <p className="text-lg font-bold text-text">No entries matched this view.</p>
+                  <p className="mt-2 text-sm font-medium text-muted">Clear the search or switch the archive filter back to All.</p>
                 </div>
               )}
             </div>

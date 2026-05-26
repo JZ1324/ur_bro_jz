@@ -17,12 +17,17 @@ export function NowSection({ items, onSecretClick }: NowSectionProps) {
       className="grid gap-3 sm:grid-cols-3"
       aria-label="Current archive updates"
     >
-      {items.map((item) => (
+      {items.map((item, index) => (
         <article
           key={item.label}
-          className="rounded-2xl border border-border/50 bg-surface/80 p-4 shadow-lg shadow-black/10 sm:p-4"
+          className="archive-note-card group relative overflow-hidden rounded-2xl border border-border/50 bg-surface/80 p-4 shadow-lg shadow-black/10 transition-[transform,border-color,background-color] duration-180 ease-out hover:border-accent/30 hover:bg-surface sm:p-4"
         >
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-warm-accent">{item.label}</p>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-warm-accent">{item.label}</p>
+            <span className="rounded-full border border-border/35 bg-bg/35 px-2 py-0.5 text-[9px] font-bold text-[#8E927F]">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+          </div>
           <h2 className="mt-2 text-[15px] font-bold leading-tight text-text">{item.title}</h2>
           {item.label === 'Music' ? (
             <p className="mt-2 text-[13px] leading-6 text-muted">
