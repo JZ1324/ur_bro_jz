@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Download, Loader2, Lock, X } from 'lucide-react';
+import { ArrowUpRight, Check, Download, Loader2, Lock, X } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { checkSecretName, submitSecretPuzzleStep } from '../lib/secretName';
 import { ShinyText } from './ui/ShinyText';
@@ -29,6 +29,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
   const [secretName, setSecretName] = useState('');
   const [revealedName, setRevealedName] = useState('');
   const [status, setStatus] = useState<'idle' | 'checking' | 'matched' | 'missed' | 'error'>('idle');
+  const [manualMissCount, setManualMissCount] = useState(0);
   const [stage, setStage] = useState<PuzzleStage>('manual');
   const [puzzleInput, setPuzzleInput] = useState('');
   const [puzzleStatus, setPuzzleStatus] = useState<PuzzleStatus>('idle');
@@ -54,6 +55,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     setSecretName('');
     setRevealedName('');
     setStatus('idle');
+    setManualMissCount(0);
     setStage('manual');
     setPuzzleInput('');
     setPuzzleStatus('idle');
@@ -69,6 +71,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     setSecretName('');
     setRevealedName('');
     setStatus('idle');
+    setManualMissCount(0);
     moveToStage('fragment');
   };
 
@@ -115,12 +118,18 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     try {
       const matched = await checkSecretName(trimmedName);
       setStatus(matched ? 'matched' : 'missed');
+      if (matched) {
+        setManualMissCount(0);
+      } else {
+        setManualMissCount((count) => count + 1);
+      }
     } catch {
       setStatus('error');
     }
   };
 
   const puzzleStarted = stage !== 'manual';
+  const showPuzzleHint = stage === 'manual' && status === 'missed' && manualMissCount >= 2;
 
   return (
     <AnimatePresence>
@@ -135,7 +144,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
             initial={{ opacity: 0, y: 18, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.97 }}
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
             className="relative w-full max-w-5xl overflow-hidden rounded-3xl border border-border/55 bg-surface shadow-2xl shadow-black/30"
           >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(228,154,120,0.09),transparent_42%),radial-gradient(circle_at_18%_82%,rgba(201,211,176,0.08),transparent_36%)]" />
@@ -145,7 +154,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                 event.stopPropagation();
                 onClose();
               }}
-              className="absolute right-5 top-5 z-20 rounded-full bg-accent-soft p-3 text-accent transition-colors hover:bg-accent/15 sm:right-6 sm:top-6"
+              className="absolute right-5 top-5 z-20 rounded-full bg-accent-soft p-3 text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent/15 active:scale-[0.96] sm:right-6 sm:top-6"
               aria-label="Close puzzle"
             >
               <X size={22} />
@@ -153,15 +162,43 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
 
             <div className="relative grid min-h-[32rem] gap-8 p-6 pt-20 sm:p-10 sm:pt-24 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:p-14">
               <div className="text-center lg:text-left">
-                <button
-                  type="button"
-                  onClick={puzzleStarted ? () => moveToStage('manual') : startPuzzle}
-                  className="mx-auto inline-flex items-center gap-2 rounded-full border border-warm-accent/25 bg-warm-accent/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.24em] text-warm-accent transition-all hover:border-warm-accent/55 hover:bg-warm-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent/45 active:scale-95 lg:mx-0"
-                  aria-label={puzzleStarted ? 'Return to sealed note input' : 'Start sealed note puzzle'}
-                >
-                  <Lock size={13} />
-                  Sealed note
-                </button>
+                <div className="relative mx-auto inline-flex lg:mx-0">
+                  <AnimatePresence>
+                    {showPuzzleHint && (
+                      <motion.div
+                        key="sealed-note-arrow"
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        animate={{
+                          opacity: 1,
+                          y: [4, -2, 4],
+                          scale: 1,
+                        }}
+                        exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                        transition={{
+                          opacity: { duration: 0.18 },
+                          scale: { duration: 0.18 },
+                          y: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' },
+                        }}
+                        className="pointer-events-none absolute bottom-[calc(100%+0.85rem)] left-1/2 hidden -translate-x-1/2 flex-col items-center gap-1 text-warm-accent sm:flex"
+                        aria-hidden="true"
+                      >
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] drop-shadow-[0_8px_18px_rgba(0,0,0,0.35)]">
+                          Here
+                        </span>
+                        <ArrowUpRight size={18} className="rotate-[135deg]" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                  <button
+                    type="button"
+                    onClick={puzzleStarted ? () => moveToStage('manual') : startPuzzle}
+                    className="mx-auto inline-flex items-center gap-2 rounded-full border border-warm-accent/25 bg-warm-accent/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.24em] text-warm-accent transition-[transform,background-color,border-color] duration-150 ease-out hover:border-warm-accent/55 hover:bg-warm-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent/45 active:scale-[0.97] lg:mx-0"
+                    aria-label={puzzleStarted ? 'Return to sealed note input' : 'Start sealed note puzzle'}
+                  >
+                    <Lock size={13} />
+                    Sealed note
+                  </button>
+                </div>
                 {puzzleStarted ? (
                   <>
                     <p className="mt-7 text-balance text-3xl font-semibold leading-tight text-text sm:text-5xl sm:leading-[1.08]">
@@ -210,6 +247,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       <CutesyOpenedNote key="opened-note" onLockAgain={() => {
                         setSecretName('');
                         setStatus('idle');
+                        setManualMissCount(0);
                       }} />
                     ) : (
                       <motion.form
@@ -217,7 +255,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
-                        transition={{ duration: 0.22 }}
+                        transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
                         onSubmit={handleManualSubmit}
                       >
                         <label htmlFor="secret-name" className="block text-2xl font-bold text-text">
@@ -241,7 +279,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         <button
                           type="submit"
                           disabled={!secretName.trim() || status === 'checking'}
-                          className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-all hover:bg-accent-dark active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {status === 'checking' ? (
                             <>
@@ -261,7 +299,9 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                               exit={{ opacity: 0, y: -6 }}
                               className="mt-4 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 px-4 py-3 text-sm font-semibold text-warm-accent"
                             >
-                              Not it.
+                              {manualMissCount >= 2
+                                ? 'Hint: press the Sealed Note lock chip first. It starts the trail.'
+                                : 'Not it.'}
                             </motion.p>
                           )}
                           {status === 'error' && (
@@ -295,7 +335,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                     <a
                       href={fragmentSrc}
                       download="archive-fragment.png"
-                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-border/60 bg-surface/80 px-5 py-3 text-sm font-bold text-text transition-all hover:border-accent/45 hover:bg-accent/10"
+                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-border/60 bg-surface/80 px-5 py-3 text-sm font-bold text-text transition-[transform,background-color,border-color] duration-150 ease-out hover:border-accent/45 hover:bg-accent/10 active:scale-[0.98]"
                     >
                       <Download size={17} />
                       Download image
@@ -412,7 +452,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       <button
                         type="button"
                         onClick={() => moveToStage('cipher')}
-                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-all hover:bg-accent-dark active:scale-[0.99]"
+                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-[transform,background-color] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97]"
                       >
                         Try again
                       </button>
@@ -434,8 +474,8 @@ function CutesyOpenedNote({ onLockAgain }: { onLockAgain: () => void }) {
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.98 }}
-      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-      className="rounded-[1.75rem] border border-warm-accent/25 bg-warm-accent/[0.07] p-5 shadow-inner shadow-black/10"
+      transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+      className="rounded-[1.75rem] border border-border/55 bg-bg/35 p-5 shadow-inner shadow-black/10"
     >
       <div className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-accent">
         <Check size={13} />
@@ -458,14 +498,14 @@ function CutesyOpenedNote({ onLockAgain }: { onLockAgain: () => void }) {
         </p>
       </div>
 
-      <p className="mt-4 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-3 text-sm font-semibold leading-6 text-accent">
+      <p className="mt-4 rounded-2xl border border-accent/20 bg-accent/5 px-4 py-3 text-sm font-semibold leading-6 text-accent">
         <DecodedText text="Some things are only meant to open once." />
       </p>
 
       <button
         type="button"
         onClick={onLockAgain}
-        className="mt-4 w-full rounded-full border border-border/65 bg-surface/70 px-5 py-3 text-sm font-bold text-muted transition-all hover:border-accent/40 hover:bg-accent/10 hover:text-text active:scale-[0.99]"
+        className="mt-4 w-full rounded-full border border-border/65 bg-surface/70 px-5 py-3 text-sm font-bold text-muted transition-[transform,background-color,border-color,color] duration-150 ease-out hover:border-accent/40 hover:bg-accent/10 hover:text-text active:scale-[0.97]"
       >
         Lock it again
       </button>
@@ -478,7 +518,7 @@ function PuzzleSubmitButton({ disabled, loading = false }: { disabled: boolean; 
     <button
       type="submit"
       disabled={disabled}
-      className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-all hover:bg-accent-dark active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+      className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
     >
       {loading && <Loader2 size={18} className="animate-spin" />}
       {loading ? 'Checking' : 'Continue'}
@@ -552,7 +592,7 @@ function ScrambleRevealLetter({ character, index }: { character: string; index: 
       onMouseLeave={encrypt}
       onFocus={reveal}
       onBlur={encrypt}
-      className="grid h-12 min-w-10 place-items-center rounded-xl border border-border/55 bg-surface/55 px-2 font-mono text-accent/75 shadow-inner shadow-black/10 outline-none transition-all duration-200 hover:-translate-y-0.5 hover:border-warm-accent/55 hover:bg-warm-accent/10 hover:text-warm-accent focus-visible:-translate-y-0.5 focus-visible:border-warm-accent/60 focus-visible:bg-warm-accent/10 focus-visible:text-warm-accent focus-visible:ring-2 focus-visible:ring-accent/50 sm:h-14 sm:min-w-11"
+      className="grid h-12 min-w-10 place-items-center rounded-xl border border-border/55 bg-surface/55 px-2 font-mono text-accent/75 shadow-inner shadow-black/10 outline-none transition-[transform,background-color,border-color,color,box-shadow] duration-150 ease-out hover:-translate-y-px hover:border-warm-accent/55 hover:bg-warm-accent/10 hover:text-warm-accent focus-visible:-translate-y-px focus-visible:border-warm-accent/60 focus-visible:bg-warm-accent/10 focus-visible:text-warm-accent focus-visible:ring-2 focus-visible:ring-accent/50 sm:h-14 sm:min-w-11"
     >
       {displayCharacter}
     </button>

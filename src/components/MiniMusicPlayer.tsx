@@ -554,7 +554,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   return (
     <>
     <div
-      className="relative z-10 mt-3 min-h-[6.25rem] w-full max-w-[13rem] cursor-pointer overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl transition-transform hover:-translate-y-0.5"
+      className="relative z-10 mt-3 min-h-[6.25rem] w-full max-w-[13rem] cursor-pointer overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-200 ease-out hover:-translate-y-px active:scale-[0.99]"
       role="button"
       tabIndex={0}
       onClick={(event) => {
@@ -619,7 +619,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
             void togglePlayback();
           }}
           disabled={hasAudioError}
-          className="flex h-[2.2rem] w-[2.2rem] shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-lg shadow-accent/10 transition-all hover:bg-accent-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
+          className="flex h-[2.2rem] w-[2.2rem] shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-lg shadow-accent/10 transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-45"
           aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
         >
           {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="translate-x-px" />}
@@ -755,7 +755,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
             initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
-            transition={{ duration: shouldReduceMotion ? 0.18 : 0.45, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: shouldReduceMotion ? 0.16 : 0.32, ease: [0.23, 1, 0.32, 1] }}
             className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-surface md:grid md:h-screen md:grid-cols-[minmax(25rem,0.86fr)_minmax(0,1.14fr)]"
             onClick={(event) => event.stopPropagation()}
           >
@@ -765,21 +765,21 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                 <motion.div
                   aria-hidden="true"
                   className="pointer-events-none absolute -left-24 top-1/4 h-72 w-72 rounded-full bg-accent/10 blur-3xl"
-                  animate={isPlaying ? { opacity: [0.3, 0.58, 0.3], scale: [1, 1.14, 1] } : { opacity: 0.26, scale: 1 }}
-                  transition={{ duration: 5.8, repeat: isPlaying ? Infinity : 0, ease: 'easeInOut' }}
+                  animate={isPlaying ? { opacity: [0.22, 0.42, 0.22], scale: [1, 1.08, 1] } : { opacity: 0.18, scale: 1 }}
+                  transition={{ duration: 7.5, repeat: isPlaying ? Infinity : 0, ease: 'easeInOut' }}
                 />
                 <motion.div
                   aria-hidden="true"
                   className="pointer-events-none absolute right-0 top-10 h-64 w-64 rounded-full bg-warm-accent/10 blur-3xl"
-                  animate={isPlaying ? { opacity: [0.18, 0.42, 0.18], x: [0, -18, 0], y: [0, 14, 0] } : { opacity: 0.16, x: 0, y: 0 }}
-                  transition={{ duration: 7.2, repeat: isPlaying ? Infinity : 0, ease: 'easeInOut' }}
+                  animate={isPlaying ? { opacity: [0.14, 0.3, 0.14], x: [0, -10, 0], y: [0, 8, 0] } : { opacity: 0.12, x: 0, y: 0 }}
+                  transition={{ duration: 9.2, repeat: isPlaying ? Infinity : 0, ease: 'easeInOut' }}
                 />
               </>
             )}
             <button
               type="button"
               onClick={() => setShowExpandedPlayer(false)}
-              className="absolute right-5 top-5 z-30 rounded-full border border-accent/10 bg-accent-soft/90 p-3 text-accent shadow-xl shadow-black/20 backdrop-blur-xl transition-colors hover:bg-accent/15"
+              className="absolute right-5 top-5 z-30 rounded-full border border-accent/10 bg-accent-soft/90 p-3 text-accent shadow-xl shadow-black/20 backdrop-blur-xl transition-[transform,background-color] duration-150 ease-out hover:bg-accent/15 active:scale-[0.96]"
               aria-label="Close expanded player"
             >
               <X size={22} />
@@ -795,15 +795,15 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                   className="w-[min(38vw,9rem)] overflow-hidden rounded-[1.25rem] border border-white/10 bg-bg/40 shadow-2xl shadow-black/30 md:w-full md:rounded-[1.65rem]"
                   animate={isPlaying && !shouldReduceMotion
                     ? {
-                      scale: [1, 1.012, 1],
+                      scale: [1, 1.006, 1],
                       boxShadow: [
                         '0 26px 60px rgba(0,0,0,0.32), 0 0 0 rgba(201,211,176,0)',
-                        '0 30px 72px rgba(0,0,0,0.38), 0 0 42px rgba(201,211,176,0.12)',
+                        '0 28px 66px rgba(0,0,0,0.36), 0 0 30px rgba(201,211,176,0.09)',
                         '0 26px 60px rgba(0,0,0,0.32), 0 0 0 rgba(201,211,176,0)',
                       ],
                     }
                     : { scale: 1 }}
-                  transition={{ duration: 4.8, repeat: isPlaying && !shouldReduceMotion ? Infinity : 0, ease: 'easeInOut' }}
+                  transition={{ duration: 6.2, repeat: isPlaying && !shouldReduceMotion ? Infinity : 0, ease: 'easeInOut' }}
                 >
                   <img
                     src={track.artworkSrc}
@@ -828,13 +828,13 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                       void togglePlayback();
                     }}
                     disabled={hasAudioError}
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-xl shadow-accent/10 transition-all hover:bg-accent-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-45 md:h-[3.75rem] md:w-[3.75rem]"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-xl shadow-accent/10 transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-45 md:h-[3.75rem] md:w-[3.75rem]"
                     aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
-                    whileTap={shouldReduceMotion ? undefined : { scale: 0.92 }}
+                    whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
                     animate={isPlaying && !shouldReduceMotion
                       ? { boxShadow: ['0 10px 28px rgba(201,211,176,0.12)', '0 14px 42px rgba(201,211,176,0.24)', '0 10px 28px rgba(201,211,176,0.12)'] }
                       : { boxShadow: '0 10px 28px rgba(201,211,176,0.1)' }}
-                    transition={{ duration: 3.5, repeat: isPlaying && !shouldReduceMotion ? Infinity : 0, ease: 'easeInOut' }}
+                    transition={{ duration: 5.2, repeat: isPlaying && !shouldReduceMotion ? Infinity : 0, ease: 'easeInOut' }}
                   >
                     {isPlaying ? <Pause size={23} fill="currentColor" /> : <Play size={23} fill="currentColor" className="translate-x-0.5" />}
                   </motion.button>
@@ -923,7 +923,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                             scale: shouldReduceMotion ? 1 : isActive ? 1 : Math.max(0.88, 0.98 - distance * 0.025),
                             filter: shouldReduceMotion ? 'blur(0px)' : `blur(${isActive ? 0 : blur}px)`,
                           }}
-                          transition={{ duration: shouldReduceMotion ? 0.18 : 0.58, ease: [0.16, 1, 0.3, 1] }}
+                          transition={{ duration: shouldReduceMotion ? 0.16 : 0.42, ease: [0.23, 1, 0.32, 1] }}
                           className={`mx-auto w-full origin-center text-center text-balance font-bold leading-tight tracking-tight ${
                             isActive
                               ? 'text-xl sm:text-3xl md:text-4xl lg:text-[2.7rem]'
@@ -941,11 +941,11 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                                   ...getTokenFillStyle(tokenIndex, activeTokenIndex),
                                   opacity: tokenIndex > activeTokenIndex ? 0.72 : 1,
                                   transform: tokenIndex === activeTokenIndex && !shouldReduceMotion
-                                    ? 'translateY(-0.045em) scale(1.035)'
+                                    ? 'translateY(-0.025em) scale(1.018)'
                                     : 'translateY(0) scale(1)',
                                   transition: shouldReduceMotion
                                     ? 'opacity 180ms ease'
-                                    : 'transform 520ms cubic-bezier(0.16, 1, 0.3, 1), opacity 420ms ease, text-shadow 520ms ease',
+                                    : 'transform 360ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms ease, text-shadow 360ms ease',
                                   willChange: tokenIndex === activeTokenIndex ? 'transform' : undefined,
                                 } : undefined}
                               >

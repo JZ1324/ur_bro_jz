@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
+import { TextScramble } from './TextScramble';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
-import type { AboutSection, ProfileData, ProfileStat } from '../data/site';
+import type { AboutSection, JournalEntry, ProfileData, ProfileStat, ToolItem } from '../data/site';
 
 type AboutOverlayProps = {
   isOpen: boolean;
@@ -10,6 +11,8 @@ type AboutOverlayProps = {
   facts: Array<{ title: string; value: string }>;
   focusItems: string[];
   archiveStyleItems: string[];
+  journalEntries: JournalEntry[];
+  toolItems: ToolItem[];
   onClose: () => void;
 };
 
@@ -29,6 +32,8 @@ export function AboutOverlay({
   facts,
   focusItems,
   archiveStyleItems,
+  journalEntries,
+  toolItems,
   onClose,
 }: AboutOverlayProps) {
   useBodyScrollLock(isOpen);
@@ -48,6 +53,7 @@ export function AboutOverlay({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
           className="fixed inset-0 z-50 bg-bg/95 backdrop-blur-2xl"
         >
           <article id="about-panel" className="h-screen overflow-y-auto overscroll-contain px-5 pb-8 sm:px-8">
@@ -59,7 +65,7 @@ export function AboutOverlay({
                 </div>
                 <button
                   onClick={onClose}
-                  className="rounded-full border border-border/45 bg-surface/90 p-2.5 text-accent shadow-lg shadow-black/20 transition-all hover:bg-accent/15 active:scale-95"
+                  className="rounded-full border border-border/45 bg-surface/90 p-2.5 text-accent shadow-lg shadow-black/20 transition-[transform,background-color,border-color] duration-150 ease-out hover:bg-accent/15 active:scale-[0.96]"
                   aria-label="Close about"
                 >
                   <X size={20} />
@@ -86,7 +92,7 @@ export function AboutOverlay({
                       href={profile.instagramUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-full bg-accent px-5 py-2 text-sm font-bold text-bg transition-all hover:bg-accent-dark active:scale-95"
+                      className="rounded-full bg-accent px-5 py-2 text-sm font-bold text-bg transition-[transform,background-color] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97]"
                     >
                       {profile.handle}
                     </a>
@@ -159,6 +165,53 @@ export function AboutOverlay({
                       </section>
                     )}
 
+                    <section className="relative overflow-hidden rounded-3xl border border-warm-accent/20 bg-[linear-gradient(135deg,rgba(228,154,120,0.08),transparent_28%),radial-gradient(circle_at_85%_12%,rgba(201,211,176,0.1),transparent_22rem),var(--color-surface)] p-5 shadow-xl shadow-black/10 sm:p-6">
+                      <span className="pointer-events-none absolute right-8 top-8 hidden h-3 w-3 rotate-45 rounded-[2px] border border-warm-accent/45 sm:block" />
+                      <span className="pointer-events-none absolute bottom-10 left-8 hidden h-px w-16 rotate-[-8deg] bg-warm-accent/35 sm:block" />
+                      <span className="pointer-events-none absolute right-10 bottom-12 hidden text-xs font-black text-warm-accent/35 sm:block">+</span>
+
+                      <div className="relative z-[1] flex flex-col gap-5">
+                        <div className="flex flex-wrap items-end justify-between gap-3">
+                          <div>
+                            <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-warm-accent">
+                              <TextScramble text="journal layer" />
+                            </div>
+                            <h3 data-toc id="about-journal" className="mt-3 text-2xl font-bold text-text">
+                              Archive journal
+                            </h3>
+                          </div>
+                          <span className="rounded-full border border-border/45 bg-bg/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
+                            locked note
+                          </span>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {journalEntries.map((entry) => (
+                            <article key={entry.label} className="rounded-2xl border border-border/40 bg-bg/45 p-4 shadow-sm">
+                              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-warm-accent">{entry.label}</p>
+                              <h4 className="mt-3 text-base font-bold text-text">{entry.title}</h4>
+                              <p className="mt-2 text-sm font-medium leading-relaxed text-muted">{entry.body}</p>
+                            </article>
+                          ))}
+                        </div>
+
+                        <div className="rounded-2xl border border-border/35 bg-bg/35 p-4">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8E927F]">Tools I keep reaching for</p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {toolItems.map((tool) => (
+                              <span
+                                key={tool.label}
+                                className="rounded-full border border-border/45 bg-surface/65 px-3 py-1.5 text-xs font-bold text-text"
+                              >
+                                {tool.label}
+                                <span className="ml-1 font-semibold text-muted">/ {tool.note}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </section>
+
                     {archive && (
                       <section className="flex flex-col gap-3">
                         <h3 data-toc id={archive.id} className="text-2xl font-bold text-text">{archive.title}</h3>
@@ -200,7 +253,7 @@ export function AboutOverlay({
                           href={profile.instagramUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex w-fit rounded-full bg-accent px-6 py-3 text-sm font-bold text-bg transition-all hover:bg-accent-dark active:scale-95"
+                          className="inline-flex w-fit rounded-full bg-accent px-6 py-3 text-sm font-bold text-bg transition-[transform,background-color] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97]"
                         >
                           Open Instagram
                         </a>

@@ -46,13 +46,14 @@ export function ArchiveVault({
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: '100vh' }}
           exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
           className="fixed inset-0 z-50 overflow-y-auto overscroll-contain bg-bg/96 px-4 py-8 text-text backdrop-blur-xl scrollbar-hide sm:px-6"
         >
           <motion.section
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 14, scale: 0.985 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 24 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+            exit={{ opacity: 0, y: 10, scale: 0.985 }}
+            transition={{ duration: 0.24, ease: [0.23, 1, 0.32, 1] }}
             className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl flex-col gap-8 rounded-3xl border border-border/55 bg-surface/80 p-5 shadow-2xl shadow-black/30 sm:p-8"
           >
             <div className="flex flex-col gap-6 border-b border-border/35 pb-6 lg:flex-row lg:items-start lg:justify-between">
@@ -72,14 +73,14 @@ export function ArchiveVault({
               <div className="flex items-center gap-3 self-start">
                 <button
                   onClick={onLock}
-                  className="group flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-3 text-xs font-bold text-accent transition-all hover:bg-accent/20 active:scale-95"
+                  className="group flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-3 text-xs font-bold text-accent transition-[transform,background-color,border-color] duration-150 ease-out hover:bg-accent/20 active:scale-[0.97]"
                 >
-                  <Lock size={14} className="transition-transform group-hover:scale-110" />
+                  <Lock size={14} className="transition-transform duration-150 ease-out group-hover:scale-105" />
                   Lock
                 </button>
                 <button
                   onClick={onClose}
-                  className="flex h-12 w-12 items-center justify-center rounded-full border border-border/45 bg-accent-soft text-accent transition-all hover:border-accent/35 hover:bg-[#2A3125] active:scale-95"
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-border/45 bg-accent-soft text-accent transition-[transform,background-color,border-color] duration-150 ease-out hover:border-accent/35 hover:bg-[#2A3125] active:scale-[0.96]"
                   aria-label="Close archive"
                 >
                   <X size={24} />
@@ -96,7 +97,7 @@ export function ArchiveVault({
                   <button
                     key={section.id}
                     onClick={() => onSelectSection(section.id)}
-                    className={`rounded-2xl border p-4 text-left transition-all active:scale-[0.98] ${
+                    className={`rounded-2xl border p-4 text-left transition-[transform,background-color,border-color,box-shadow,color] duration-180 ease-out active:scale-[0.98] ${
                       isActive
                         ? 'border-accent/50 bg-accent-soft text-text shadow-lg shadow-black/10'
                         : 'border-border/45 bg-bg/55 text-muted hover:border-accent/25 hover:bg-accent-soft/50 hover:text-text'
@@ -144,9 +145,9 @@ export function ArchiveVault({
             ) : activeSection ? (
               <motion.article
                 key={activeSection.sectionId}
-                initial={{ opacity: 0, y: 18 }}
+                initial={{ opacity: 0, y: 12, scale: 0.99 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, ease: 'easeOut' }}
+                transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
                 className="overflow-hidden rounded-3xl border border-border/55 bg-surface shadow-2xl shadow-black/20"
               >
                 <div className="border-b border-border/35 bg-accent-soft/55 p-6 sm:p-8">

@@ -77,7 +77,9 @@
 
 @layer utilities {
   .premium-transition {
-    @apply transition-all duration-300 ease-in-out;
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: 180ms;
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
   }
   
   .clay-shadow {
@@ -124,7 +126,7 @@
   }
 
   .profile-avatar-shine {
-    animation: avatar-shine 7.5s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+    animation: avatar-shine 10.5s cubic-bezier(0.76, 0, 0.24, 1) infinite;
     will-change: transform, opacity;
   }
 
@@ -135,6 +137,15 @@
 
   .animate-pulse-soft {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-avatar-shine,
+  .animate-shimmer,
+  .animate-caret-blink,
+  .animate-pulse-soft {
+    animation: none;
   }
 }
 

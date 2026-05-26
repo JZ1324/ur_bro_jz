@@ -4,14 +4,13 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { LayoutGrid, Lock, Menu, Plus } from 'lucide-react';
+import { ExternalLink, Folder, GraduationCap, LayoutGrid, Lock, Menu, Music, Plus, Sparkles, User, Users, X } from 'lucide-react';
 import { AnimatePresence, motion, useScroll } from 'motion/react';
 import { ArchiveVault } from './components/ArchiveVault';
 import { AboutOverlay } from './components/AboutOverlay';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from './components/InputOTP';
 import { JesusOverlay } from './components/JesusOverlay';
 import { NowSection } from './components/NowSection';
-import { PlaceholderModal } from './components/PlaceholderModal';
 import { ParallaxLayer } from './components/ParallaxLayer';
 import { ProfileCard } from './components/ProfileCard';
 import { ProjectOverlays } from './components/ProjectOverlays';
@@ -28,21 +27,268 @@ import {
   faithHover,
   faithSections,
   focusItems,
+  journalEntries,
   nowItems,
-  placeholders,
   profileData,
   profileFacts,
   projects,
   storyItems,
+  toolItems,
   type ArchiveSectionId,
   type ArchiveSection,
-  type PlaceholderContent,
   type PrivateArchiveSection,
   type StoryItem,
 } from './data/site';
 import { fetchPrivateArchiveSection, PrivateArchiveError } from './lib/privateArchive';
 
 type UnlockDestination = 'archive' | 'about';
+type ArchiveMapStatus = 'locked' | 'public' | 'external' | 'hidden';
+
+type ArchiveSignalOverlayProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onOpenArchive: () => void;
+  onOpenMusic: () => void;
+};
+
+type ArchiveMapOverlayProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onOpenAbout: () => void;
+  onOpenProjects: () => void;
+  onOpenJesus: () => void;
+  onOpenArchiveSection: (sectionId: ArchiveSectionId) => void;
+};
+
+function ArchiveSignalOverlay({
+  isOpen,
+  onClose,
+  onOpenArchive,
+  onOpenMusic,
+}: ArchiveSignalOverlayProps) {
+  useBodyScrollLock(isOpen);
+
+  const runAction = (action: () => void) => {
+    onClose();
+    action();
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-bg/82 p-4 backdrop-blur-md"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 18, scale: 0.96 }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+            className="w-full max-w-xl rounded-3xl border border-border/60 bg-surface p-6 shadow-2xl shadow-black/35 sm:p-7"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-warm-accent">Archive Signal</p>
+                <h2 className="text-3xl font-bold tracking-tight text-text">Latest trace</h2>
+              </div>
+              <button
+                onClick={onClose}
+                className="rounded-full bg-accent-soft p-3 text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent/15 active:scale-[0.96]"
+                aria-label="Close archive signal"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="mt-6 grid gap-3">
+              <div className="rounded-2xl border border-border/45 bg-bg/50 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8E927F]">Updated</p>
+                <p className="mt-2 text-base font-semibold leading-relaxed text-text">
+                  Header tools are becoming part of the archive: quick signals, project browsing, and a proper map.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-warm-accent/25 bg-warm-accent/10 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-warm-accent">Current signal</p>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-muted">
+                  The site is being tightened around cleaner navigation, better project browsing, and a quieter private archive flow.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <button
+                onClick={() => runAction(onOpenArchive)}
+                className="rounded-2xl bg-accent px-4 py-3 text-sm font-bold text-bg transition-[transform,background-color,box-shadow] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97]"
+              >
+                Open Archive
+              </button>
+              <button
+                onClick={() => runAction(onOpenMusic)}
+                className="rounded-2xl border border-border/55 bg-bg/45 px-4 py-3 text-sm font-bold text-text transition-[transform,border-color,background-color] duration-150 ease-out hover:border-accent/40 active:scale-[0.97]"
+              >
+                Music
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function ArchiveMapOverlay({
+  isOpen,
+  onClose,
+  onOpenAbout,
+  onOpenProjects,
+  onOpenJesus,
+  onOpenArchiveSection,
+}: ArchiveMapOverlayProps) {
+  useBodyScrollLock(isOpen);
+
+  const lockedItems: Array<{
+    title: string;
+    body: string;
+    status: ArchiveMapStatus;
+    icon: typeof Lock;
+    action: () => void;
+  }> = [
+    { title: 'Locked About', body: 'Private context and longer notes.', status: 'locked', icon: User, action: onOpenAbout },
+    { title: 'School', body: 'Coursework and study archive.', status: 'locked', icon: GraduationCap, action: () => onOpenArchiveSection('school') },
+    { title: 'Music', body: 'Practice, references, and sounds.', status: 'locked', icon: Music, action: () => onOpenArchiveSection('music') },
+    { title: 'Leadership', body: 'Roles, values, and lessons.', status: 'locked', icon: Users, action: () => onOpenArchiveSection('leadership') },
+  ];
+
+  const publicItems: Array<{
+    title: string;
+    body: string;
+    status: ArchiveMapStatus;
+    icon: typeof Lock;
+    action?: () => void;
+    href?: string;
+  }> = [
+    { title: 'Projects', body: 'Live builds and notes.', status: 'public', icon: Folder, action: onOpenProjects },
+    { title: 'Jesus', body: 'Why I follow Him.', status: 'public', icon: Sparkles, action: onOpenJesus },
+    { title: 'Instagram', body: 'Main contact path.', status: 'external', icon: ExternalLink, href: profileData.instagramUrl },
+    { title: 'My Dumpy', body: 'Second profile link.', status: 'external', icon: ExternalLink, href: profileData.dumpsUrl },
+  ];
+
+  const handleAction = (action: () => void) => {
+    onClose();
+    action();
+  };
+
+  const renderItem = (item: (typeof lockedItems[number]) | (typeof publicItems[number])) => {
+    const Icon = item.icon;
+    const content = (
+      <>
+        <div className="flex items-start justify-between gap-3">
+          <Icon size={22} className="mt-1 text-accent" />
+          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
+            item.status === 'locked'
+              ? 'border-warm-accent/35 bg-warm-accent/10 text-warm-accent'
+              : item.status === 'external'
+                ? 'border-border/50 bg-bg/45 text-muted'
+                : 'border-accent/30 bg-accent/10 text-accent'
+          }`}
+          >
+            {item.status}
+          </span>
+        </div>
+        <div className="mt-4">
+          <h3 className="text-lg font-bold text-text">{item.title}</h3>
+          <p className="mt-1 text-sm font-medium leading-relaxed text-muted">{item.body}</p>
+        </div>
+      </>
+    );
+
+    if ('href' in item && item.href) {
+      return (
+        <a
+          key={item.title}
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onClose}
+          className="rounded-2xl border border-border/45 bg-bg/45 p-4 text-left transition-[transform,background-color,border-color] duration-180 ease-out hover:-translate-y-px hover:border-accent/35 hover:bg-accent-soft/45 active:scale-[0.99]"
+        >
+          {content}
+        </a>
+      );
+    }
+
+    return (
+      <button
+        key={item.title}
+        type="button"
+        onClick={() => item.action && handleAction(item.action)}
+        className="rounded-2xl border border-border/45 bg-bg/45 p-4 text-left transition-[transform,background-color,border-color] duration-180 ease-out hover:-translate-y-px hover:border-accent/35 hover:bg-accent-soft/45 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        {content}
+      </button>
+    );
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 overflow-y-auto bg-bg/92 px-4 py-8 backdrop-blur-xl"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 18, scale: 0.98 }}
+            transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+            className="mx-auto w-full max-w-4xl rounded-3xl border border-border/60 bg-surface p-5 shadow-2xl shadow-black/35 sm:p-7"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-warm-accent">Archive Map</p>
+                <h2 className="text-3xl font-bold tracking-tight text-text sm:text-4xl">Where everything is</h2>
+                <p className="max-w-2xl text-sm font-medium leading-relaxed text-muted sm:text-base">
+                  Public paths, locked sections, and the quiet external links in one place.
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="rounded-full bg-accent-soft p-3 text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent/15 active:scale-[0.96]"
+                aria-label="Close archive map"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            <div className="mt-7 grid gap-5">
+              <section>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#8E927F]">Locked</h3>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {lockedItems.map(renderItem)}
+                </div>
+              </section>
+              <section>
+                <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#8E927F]">Public / external</h3>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {publicItems.map(renderItem)}
+                </div>
+              </section>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 export default function App() {
   const homeRef = useRef<HTMLElement>(null);
@@ -60,6 +306,8 @@ export default function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [showJesus, setShowJesus] = useState(false);
   const [showSecretPuzzle, setShowSecretPuzzle] = useState(false);
+  const [showArchiveSignal, setShowArchiveSignal] = useState(false);
+  const [showArchiveMap, setShowArchiveMap] = useState(false);
   const [showArchiveOverlay, setShowArchiveOverlay] = useState(false);
   const [activeArchiveSectionId, setActiveArchiveSectionId] = useState<ArchiveSectionId | null>('school');
   const [pendingArchiveSectionId, setPendingArchiveSectionId] = useState<ArchiveSectionId | null>(null);
@@ -67,7 +315,6 @@ export default function App() {
   const [privateArchiveSections, setPrivateArchiveSections] = useState<Partial<Record<ArchiveSectionId, PrivateArchiveSection>>>({});
   const [archiveAccessKey, setArchiveAccessKey] = useState<string | null>(null);
   const [archiveErrorMessage, setArchiveErrorMessage] = useState<string | null>(null);
-  const [placeholderContent, setPlaceholderContent] = useState<PlaceholderContent | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const { scrollYProgress: homeScrollProgress } = useScroll({
     target: homeRef,
@@ -217,6 +464,21 @@ export default function App() {
     setShowModal(true);
   };
 
+  const openArchiveSection = (sectionId: ArchiveSectionId) => {
+    setPendingUnlockDestination('archive');
+    setActiveArchiveSectionId(sectionId);
+    if (isUnlocked && archiveAccessKey) {
+      if (!privateArchiveSections[sectionId]) {
+        void loadArchiveSection(sectionId, archiveAccessKey);
+      }
+      setShowArchiveOverlay(true);
+      return;
+    }
+    setPendingArchiveSectionId(sectionId);
+    setArchiveErrorMessage(null);
+    setShowModal(true);
+  };
+
   const lockArchive = () => {
     setIsUnlocked(false);
     setArchiveAccessKey(null);
@@ -268,23 +530,26 @@ export default function App() {
               onThemeChange={handleThemeChange}
             />
             <button
-              onClick={() => setPlaceholderContent(placeholders.create)}
-              className="p-2 rounded-full text-accent hover:bg-accent-soft transition-all active:scale-90"
-              title="Capture archive entry"
+              onClick={() => setShowArchiveSignal(true)}
+              className="p-2 rounded-full text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent-soft active:scale-[0.96]"
+              title="Archive signal"
+              aria-label="Open archive signal"
             >
               <Plus size={24} />
             </button>
             <button
-              onClick={() => setPlaceholderContent(placeholders.grid)}
-              className="p-2 rounded-full text-accent hover:bg-accent-soft transition-all active:scale-90"
-              title="View archive modes"
+              onClick={() => setShowBento(true)}
+              className="p-2 rounded-full text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent-soft active:scale-[0.96]"
+              title="Project explorer"
+              aria-label="Open project explorer"
             >
               <LayoutGrid size={24} />
             </button>
             <button
-              onClick={() => setPlaceholderContent(placeholders.menu)}
-              className="p-2 rounded-full text-accent hover:bg-accent-soft transition-all active:scale-90"
-              title="Archive controls"
+              onClick={() => setShowArchiveMap(true)}
+              className="p-2 rounded-full text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent-soft active:scale-[0.96]"
+              title="Archive map"
+              aria-label="Open archive map"
             >
               <Menu size={24} />
             </button>
@@ -327,13 +592,13 @@ export default function App() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
               onClick={showArchive}
-              className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-bg transition-all hover:bg-accent-dark active:scale-95"
+              className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-bg transition-[transform,background-color,box-shadow] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97]"
             >
               Open Archive
             </button>
             <button
               onClick={openAbout}
-              className="rounded-full border border-accent/30 bg-accent-soft px-6 py-3 text-sm font-bold text-text transition-all hover:bg-[#2A3125] active:scale-95"
+              className="rounded-full border border-accent/30 bg-accent-soft px-6 py-3 text-sm font-bold text-text transition-[transform,background-color,border-color] duration-150 ease-out hover:bg-[#2A3125] active:scale-[0.97]"
             >
               Read About
             </button>
@@ -341,7 +606,7 @@ export default function App() {
               href={profileData.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full border border-border/60 px-6 py-3 text-center text-sm font-bold text-muted transition-all hover:border-accent/40 hover:text-accent active:scale-95"
+              className="rounded-full border border-border/60 px-6 py-3 text-center text-sm font-bold text-muted transition-[transform,color,border-color] duration-150 ease-out hover:border-accent/40 hover:text-accent active:scale-[0.97]"
             >
               Instagram
             </a>
@@ -366,9 +631,10 @@ export default function App() {
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-bg/82 backdrop-blur-md"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.97, opacity: 0, y: 8 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.97, opacity: 0, y: 8 }}
+              transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
               className={`w-full max-w-md ${error ? 'animate-shake' : ''}`}
             >
               <Stepper
@@ -507,6 +773,8 @@ export default function App() {
         facts={profileFacts}
         focusItems={focusItems}
         archiveStyleItems={archiveStyleItems}
+        journalEntries={journalEntries}
+        toolItems={toolItems}
         onClose={closeAbout}
       />
 
@@ -521,8 +789,25 @@ export default function App() {
         onClose={() => setShowSecretPuzzle(false)}
       />
 
+      <ArchiveSignalOverlay
+        isOpen={showArchiveSignal}
+        onClose={() => setShowArchiveSignal(false)}
+        onOpenArchive={showArchive}
+        onOpenMusic={() => openArchiveSection('music')}
+      />
+
+      <ArchiveMapOverlay
+        isOpen={showArchiveMap}
+        onClose={() => setShowArchiveMap(false)}
+        onOpenAbout={openAbout}
+        onOpenProjects={() => setShowBento(true)}
+        onOpenJesus={() => setShowJesus(true)}
+        onOpenArchiveSection={openArchiveSection}
+      />
+
       <ProjectOverlays
         projects={projects}
+        toolItems={toolItems}
         showBento={showBento}
         expandedProjectId={expandedProjectId}
         onCloseBento={() => setShowBento(false)}
@@ -542,8 +827,6 @@ export default function App() {
         onClose={lockArchive}
         onLock={lockArchive}
       />
-
-      <PlaceholderModal content={placeholderContent} onClose={() => setPlaceholderContent(null)} />
 
       <style>{`
         @keyframes shake {

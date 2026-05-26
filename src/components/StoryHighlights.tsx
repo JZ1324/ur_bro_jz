@@ -21,7 +21,7 @@ export function StoryHighlights({ stories, isUnlocked, onStoryClick }: StoryHigh
     <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.2 }}
+      transition={{ duration: 0.42, delay: 0.16, ease: [0.23, 1, 0.32, 1] }}
       className="w-full"
     >
       <div className="flex justify-start md:justify-center gap-6 overflow-x-auto py-4 scrollbar-hide px-2">
@@ -33,13 +33,13 @@ export function StoryHighlights({ stories, isUnlocked, onStoryClick }: StoryHigh
             <button
               key={story.id}
               onClick={() => onStoryClick(story)}
-              className="flex flex-col items-center gap-3 cursor-pointer group flex-shrink-0"
+              className="group flex flex-shrink-0 cursor-pointer flex-col items-center gap-3 active:scale-[0.98] transition-transform duration-150 ease-out"
             >
               <div
-                className={`w-20 h-20 rounded-full p-1 transition-all duration-300 relative group-hover:bg-accent-soft/30 ${
+                className={`relative h-20 w-20 rounded-full p-1 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out group-hover:bg-accent-soft/30 ${
                   isLocked
                     ? 'ring-2 ring-border opacity-95 group-hover:opacity-100'
-                    : 'ring-2 ring-accent group-hover:shadow-[0_0_18px_rgba(201,211,176,0.22)] group-hover:scale-[1.03]'
+                    : 'ring-2 ring-accent group-hover:scale-[1.015] group-hover:shadow-[0_0_14px_rgba(201,211,176,0.18)]'
                 }`}
               >
                 <div className="w-full h-full bg-surface rounded-full flex items-center justify-center border border-border/60 shadow-lg shadow-black/10">
@@ -54,7 +54,7 @@ export function StoryHighlights({ stories, isUnlocked, onStoryClick }: StoryHigh
                   </div>
                 )}
               </div>
-              <span className={`text-[12px] font-semibold transition-colors ${isLocked ? 'text-muted group-hover:text-text' : 'text-text'}`}>
+              <span className={`text-[12px] font-semibold transition-colors duration-150 ease-out ${isLocked ? 'text-muted group-hover:text-text' : 'text-text'}`}>
                 {story.label}
               </span>
             </button>

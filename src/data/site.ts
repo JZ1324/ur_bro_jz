@@ -79,11 +79,13 @@ export type Project = {
   longDescription: string;
   what: string;
   why: string;
+  learned?: string;
   status: string;
   image: string;
   tags: string[];
   tech: string[];
   link: string;
+  aiAssisted?: boolean;
 };
 
 export type FaithHover = {
@@ -111,13 +113,15 @@ export type AboutSection = {
   body: string[];
 };
 
-export type PlaceholderContent = {
-  eyebrow?: string;
+export type JournalEntry = {
+  label: string;
   title: string;
-  description: string;
-  items: string[];
-  actionLabel?: string;
-  actionHref?: string;
+  body: string;
+};
+
+export type ToolItem = {
+  label: string;
+  note: string;
 };
 
 const supabaseStorageUrl = `${(import.meta.env.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
@@ -446,6 +450,39 @@ export const archiveStyleItems = [
   'The whole thing should feel like me, not a template.',
 ];
 
+export const journalEntries: JournalEntry[] = [
+  {
+    label: 'what i build',
+    title: 'Small things I would actually use',
+    body: 'School tools, profile ideas, private archive pieces, and UI experiments that start from a real problem or a random idea I cannot leave alone.',
+  },
+  {
+    label: 'what i am learning',
+    title: 'Making things feel less rough',
+    body: 'Cleaner spacing, smoother motion, better mobile layouts, Supabase flows, and how to make a page feel finished without adding too much.',
+  },
+  {
+    label: 'how i use ai',
+    title: 'Fast drafts, then cleanup by hand',
+    body: 'AI helps me move quicker, but I still tune the layout, copy, private parts, and the weird details until it feels like mine.',
+  },
+  {
+    label: 'things i keep private',
+    title: 'Not everything needs to be public',
+    body: 'Some photos, notes, school stuff, and personal context stay locked. The public page is meant to give the shape, not the whole archive.',
+  },
+];
+
+export const toolItems: ToolItem[] = [
+  { label: 'React', note: 'interfaces' },
+  { label: 'TypeScript', note: 'structure' },
+  { label: 'Vite', note: 'fast builds' },
+  { label: 'Supabase', note: 'private access' },
+  { label: 'Vercel', note: 'deploys' },
+  { label: 'Swift', note: 'macOS ideas' },
+  { label: 'AI tools', note: 'draft + iterate' },
+];
+
 const liveScreenshot = (url: string) => {
   const params = new URLSearchParams({
     url,
@@ -470,11 +507,13 @@ export const projects: Project[] = [
     longDescription: 'A standalone timetable build focused on making school schedule planning easier to scan. It is one of the more complete public projects because it has a real live deployment and a clear use case.',
     what: 'A web timetable app for viewing and managing class schedule information in a cleaner interface.',
     why: 'School schedules are easy to make cluttered. This project tests how far a timetable can feel polished while still being practical.',
+    learned: 'I learned how much spacing, hierarchy, and small controls matter when the same information has to be checked every day.',
     status: 'Live on Vercel and treated as one of the main pinned builds.',
     image: `${import.meta.env.BASE_URL}project-pro-timetable.png`,
     tags: ['Live', 'Timetable', 'Web App'],
     tech: ['JavaScript', 'Vercel', 'Frontend UI', 'Deployment'],
     link: 'https://pro-timetable.vercel.app',
+    aiAssisted: true,
   },
   {
     id: 'imessaging',
@@ -483,11 +522,13 @@ export const projects: Project[] = [
     longDescription: 'A local-report project for generating iMessage stats without sending message data to an external AI service. It focuses on counts, response timing, per-chat breakdowns, and standalone HTML reports.',
     what: 'A local stats tool and product page for turning chat data into readable summaries.',
     why: 'Message data is personal, so the interesting part is making the report useful while keeping the workflow local and controlled.',
+    learned: 'This helped me think more seriously about privacy, local processing, and how to present personal data without making it feel messy.',
     status: 'Live product page on GitHub Pages, with local reporting work behind it.',
     image: liveScreenshot('https://jz1324.github.io/Imessaging/'),
     tags: ['Live', 'macOS', 'Stats'],
     tech: ['Swift', 'SwiftUI', 'Python', 'HTML Reports', 'GitHub Pages'],
     link: 'https://jz1324.github.io/Imessaging/',
+    aiAssisted: true,
   },
   {
     id: 'clipboard-manager',
@@ -496,11 +537,13 @@ export const projects: Project[] = [
     longDescription: 'A macOS clipboard manager concept focused on making copied content easier to find, protect, and reuse. The public page explains the product idea and the feature direction.',
     what: 'A clipboard history utility concept with a public project page and macOS-focused interaction ideas.',
     why: 'Clipboard history is useful but usually hidden. This project explores a more controlled and searchable version of it.',
+    learned: 'It pushed me to think about utility design: quick access, search, protection, and keeping a tool simple enough to trust.',
     status: 'Live on GitHub Pages as a project page and useful as a product-direction prototype.',
     image: liveScreenshot('https://jz1324.github.io/ClipBoard-Manager/'),
     tags: ['Live', 'macOS', 'Utility'],
     tech: ['CSS', 'macOS UI', 'GitHub Pages', 'Frontend'],
     link: 'https://jz1324.github.io/ClipBoard-Manager/',
+    aiAssisted: true,
   },
   {
     id: 'ur-bro-jz',
@@ -509,11 +552,13 @@ export const projects: Project[] = [
     longDescription: 'The current portfolio archive. It combines an Instagram-inspired profile, project cards, a music player, locked story sections, and Supabase-backed private archive access.',
     what: 'A Vite + React personal archive with public profile/project content and private sections kept outside the static bundle.',
     why: 'A normal bio link felt too flat. This turns the profile into a more memorable archive while keeping private content separated.',
+    learned: 'This is where I learned the most about polish: scroll locking, overlays, music sync, private functions, and making copy sound like me.',
     status: 'Live and actively being polished as the main personal site.',
     image: liveScreenshot('https://jz1324.github.io/ur_bro_jz/'),
     tags: ['Live', 'Archive', 'React'],
     tech: ['Vite', 'React', 'TypeScript', 'Tailwind CSS', 'Supabase'],
     link: 'https://jz1324.github.io/ur_bro_jz/',
+    aiAssisted: true,
   },
   {
     id: 'premium-timetable',
@@ -522,11 +567,13 @@ export const projects: Project[] = [
     longDescription: 'The earlier timetable project and documentation base. It captures setup, deployment notes, parser work, and the first version of the schedule interface.',
     what: 'An older timetable web project with docs and feature experiments that became the base for later timetable work.',
     why: 'It shows the rougher first pass and the iteration path before the cleaner standalone version.',
+    learned: 'It showed me which parts of the timetable idea were useful and which parts needed a cleaner second version.',
     status: 'Live on GitHub Pages as an older but useful checkpoint.',
     image: liveScreenshot('https://jz1324.github.io/Premium-Timetable/'),
     tags: ['Live', 'Timetable', 'Docs'],
     tech: ['JavaScript', 'GitHub Pages', 'Documentation', 'Frontend'],
     link: 'https://jz1324.github.io/Premium-Timetable/',
+    aiAssisted: true,
   },
   {
     id: 'about-me',
@@ -535,39 +582,12 @@ export const projects: Project[] = [
     longDescription: 'A smaller TypeScript personal site that works as an earlier design checkpoint. It helped test profile copy, layout structure, and what a personal homepage should feel like.',
     what: 'A static personal website experiment deployed on GitHub Pages.',
     why: 'It gave a quick place to test the about-me direction before moving the stronger ideas into this archive.',
+    learned: 'It helped me see what felt too plain, what felt too much like a template, and why this archive direction worked better.',
     status: 'Live on GitHub Pages as a design checkpoint.',
     image: liveScreenshot('https://jz1324.github.io/about-me/'),
     tags: ['Live', 'About', 'TypeScript'],
     tech: ['TypeScript', 'Next.js', 'React', 'GitHub Pages'],
     link: 'https://jz1324.github.io/about-me/',
+    aiAssisted: true,
   },
 ];
-
-export const placeholders: Record<string, PlaceholderContent> = {
-  create: {
-    eyebrow: 'Archive Tool',
-    title: 'New entry',
-    description: 'A small sketch of how new archive entries could be saved later without making the page feel crowded.',
-    items: ['Write a short note', 'Pick where it belongs', 'Keep private things private'],
-  },
-  grid: {
-    eyebrow: 'View Control',
-    title: 'Archive views',
-    description: 'The clean grid is the main view for now. Other views can come later if the archive grows enough to need them.',
-    items: ['Project grid: active', 'Compact view: saved for later', 'Timeline: only if dated entries matter'],
-  },
-  menu: {
-    eyebrow: 'Quick Menu',
-    title: 'Archive controls',
-    description: 'A quiet place for controls that should not compete with the profile card.',
-    items: ['Theme toggle stays in the header', 'Locked sections open from stories', 'Instagram is the public contact link'],
-  },
-  resume: {
-    eyebrow: 'Resume',
-    title: 'Resume by request',
-    description: 'The public page keeps personal details light. For now, the clean contact path is Instagram, and a resume can be shared directly when needed.',
-    items: ['Keep public details minimal', 'Share the current version directly', 'Avoid storing extra personal information on the static page'],
-    actionLabel: 'Message on Instagram',
-    actionHref: 'https://www.instagram.com/ur_bro_jz/',
-  },
-};

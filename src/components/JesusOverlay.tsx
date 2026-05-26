@@ -91,7 +91,7 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
       type="button"
       onClick={onClick}
       aria-pressed={isSelected}
-      className={`rounded-full border px-5 py-2.5 text-sm font-bold transition-all active:scale-95 ${
+      className={`rounded-full border px-5 py-2.5 text-sm font-bold transition-[transform,background-color,border-color,color,box-shadow] duration-150 ease-out active:scale-[0.97] ${
         isSelected
           ? 'border-accent bg-accent text-bg shadow-lg shadow-accent/10'
           : 'border-border/60 bg-bg/30 text-muted hover:border-accent/60 hover:text-text'
@@ -108,12 +108,13 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
           className="fixed inset-0 z-[70] bg-bg/96 backdrop-blur-2xl"
         >
           <article id="jesus-panel" className="h-screen overflow-y-auto overscroll-contain px-5 py-8 sm:px-8">
             <button
               onClick={onClose}
-              className="fixed right-5 top-5 z-[80] rounded-full border border-border/45 bg-surface/90 p-3 text-accent shadow-xl shadow-black/25 transition-all hover:bg-accent/15 active:scale-95 sm:right-8 sm:top-8"
+              className="fixed right-5 top-5 z-[80] rounded-full border border-border/45 bg-surface/90 p-3 text-accent shadow-xl shadow-black/25 transition-[transform,background-color,border-color] duration-150 ease-out hover:bg-accent/15 active:scale-[0.96] sm:right-8 sm:top-8"
               aria-label="Close Gospel summary"
             >
               <X size={22} />
@@ -191,7 +192,7 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.24 }}
+                      transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
                       className="mt-6 rounded-3xl border border-border/45 bg-bg/30 p-5"
                     >
                       {quizStep === 0 && (
@@ -365,7 +366,7 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                       <button
                         type="button"
                         onClick={() => setQuizStep((step) => Math.max(0, step - 1))}
-                        className="rounded-full border border-border/60 px-6 py-3 font-bold text-muted transition-all hover:border-accent/60 hover:text-text active:scale-95"
+                        className="rounded-full border border-border/60 px-6 py-3 font-bold text-muted transition-[transform,border-color,color] duration-150 ease-out hover:border-accent/60 hover:text-text active:scale-[0.97]"
                       >
                         Back
                       </button>
@@ -375,7 +376,7 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                         type="button"
                         onClick={() => setQuizStep((step) => Math.min(gospelStep, step + 1))}
                         disabled={!canContinue}
-                        className="rounded-full bg-accent px-6 py-3 font-bold text-bg transition-all hover:bg-accent-dark active:scale-95 disabled:cursor-not-allowed disabled:opacity-45"
+                        className="rounded-full bg-accent px-6 py-3 font-bold text-bg transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         Continue
                       </button>
@@ -383,7 +384,7 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
                     <button
                       type="button"
                       onClick={resetQuiz}
-                      className="rounded-full border border-border/60 px-6 py-3 font-bold text-muted transition-all hover:border-accent/60 hover:text-text active:scale-95 sm:ml-auto"
+                      className="rounded-full border border-border/60 px-6 py-3 font-bold text-muted transition-[transform,border-color,color] duration-150 ease-out hover:border-accent/60 hover:text-text active:scale-[0.97] sm:ml-auto"
                     >
                       Reset
                     </button>

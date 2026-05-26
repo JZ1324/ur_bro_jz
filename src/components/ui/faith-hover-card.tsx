@@ -13,6 +13,8 @@ type FaithHoverCardProps = {
 
 export function FaithHoverCard({ children, faith, className, onOpenPage }: FaithHoverCardProps) {
   const [isOpen, setOpen] = React.useState(false);
+  const [isNavigating, setIsNavigating] = React.useState(false);
+  const suppressHoverUntilRef = React.useRef(0);
 
   React.useEffect(() => {
     const closeHover = () => setOpen(false);
@@ -31,17 +33,35 @@ export function FaithHoverCard({ children, faith, className, onOpenPage }: Faith
     };
   }, []);
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen && (isNavigating || Date.now() < suppressHoverUntilRef.current)) {
+      return;
+    }
+
+    setOpen(nextOpen);
+  };
+
   const handleOpenPage = () => {
+    suppressHoverUntilRef.current = Date.now() + 700;
+    setIsNavigating(true);
     setOpen(false);
     window.requestAnimationFrame(() => {
       onOpenPage?.();
+      window.setTimeout(() => setIsNavigating(false), 250);
     });
   };
 
   return (
-    <HoverCardPrimitive.Root open={isOpen} openDelay={80} closeDelay={140} onOpenChange={setOpen}>
+    <HoverCardPrimitive.Root open={isOpen} openDelay={140} closeDelay={90} onOpenChange={handleOpenChange}>
       <HoverCardPrimitive.Trigger asChild>
-        <button type="button" onClick={handleOpenPage} className={cn('inline-flex cursor-pointer text-left', className)}>
+        <button
+          type="button"
+          onPointerDown={() => {
+            suppressHoverUntilRef.current = Date.now() + 700;
+          }}
+          onClick={handleOpenPage}
+          className={cn('inline-flex cursor-pointer text-left', className)}
+        >
           {children}
         </button>
       </HoverCardPrimitive.Trigger>
@@ -54,28 +74,27 @@ export function FaithHoverCard({ children, faith, className, onOpenPage }: Faith
           className="z-[60] [transform-origin:var(--radix-hover-card-content-transform-origin)]"
         >
           <AnimatePresence>
-            {isOpen && (
+            {isOpen && !isNavigating && (
               <motion.button
                 type="button"
                 onClick={handleOpenPage}
-                initial={{ opacity: 0, y: 16, scale: 0.88 }}
+                initial={{ opacity: 0, y: 10, scale: 0.96 }}
                 animate={{
                   opacity: 1,
                   y: 0,
                   scale: 1,
                   transition: {
-                    type: 'spring',
-                    stiffness: 260,
-                    damping: 22,
+                    duration: 0.2,
+                    ease: [0.23, 1, 0.32, 1],
                   },
                 }}
-                exit={{ opacity: 0, y: 12, scale: 0.9 }}
-                className="group w-[min(15rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border/60 bg-surface text-left shadow-2xl shadow-black/40 transition-colors hover:border-accent/45 hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                exit={{ opacity: 0, y: 4, scale: 0.98, transition: { duration: 0.06 } }}
+                className="group w-[min(15rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border/60 bg-surface text-left shadow-2xl shadow-black/40 transition-[background-color,border-color,transform] duration-180 ease-out hover:border-accent/45 hover:bg-accent-soft active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-bg">
                   <video
                     src={faith.previewVideoSrc}
-                    className="h-full w-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-[1.03]"
+                    className="h-full w-full object-cover opacity-90 transition-transform duration-300 ease-out group-hover:scale-[1.015]"
                     autoPlay
                     muted
                     loop

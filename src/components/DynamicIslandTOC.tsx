@@ -260,7 +260,7 @@ export function DynamicIslandTOC({
                   e.stopPropagation();
                   setIsExpanded(false);
                 }}
-                className="text-muted transition-colors hover:text-text"
+                className="text-muted transition-colors duration-150 ease-out hover:text-text active:scale-[0.96]"
                 aria-label="Close contents"
               >
                 <X className="h-5 w-5" />
@@ -286,13 +286,13 @@ export function DynamicIslandTOC({
                       }}
                       style={{ paddingLeft: `${paddingLeft}px` }}
                       className={cn(
-                        'group flex w-full shrink-0 cursor-pointer items-center rounded-lg border-none py-2 pr-3 text-left text-sm transition-all duration-300 ease-out',
+                        'group flex w-full shrink-0 cursor-pointer items-center rounded-lg border-none py-2 pr-3 text-left text-sm transition-[transform,background-color,color] duration-180 ease-out active:scale-[0.99]',
                         isActive && 'bg-accent/15 font-medium text-text',
                         !isActive && isHovered && 'bg-accent/10 text-text',
                         !isActive && !isHovered && 'bg-transparent text-muted',
                       )}
                     >
-                      <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap transition-transform duration-300 group-hover:translate-x-1">
+                      <span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap transition-transform duration-180 ease-out group-hover:translate-x-0.5">
                         {h.text}
                       </span>
 

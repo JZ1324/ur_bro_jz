@@ -71,8 +71,8 @@ export function TextScramble({ text, className = "" }: TextScrambleProps) {
         {displayText.split("").map((char, i) => (
           <span
             key={i}
-            className={`inline-block transition-all duration-150 ${
-              isScrambling && char !== text[i] ? "text-accent scale-110" : "text-text"
+            className={`inline-block transition-[color,transform] duration-150 ease-out ${
+              isScrambling && char !== text[i] ? "scale-[1.06] text-accent" : "text-text"
             }`}
             style={{
               transitionDelay: `${i * 10}ms`,
@@ -86,7 +86,7 @@ export function TextScramble({ text, className = "" }: TextScrambleProps) {
       {/* Animated underline */}
       <span className="relative h-px w-full mt-1 overflow-hidden">
         <span
-          className={`absolute inset-0 bg-accent transition-transform duration-500 ease-out origin-left ${
+          className={`absolute inset-0 origin-left bg-accent transition-transform duration-300 ease-out ${
             isHovering ? "scale-x-100" : "scale-x-0"
           }`}
         />
@@ -95,7 +95,7 @@ export function TextScramble({ text, className = "" }: TextScrambleProps) {
 
       {/* Subtle glow on hover */}
       <span
-        className={`absolute -inset-2 rounded-lg bg-accent/5 transition-opacity duration-300 -z-10 ${
+        className={`absolute -inset-2 -z-10 rounded-lg bg-accent/5 transition-opacity duration-200 ease-out ${
           isHovering ? "opacity-100" : "opacity-0"
         }`}
       />
