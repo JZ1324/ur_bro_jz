@@ -38,10 +38,11 @@ export function ThemeToggle({
   const [theme, setTheme] = useState<Theme>(defaultTheme);
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
+
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    setTheme(isDark ? 'dark' : 'light');
-  }, []);
+    setTheme(defaultTheme);
+    document.documentElement.classList.toggle('dark', defaultTheme === 'dark');
+  }, [defaultTheme]);
 
   const toggle = useCallback(() => {
     const next: Theme = theme === 'light' ? 'dark' : 'light';
