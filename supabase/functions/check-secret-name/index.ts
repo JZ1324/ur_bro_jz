@@ -69,20 +69,29 @@ function hexPayload(value: string) {
   return value.toLowerCase().match(/[a-f0-9]{40,}/)?.[0] || '';
 }
 
-type PuzzleStage = 'fragment' | 'hex' | 'cipher';
+function compactPayload(value: string) {
+  const markerMatch = value.match(/JZ_ARCHIVE_PAYLOAD\s*=\s*([A-Za-z0-9+/=]+)/i);
+  if (markerMatch) return markerMatch[1];
+
+  return value.replace(/\s+/g, '').trim();
+}
+
+type PuzzleStage = 'fragment' | 'payload' | 'hex' | 'cipher';
 
 function isPuzzleStage(value: unknown): value is PuzzleStage {
-  return value === 'fragment' || value === 'hex' || value === 'cipher';
+  return value === 'fragment' || value === 'payload' || value === 'hex' || value === 'cipher';
 }
 
 function normalizePuzzleAnswer(stage: PuzzleStage, value: string) {
-  if (stage === 'fragment') return hexPayload(value);
+  if (stage === 'fragment') return compactPayload(value);
+  if (stage === 'payload') return hexPayload(value);
   return phrase(value);
 }
 
 function getPuzzleAnswerHash(stage: PuzzleStage) {
   const secretName = {
     fragment: 'SECRET_PUZZLE_FRAGMENT_HASH',
+    payload: 'SECRET_PUZZLE_PAYLOAD_HASH',
     hex: 'SECRET_PUZZLE_HEX_HASH',
     cipher: 'SECRET_PUZZLE_CIPHER_HASH',
   }[stage];

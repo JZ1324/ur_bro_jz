@@ -41,6 +41,24 @@ import {
 } from './data/site';
 import { fetchPrivateArchiveSection, PrivateArchiveError } from './lib/privateArchive';
 
+const accessStatusCopy = {
+  checking: {
+    label: 'checking key...',
+    title: 'reading archive index...',
+    body: 'waiting for private drawer...',
+  },
+  approved: {
+    label: 'key matched',
+    title: 'archive ready',
+    body: 'Unlock will open the private drawer now.',
+  },
+  denied: {
+    label: 'key rejected',
+    title: 'nothing private was opened',
+    body: 'Try the key again. The archive stayed closed.',
+  },
+};
+
 type UnlockDestination = 'archive' | 'about';
 type ArchiveMapStatus = 'locked' | 'public' | 'external' | 'hidden';
 
@@ -48,6 +66,7 @@ type ArchiveSignalOverlayProps = {
   isOpen: boolean;
   onClose: () => void;
   onOpenArchive: () => void;
+  onOpenProjects: () => void;
   onOpenMusic: () => void;
 };
 
@@ -64,6 +83,7 @@ function ArchiveSignalOverlay({
   isOpen,
   onClose,
   onOpenArchive,
+  onOpenProjects,
   onOpenMusic,
 }: ArchiveSignalOverlayProps) {
   useBodyScrollLock(isOpen);
@@ -109,23 +129,29 @@ function ArchiveSignalOverlay({
               <div className="rounded-2xl border border-border/45 bg-bg/50 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8E927F]">Updated</p>
                 <p className="mt-2 text-base font-semibold leading-relaxed text-text">
-                  The header now works like a small control shelf: signal, projects, and map.
+                  The public side is cleaner now: profile first, projects next, private sections tucked behind the archive.
                 </p>
               </div>
               <div className="rounded-2xl border border-warm-accent/25 bg-warm-accent/10 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-warm-accent">Current signal</p>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-muted">
-                  Tightening the public side so it feels calmer, cleaner, and less like a random link page.
+                  Best route for a visitor: scan the profile, open the projects, then use Instagram if they need to reach me.
                 </p>
               </div>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <button
-                onClick={() => runAction(onOpenArchive)}
+                onClick={() => runAction(onOpenProjects)}
                 className="rounded-2xl bg-accent px-4 py-3 text-sm font-bold text-bg transition-[transform,background-color,box-shadow] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97]"
               >
-                Open Archive
+                Projects
+              </button>
+              <button
+                onClick={() => runAction(onOpenArchive)}
+                className="rounded-2xl border border-border/55 bg-bg/45 px-4 py-3 text-sm font-bold text-text transition-[transform,border-color,background-color] duration-150 ease-out hover:border-accent/40 active:scale-[0.97]"
+              >
+                Archive
               </button>
               <button
                 onClick={() => runAction(onOpenMusic)}
@@ -144,17 +170,18 @@ function ArchiveSignalOverlay({
 function ArchiveRail() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.46, delay: 0.12, ease: [0.23, 1, 0.32, 1] }}
-      className="relative mx-auto -mt-5 -mb-6 flex w-full max-w-4xl items-center gap-3 px-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.32, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
+      className="relative mx-auto -mt-5 -mb-7 grid w-full max-w-xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-6 text-[9px] font-bold uppercase tracking-[0.2em] text-[#8E927F] max-[360px]:hidden sm:max-w-2xl sm:px-10"
       aria-hidden="true"
     >
-      <span className="h-px flex-1 bg-linear-to-r from-transparent via-border/65 to-border/20" />
-      <span className="archive-rail-pill">JZ / Archive / 2026</span>
-      <span className="archive-rail-dot" />
-      <span className="hidden text-[#8E927F] sm:inline">public front / private notes</span>
-      <span className="h-px flex-1 bg-linear-to-l from-transparent via-border/65 to-border/20" />
+      <span className="h-px bg-linear-to-r from-transparent via-border/35 to-border/10" />
+      <span className="flex items-center gap-2 rounded-full border border-border/35 bg-surface/45 px-3 py-1">
+        <span className="h-1 w-1 rounded-full bg-warm-accent/70" />
+        LIVE PROFILE
+      </span>
+      <span className="h-px bg-linear-to-l from-transparent via-border/35 to-border/10" />
     </motion.div>
   );
 }
@@ -327,6 +354,7 @@ export default function App() {
   const [showArchiveSignal, setShowArchiveSignal] = useState(false);
   const [showArchiveMap, setShowArchiveMap] = useState(false);
   const [showArchiveOverlay, setShowArchiveOverlay] = useState(false);
+  const [lockedStoryPulseId, setLockedStoryPulseId] = useState<string | null>(null);
   const [activeArchiveSectionId, setActiveArchiveSectionId] = useState<ArchiveSectionId | null>('school');
   const [pendingArchiveSectionId, setPendingArchiveSectionId] = useState<ArchiveSectionId | null>(null);
   const [pendingUnlockDestination, setPendingUnlockDestination] = useState<UnlockDestination>('archive');
@@ -338,6 +366,11 @@ export default function App() {
     target: homeRef,
     offset: ['start start', 'end start'],
   });
+  const currentAccessStatusCopy = accessStatus === 'approved'
+    ? accessStatusCopy.approved
+    : accessStatus === 'denied'
+      ? accessStatusCopy.denied
+      : accessStatusCopy.checking;
 
   useBodyScrollLock(showModal);
 
@@ -463,23 +496,35 @@ export default function App() {
       setShowBento(true);
       return;
     }
-    if (story.action === 'about') {
-      openAbout();
-      return;
-    }
-    const sectionId = story.id as ArchiveSectionId;
-    setPendingUnlockDestination('archive');
-    setActiveArchiveSectionId(sectionId);
-    if (isUnlocked && archiveAccessKey) {
-      if (!privateArchiveSections[sectionId]) {
-        void loadArchiveSection(sectionId, archiveAccessKey);
+    const runLockedStoryAction = (action: () => void) => {
+      if (story.locked && !isUnlocked) {
+        setLockedStoryPulseId(story.id);
+        window.setTimeout(() => setLockedStoryPulseId(null), 420);
+        window.setTimeout(action, 160);
+        return;
       }
-      setShowArchiveOverlay(true);
+      action();
+    };
+
+    if (story.action === 'about') {
+      runLockedStoryAction(openAbout);
       return;
     }
-    setPendingArchiveSectionId(sectionId);
-    setArchiveErrorMessage(null);
-    setShowModal(true);
+    runLockedStoryAction(() => {
+      const sectionId = story.id as ArchiveSectionId;
+      setPendingUnlockDestination('archive');
+      setActiveArchiveSectionId(sectionId);
+      if (isUnlocked && archiveAccessKey) {
+        if (!privateArchiveSections[sectionId]) {
+          void loadArchiveSection(sectionId, archiveAccessKey);
+        }
+        setShowArchiveOverlay(true);
+        return;
+      }
+      setPendingArchiveSectionId(sectionId);
+      setArchiveErrorMessage(null);
+      setShowModal(true);
+    });
   };
 
   const openArchiveSection = (sectionId: ArchiveSectionId) => {
@@ -540,7 +585,7 @@ export default function App() {
             className="text-xl font-bold tracking-tight text-text"
             aria-label="Back to top"
           >
-            <TextScramble text="jz.archive" className="scale-75 origin-left" />
+            <TextScramble text="jz.archive" className="archive-brand-signal scale-75 origin-left" />
           </button>
           <div className="flex items-center gap-2 text-accent">
             <ThemeToggle
@@ -588,7 +633,12 @@ export default function App() {
           y={[18, -26]}
           opacity={[1, 0.98]}
         >
-          <StoryHighlights stories={storyItems} isUnlocked={isUnlocked} onStoryClick={handleStoryClick} />
+          <StoryHighlights
+            stories={storyItems}
+            isUnlocked={isUnlocked}
+            lockedPulseId={lockedStoryPulseId}
+            onStoryClick={handleStoryClick}
+          />
         </ParallaxLayer>
         <ParallaxLayer
           progress={homeScrollProgress}
@@ -619,7 +669,7 @@ export default function App() {
               onClick={openAbout}
               className="rounded-full border border-accent/30 bg-accent-soft px-6 py-3 text-sm font-bold text-text transition-[transform,background-color,border-color] duration-150 ease-out hover:bg-[#2A3125] active:scale-[0.97]"
             >
-              Read About
+              Locked About
             </button>
             <a
               href={profileData.instagramUrl}
@@ -751,17 +801,13 @@ export default function App() {
 
                     <div className="flex flex-col gap-2">
                       <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">
-                        {accessStatus === 'approved' ? 'Access approved' : accessStatus === 'denied' ? 'Access declined' : 'Checking access'}
+                        {currentAccessStatusCopy.label}
                       </p>
                       <h3 className="text-2xl font-bold text-text">
-                        {accessStatus === 'approved' ? 'Ready to unlock' : accessStatus === 'denied' ? 'Key did not open it' : 'Checking key'}
+                        {currentAccessStatusCopy.title}
                       </h3>
                       <p className="text-sm leading-relaxed text-muted">
-                        {accessStatus === 'approved'
-                          ? 'The section is already verified. Unlock will open it instantly.'
-                          : accessStatus === 'denied'
-                            ? 'Try the key again. Nothing private was loaded.'
-                            : 'The key is being checked before private archive content loads.'}
+                        {currentAccessStatusCopy.body}
                       </p>
                     </div>
 
@@ -812,6 +858,7 @@ export default function App() {
         isOpen={showArchiveSignal}
         onClose={() => setShowArchiveSignal(false)}
         onOpenArchive={showArchive}
+        onOpenProjects={() => setShowBento(true)}
         onOpenMusic={() => openArchiveSection('music')}
       />
 

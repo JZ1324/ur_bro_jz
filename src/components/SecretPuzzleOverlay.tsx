@@ -10,7 +10,7 @@ type SecretPuzzleOverlayProps = {
   onClose: () => void;
 };
 
-type PuzzleStage = 'manual' | 'fragment' | 'hex' | 'cipher' | 'name';
+type PuzzleStage = 'manual' | 'fragment' | 'payload' | 'hex' | 'cipher' | 'name';
 type PuzzleStatus = 'idle' | 'checking' | 'wrong' | 'error';
 
 const fragmentSrc = `${import.meta.env.BASE_URL}archive-fragment.png`;
@@ -20,9 +20,17 @@ const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*';
 const stageLabels: Record<PuzzleStage, string> = {
   manual: 'private line',
   fragment: '01 / fragment',
-  hex: '02 / hex',
-  cipher: '03 / cipher',
-  name: '04 / reveal',
+  payload: '02 / payload',
+  hex: '03 / hex',
+  cipher: '04 / cipher',
+  name: '05 / reveal',
+};
+
+const puzzleHints: Partial<Record<PuzzleStage, string>> = {
+  fragment: 'Hint: look at printable strings near the end of the file.',
+  payload: 'Hint: the payload is base64.',
+  hex: 'Hint: hex can become plain text.',
+  cipher: 'Hint: ROT13 swaps alphabet halves.',
 };
 
 export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProps) {
@@ -33,6 +41,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
   const [stage, setStage] = useState<PuzzleStage>('manual');
   const [puzzleInput, setPuzzleInput] = useState('');
   const [puzzleStatus, setPuzzleStatus] = useState<PuzzleStatus>('idle');
+  const [puzzleMissCount, setPuzzleMissCount] = useState(0);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -59,12 +68,14 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     setStage('manual');
     setPuzzleInput('');
     setPuzzleStatus('idle');
+    setPuzzleMissCount(0);
   }, [isOpen]);
 
   const moveToStage = (nextStage: PuzzleStage) => {
     setStage(nextStage);
     setPuzzleInput('');
     setPuzzleStatus('idle');
+    setPuzzleMissCount(0);
   };
 
   const startPuzzle = () => {
@@ -72,6 +83,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     setRevealedName('');
     setStatus('idle');
     setManualMissCount(0);
+    setPuzzleMissCount(0);
     moveToStage('fragment');
   };
 
@@ -86,10 +98,16 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
       const result = await submitSecretPuzzleStep(stage, value);
       if (!result.matched) {
         setPuzzleStatus('wrong');
+        setPuzzleMissCount((count) => count + 1);
         return;
       }
 
       if (stage === 'fragment') {
+        moveToStage('payload');
+        return;
+      }
+
+      if (stage === 'payload') {
         moveToStage('hex');
         return;
       }
@@ -130,6 +148,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
 
   const puzzleStarted = stage !== 'manual';
   const showPuzzleHint = stage === 'manual' && status === 'missed' && manualMissCount >= 2;
+  const activePuzzleHint = puzzleMissCount >= 2 ? puzzleHints[stage] : null;
 
   return (
     <AnimatePresence>
@@ -205,7 +224,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       Some things stay locked until the right name opens them.
                     </p>
                     <p className="mx-auto mt-5 max-w-2xl text-sm font-medium leading-7 text-muted lg:mx-0">
-                      The lock starts a small trail: image, hex, cipher, then the name. The answer is still checked away from the page.
+                      The lock starts a small trail: image, payload, hex, cipher, then the reveal. The answer is still checked away from the page.
                     </p>
                   </>
                 ) : (
@@ -325,7 +344,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                   <form onSubmit={handlePuzzleSubmit}>
                     <h3 className="text-2xl font-bold text-text">Download the fragment.</h3>
                     <p className="mt-3 text-sm font-medium leading-7 text-muted">
-                      The picture still works as a picture. The clue lives after the image ends.
+                      The picture still works as a picture. The payload is tucked after the image data.
                     </p>
                     <img
                       src={fragmentSrc}
@@ -341,7 +360,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       Download image
                     </a>
                     <label htmlFor="fragment-answer" className="mt-5 block text-sm font-bold text-text">
-                      Paste the hex payload.
+                      Paste the hidden payload.
                     </label>
                     <div className="mt-3 rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
                       <input
@@ -358,8 +377,37 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       />
                     </div>
                     <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
-                    {puzzleStatus === 'wrong' && <PuzzleError>Wrong fragment.</PuzzleError>}
+                    {puzzleStatus === 'wrong' && <PuzzleError hint={activePuzzleHint}>That is not the fragment payload.</PuzzleError>}
                     {puzzleStatus === 'error' && <PuzzleError>The fragment could not be checked right now.</PuzzleError>}
+                  </form>
+                )}
+
+                {stage === 'payload' && (
+                  <form onSubmit={handlePuzzleSubmit}>
+                    <h3 className="text-2xl font-bold text-text">Unpack the payload.</h3>
+                    <p className="mt-3 text-sm font-medium leading-7 text-muted">
+                      The payload is wrapped once before it becomes hex.
+                    </p>
+                    <label htmlFor="payload-answer" className="mt-5 block text-sm font-bold text-text">
+                      Paste the decoded hex string.
+                    </label>
+                    <div className="mt-3 rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
+                      <input
+                        id="payload-answer"
+                        value={puzzleInput}
+                        onChange={(event) => {
+                          setPuzzleInput(event.target.value);
+                          setPuzzleStatus('idle');
+                        }}
+                        autoComplete="off"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        className="w-full bg-transparent text-base font-bold tracking-wide text-text outline-none"
+                      />
+                    </div>
+                    <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
+                    {puzzleStatus === 'wrong' && <PuzzleError hint={activePuzzleHint}>That payload did not open.</PuzzleError>}
+                    {puzzleStatus === 'error' && <PuzzleError>The payload could not be checked right now.</PuzzleError>}
                   </form>
                 )}
 
@@ -367,10 +415,10 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                   <form onSubmit={handlePuzzleSubmit}>
                     <h3 className="text-2xl font-bold text-text">Turn hex into text.</h3>
                     <p className="mt-3 text-sm font-medium leading-7 text-muted">
-                      Decode the payload. The first word tells you what kind of cipher comes next.
+                      Decode the hex. The first word tells you what kind of cipher comes next.
                     </p>
                     <label htmlFor="hex-answer" className="mt-5 block text-sm font-bold text-text">
-                      Enter the cipher name, or paste the decoded sentence.
+                      Paste the decoded cipher line.
                     </label>
                     <div className="mt-3 rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
                       <input
@@ -387,7 +435,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       />
                     </div>
                     <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
-                    {puzzleStatus === 'wrong' && <PuzzleError>Not that cipher.</PuzzleError>}
+                    {puzzleStatus === 'wrong' && <PuzzleError hint={activePuzzleHint}>That is not the decoded line.</PuzzleError>}
                     {puzzleStatus === 'error' && <PuzzleError>The cipher could not be checked right now.</PuzzleError>}
                   </form>
                 )}
@@ -396,10 +444,10 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                   <form onSubmit={handlePuzzleSubmit}>
                     <h3 className="text-2xl font-bold text-text">Read the cipher line.</h3>
                     <p className="mt-3 text-sm font-medium leading-7 text-muted">
-                      Use the cipher from the last step. Enter the sentence it gives you.
+                      Use the cipher named in the last step. Enter the plain sentence it gives you.
                     </p>
                     <label htmlFor="cipher-answer" className="mt-5 block text-sm font-bold text-text">
-                      Enter the decoded sentence.
+                      Enter the plain sentence.
                     </label>
                     <div className="mt-3 rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
                       <input
@@ -416,7 +464,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       />
                     </div>
                     <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
-                    {puzzleStatus === 'wrong' && <PuzzleError>Line does not match.</PuzzleError>}
+                    {puzzleStatus === 'wrong' && <PuzzleError hint={activePuzzleHint}>Line does not match.</PuzzleError>}
                     {puzzleStatus === 'error' && <PuzzleError>The line could not be checked right now.</PuzzleError>}
                   </form>
                 )}
@@ -685,14 +733,15 @@ function SunlightSparkles({
   );
 }
 
-function PuzzleError({ children }: { children: string }) {
+function PuzzleError({ children, hint }: { children: string; hint?: string | null }) {
   return (
     <motion.p
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-4 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 px-4 py-3 text-sm font-semibold text-warm-accent"
+      className="mt-4 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 px-4 py-3 text-sm font-semibold leading-6 text-warm-accent"
     >
-      {children}
+      <span>{children}</span>
+      {hint && <span className="mt-2 block text-warm-accent/85">{hint}</span>}
     </motion.p>
   );
 }

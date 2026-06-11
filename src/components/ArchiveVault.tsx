@@ -114,18 +114,29 @@ export function ArchiveVault({
             </div>
 
             <div className="pb-4">
-            {isLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col gap-4 rounded-xl border border-border/20 bg-surface p-6 shadow-sm animate-pulse-soft"
-                  >
-                    <div className="h-5 w-1/2 rounded bg-bg" />
-                    <div className="h-4 w-full rounded bg-bg" />
-                    <div className="h-4 w-5/6 rounded bg-bg" />
-                  </div>
-                ))}
+              {isLoading ? (
+              <div className="grid gap-4">
+                <div className="rounded-2xl border border-border/35 bg-bg/45 p-5 shadow-sm">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">
+                    loading private section
+                  </p>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed text-muted">
+                    pulling signed notes from the archive...
+                  </p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="flex flex-col gap-4 rounded-xl border border-border/20 bg-surface p-6 shadow-sm animate-pulse-soft"
+                    >
+                      <div className="h-5 w-1/2 rounded bg-bg" />
+                      <div className="h-4 w-full rounded bg-bg" />
+                      <div className="h-4 w-5/6 rounded bg-bg" />
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : errorMessage ? (
               <div className="rounded-3xl border border-warm-accent/30 bg-surface p-6 shadow-2xl shadow-black/20">

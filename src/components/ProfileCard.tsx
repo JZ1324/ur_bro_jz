@@ -13,9 +13,9 @@ type ProfileCardProps = {
 
 function ProfileStatItem({ stat }: { stat: ProfileStat }) {
   return (
-    <div className="flex min-w-0 flex-col items-center rounded-xl px-4 py-2">
+    <div className="flex min-w-0 flex-col items-center rounded-xl px-2.5 py-2 sm:px-4">
       <span className="text-lg font-bold leading-none text-accent">{stat.value}</span>
-      <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted">{stat.label}</span>
+      <span className="mt-1 text-center text-[9px] font-semibold uppercase tracking-[0.14em] text-muted sm:text-[10px] sm:tracking-wider">{stat.label}</span>
     </div>
   );
 }
@@ -26,14 +26,11 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.42, ease: [0.23, 1, 0.32, 1] }}
-      className="archive-corner-panel relative mx-auto mt-6 grid w-full max-w-4xl grid-cols-1 items-center gap-7 overflow-hidden rounded-2xl border border-border/60 bg-surface px-5 py-5 shadow-2xl shadow-black/20 ring-1 ring-accent/5 sm:px-6 sm:py-6 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)] md:gap-8 md:px-8 md:py-7 lg:gap-9"
+      className="archive-corner-panel relative mx-auto mt-4 grid w-full max-w-4xl grid-cols-1 items-center gap-5 overflow-hidden rounded-[1.35rem] border border-border/60 bg-surface px-4 py-4 shadow-2xl shadow-black/20 ring-1 ring-accent/5 sm:mt-6 sm:gap-6 sm:rounded-2xl sm:px-6 sm:py-6 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)] md:gap-8 md:px-8 md:py-7 lg:gap-9"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(201,211,176,0.12),transparent_46%),radial-gradient(circle_at_85%_25%,rgba(228,154,120,0.09),transparent_34%)]" />
-      <div className="pointer-events-none absolute right-8 top-5 z-10 hidden rounded-full border border-border/40 bg-bg/35 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.18em] text-[#8E927F] md:block">
-        profile / live
-      </div>
       <div className="relative z-10 flex w-full min-w-0 flex-col items-center justify-center justify-self-center">
-        <div className="group relative p-1.5">
+        <div className="group relative p-1 sm:p-1.5">
           <motion.div
             animate={{
               scale: [1, 1.05, 1],
@@ -60,7 +57,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="relative h-32 w-32 overflow-hidden rounded-full border-[3px] border-accent bg-surface p-1 shadow-xl shadow-black/30 transition-transform duration-200 ease-out hover:scale-[1.01] sm:h-36 sm:w-36 md:h-[9rem] md:w-[9rem]"
+            className="relative h-[7.75rem] w-[7.75rem] overflow-hidden rounded-full border-[3px] border-accent bg-surface p-1 shadow-xl shadow-black/30 transition-transform duration-200 ease-out hover:scale-[1.01] sm:h-36 sm:w-36 md:h-[9rem] md:w-[9rem]"
           >
             <img
               src={profile.imageSrc}
@@ -77,7 +74,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
         {profile.track && <MiniMusicPlayer track={profile.track} />}
       </div>
 
-      <div className="relative z-10 flex w-full max-w-[24rem] min-w-0 flex-col items-center gap-3 justify-self-center text-center">
+      <div className="relative z-10 flex w-full max-w-[22rem] min-w-0 flex-col items-center gap-2.5 justify-self-center text-center sm:max-w-[24rem] md:gap-3">
         <h1 className="text-3xl font-bold tracking-tight text-text md:text-[2.35rem]" aria-label={profile.displayName}>
           <TypewriterEffectSmooth
             words={[
@@ -92,7 +89,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
             revealDuration={4.6}
           />
         </h1>
-        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm font-semibold tracking-wide text-muted">
+        <div className="flex max-w-[18rem] flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs font-semibold tracking-wide text-muted sm:max-w-none sm:text-sm">
           <a
             href={profile.instagramUrl}
             target="_blank"
@@ -105,7 +102,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
           <span className="text-muted">{profile.bio}</span>
         </div>
 
-        <div className="grid w-full max-w-xs grid-cols-2 gap-1.5 rounded-2xl border border-border/45 bg-bg/25 p-1.5 md:max-w-sm">
+        <div className="grid w-full max-w-[18rem] grid-cols-2 gap-1.5 rounded-2xl border border-border/45 bg-bg/25 p-1.5 sm:max-w-xs md:max-w-sm">
           {profile.stats.map((stat) => stat.label === 'Relationship' ? (
             <span key={stat.label} className="min-w-0">
               <FaithHoverCard
@@ -123,12 +120,12 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
           ))}
         </div>
 
-        <div className="mt-1 flex w-full max-w-[20.5rem] gap-3">
+        <div className="mt-1 grid w-full max-w-[18rem] grid-cols-2 gap-2.5 sm:max-w-[20.5rem] sm:gap-3">
           <a
             href={profile.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 rounded-full bg-accent px-5 py-2 text-center text-[0.95rem] font-semibold text-bg shadow-lg shadow-accent/10 premium-transition hover:bg-accent-dark active:scale-[0.97]"
+            className="flex min-h-[2.55rem] items-center justify-center rounded-full bg-accent px-4 py-2 text-center text-[0.92rem] font-semibold text-bg shadow-lg shadow-accent/10 premium-transition hover:bg-accent-dark active:scale-[0.97] sm:min-h-[2.7rem] sm:px-5 sm:text-[0.95rem]"
           >
             Instagram
           </a>
@@ -136,7 +133,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
             href={profile.dumpsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 rounded-full border border-warm-accent/45 bg-warm-accent/10 px-5 py-2 text-center text-[0.95rem] font-semibold text-text shadow-sm premium-transition hover:bg-warm-accent/15 active:scale-[0.97]"
+            className="flex min-h-[2.55rem] items-center justify-center rounded-full border border-warm-accent/45 bg-warm-accent/10 px-4 py-2 text-center text-[0.92rem] font-semibold text-text shadow-sm premium-transition hover:bg-warm-accent/15 active:scale-[0.97] sm:min-h-[2.7rem] sm:px-5 sm:text-[0.95rem]"
           >
             <ShinyText text="My Dumpy" color="#E49A78" shineColor="#FFF4CF" speed={3.2} delay={0.45} className="whitespace-nowrap" />
           </a>

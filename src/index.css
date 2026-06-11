@@ -55,10 +55,44 @@
 
   body {
     @apply bg-bg text-text antialiased;
+    position: relative;
     background:
       radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 34rem),
       radial-gradient(circle at 90% 12%, color-mix(in srgb, var(--color-warm-accent) 10%, transparent), transparent 24rem),
       var(--color-bg);
+  }
+
+  body::before,
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  body::before {
+    opacity: 0.34;
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--color-border) 18%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--color-border) 18%, transparent) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(circle at 50% 16%, black, transparent 72%);
+  }
+
+  body::after {
+    opacity: 0.22;
+    background-image:
+      radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--color-accent) 18%, transparent) 0 1px, transparent 1.5px),
+      radial-gradient(circle at 70% 60%, color-mix(in srgb, var(--color-warm-accent) 16%, transparent) 0 1px, transparent 1.5px);
+    background-size: 38px 38px, 54px 54px;
+    animation: archive-ambient-drift 28s linear infinite;
+    mask-image: linear-gradient(to bottom, transparent, black 14%, black 82%, transparent);
+  }
+
+  #root {
+    position: relative;
+    z-index: 1;
   }
 
 }
@@ -102,6 +136,54 @@
 
   .animate-shimmer {
     animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes archive-brand-sweep {
+    0%, 28% {
+      opacity: 0;
+      transform: translateX(-120%) skewX(-10deg);
+    }
+    42% {
+      opacity: 0.85;
+    }
+    58%, 100% {
+      opacity: 0;
+      transform: translateX(120%) skewX(-10deg);
+    }
+  }
+
+  @keyframes archive-ambient-drift {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(-14px, 10px, 0);
+    }
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .archive-brand-signal {
+    isolation: isolate;
+  }
+
+  .archive-brand-signal::before {
+    content: '';
+    position: absolute;
+    inset: -0.34rem -0.58rem;
+    z-index: -1;
+    border-radius: 9999px;
+    background:
+      linear-gradient(
+        105deg,
+        transparent 0 35%,
+        color-mix(in srgb, var(--color-warm-accent) 18%, transparent) 45%,
+        color-mix(in srgb, var(--color-accent) 16%, transparent) 52%,
+        transparent 64% 100%
+      );
+    animation: archive-brand-sweep 8s cubic-bezier(0.76, 0, 0.24, 1) infinite;
+    pointer-events: none;
   }
 
   @keyframes avatar-shine {
@@ -158,16 +240,77 @@
     border-bottom: 1px solid color-mix(in srgb, var(--color-accent) 70%, transparent);
   }
 
-  .archive-note-card::after {
+  .archive-note-tab {
+    position: absolute;
+    top: 0;
+    right: 1.1rem;
+    border: 1px solid color-mix(in srgb, var(--color-border) 45%, transparent);
+    border-top: 0;
+    border-radius: 0 0 0.7rem 0.7rem;
+    background: color-mix(in srgb, var(--color-bg) 58%, transparent);
+    padding: 0.24rem 0.52rem 0.28rem;
+    font-size: 0.56rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    color: color-mix(in srgb, var(--color-accent) 72%, transparent);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  }
+
+  .story-label-pill {
+    border: 1px solid color-mix(in srgb, var(--color-border) 42%, transparent);
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--color-surface) 58%, transparent);
+    padding: 0.18rem 0.48rem;
+  }
+
+  @media (min-width: 768px) {
+    .story-label-pill {
+      padding: 0.22rem 0.62rem;
+    }
+  }
+
+  @keyframes lock-wiggle {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    18% { transform: rotate(-5deg) scale(1.015); }
+    36% { transform: rotate(5deg) scale(1.015); }
+    54% { transform: rotate(-3deg) scale(1.01); }
+    72% { transform: rotate(2deg) scale(1.005); }
+  }
+
+  .animate-lock-wiggle {
+    animation: lock-wiggle 420ms cubic-bezier(0.23, 1, 0.32, 1);
+    transform-origin: center;
+  }
+
+  .archive-project-card {
+    position: relative;
+  }
+
+  .archive-project-card::after {
     content: '';
     position: absolute;
-    right: 16px;
-    bottom: 14px;
-    width: 30px;
-    height: 1px;
-    background: color-mix(in srgb, var(--color-warm-accent) 36%, transparent);
-    transform: rotate(-8deg);
-    opacity: 0.7;
+    right: -1px;
+    top: -1px;
+    width: 2.15rem;
+    height: 2.15rem;
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-warm-accent) 22%, transparent) 0 49%,
+        color-mix(in srgb, var(--color-border) 50%, transparent) 50% 52%,
+        transparent 53%
+      );
+    opacity: 0.52;
+    pointer-events: none;
+  }
+
+  .project-screenshot-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0.55rem;
+    z-index: 3;
+    border: 1px solid color-mix(in srgb, var(--color-accent) 18%, transparent);
+    border-radius: 0.95rem;
     pointer-events: none;
   }
 
@@ -185,23 +328,6 @@
       var(--color-surface);
   }
 
-  .archive-rail-pill {
-    border: 1px solid color-mix(in srgb, var(--color-border) 64%, transparent);
-    border-radius: 9999px;
-    background: color-mix(in srgb, var(--color-surface) 72%, transparent);
-    padding: 0.4rem 0.7rem;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-  }
-
-  .archive-rail-dot {
-    width: 0.34rem;
-    height: 0.34rem;
-    border-radius: 9999px;
-    background: var(--color-warm-accent);
-    opacity: 0.72;
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-warm-accent) 12%, transparent);
-  }
-
   @keyframes pulse {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }
@@ -214,8 +340,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .profile-avatar-shine,
+  body::after,
+  .archive-brand-signal::before,
   .animate-shimmer,
   .animate-caret-blink,
+  .animate-lock-wiggle,
   .animate-pulse-soft {
     animation: none;
   }

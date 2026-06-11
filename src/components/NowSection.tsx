@@ -20,13 +20,14 @@ export function NowSection({ items, onSecretClick }: NowSectionProps) {
       {items.map((item, index) => (
         <article
           key={item.label}
-          className="archive-note-card group relative overflow-hidden rounded-2xl border border-border/50 bg-surface/80 p-4 shadow-lg shadow-black/10 transition-[transform,border-color,background-color] duration-180 ease-out hover:border-accent/30 hover:bg-surface sm:p-4"
+          className="archive-note-card group relative overflow-hidden rounded-2xl border border-border/50 bg-surface/80 p-4 pt-5 shadow-lg shadow-black/10 transition-[transform,border-color,background-color] duration-180 ease-out hover:-translate-y-0.5 hover:border-accent/30 hover:bg-surface active:scale-[0.99] sm:p-4 sm:pt-5"
         >
+          <span className="archive-note-tab" aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+          </span>
           <div className="flex items-center justify-between gap-3">
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-warm-accent">{item.label}</p>
-            <span className="rounded-full border border-border/35 bg-bg/35 px-2 py-0.5 text-[9px] font-bold text-[#8E927F]">
-              {String(index + 1).padStart(2, '0')}
-            </span>
+            <span className="h-px flex-1 bg-linear-to-r from-warm-accent/30 to-transparent" />
           </div>
           <h2 className="mt-2 text-[15px] font-bold leading-tight text-text">{item.title}</h2>
           {item.label === 'Music' ? (

@@ -222,6 +222,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
   const selectedSource = useMemo(() => chooseSource(track.sources), [track.sources]);
+  const lyricLeadSeconds = track.lyricLeadSeconds ?? 0;
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -332,7 +333,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     const time = isSeeking ? seekValue : currentTime;
     if (lyrics.length === 0) return;
 
-    const effectiveTime = time;
+    const effectiveTime = Math.max(0, time + lyricLeadSeconds);
     if (effectiveTime + 0.0001 < lyrics[0].begin) {
       setCurrentLyricIndex(0);
       setCurrentTokenIndex(-1);
@@ -358,7 +359,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
         setCurrentTokenProgress(0);
       }
     }
-  }, [currentTime, isSeeking, seekValue, lyrics]);
+  }, [currentTime, isSeeking, seekValue, lyricLeadSeconds, lyrics]);
 
   // Use requestAnimationFrame while playing for smoother token highlighting
   useEffect(() => {
@@ -384,7 +385,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   }, [isPlaying]);
 
   // Auto-scroll (marquee) the active lyric line when it's wider than the mini player container.
-  const effectiveLyricTime = isSeeking ? seekValue : currentTime;
+  const effectiveLyricTime = Math.max(0, (isSeeking ? seekValue : currentTime) + lyricLeadSeconds);
   const hasStartedLyrics = isPlaying || isSeeking || currentTime > 0.12;
   const hasReachedFirstLyric = lyrics.length > 0 && hasStartedLyrics && effectiveLyricTime + 0.0001 >= lyrics[0].begin;
 
@@ -456,7 +457,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
       const tokenIndex = currentTokenIndexRef.current;
       const tokenEl = tokenRefs.current[tokenIndex] || null;
       const nextEl = tokenRefs.current[tokenIndex + 1] || null;
-      const effectiveTime = isSeekingRef.current ? seekValueRef.current : currentTimeRef.current;
+      const effectiveTime = Math.max(0, (isSeekingRef.current ? seekValueRef.current : currentTimeRef.current) + lyricLeadSeconds);
       const currentLine = visibleLyrics[0]?.line;
       const currentToken = currentLine?.tokens[tokenIndex];
       const tokenProgress = currentToken && Number.isFinite(currentToken.end) && currentToken.end > currentToken.begin
@@ -500,11 +501,12 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
       marqueeRafRef.current = null;
       innerEl.style.transition = '';
     };
-  }, [currentLyricIndex, visibleLyrics.length, isPlaying]);
+  }, [currentLyricIndex, visibleLyrics.length, isPlaying, lyricLeadSeconds]);
 
   if (!selectedSource) return null;
 
-  const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const displayTime = isSeeking ? seekValue : currentTime;
+  const progress = duration > 0 ? Math.min(100, (displayTime / duration) * 100) : 0;
   
 
   const togglePlayback = async () => {
@@ -536,15 +538,43 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     setIsSeeking(false);
   };
 
-  const previewSeekFromPointer = (event: PointerEvent<HTMLInputElement>) => {
-    event.stopPropagation();
+  const getSeekValueFromPointer = (event: PointerEvent<HTMLInputElement>) => {
     if (!duration) return;
 
     const rect = event.currentTarget.getBoundingClientRect();
     const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
-    const nextValue = ratio * duration;
+    return ratio * duration;
+  };
+
+  const previewSeekFromPointer = (event: PointerEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+    const nextValue = getSeekValueFromPointer(event);
+    if (typeof nextValue !== 'number' || !Number.isFinite(nextValue)) return;
+
     setSeekValue(nextValue);
     setIsSeeking(true);
+  };
+
+  const commitSeekFromPointer = (event: PointerEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+    const nextValue = getSeekValueFromPointer(event);
+    commitSeek(typeof nextValue === 'number' && Number.isFinite(nextValue) ? nextValue : undefined);
+  };
+
+  const captureSeekPointer = (event: PointerEvent<HTMLInputElement>) => {
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Range inputs can be inconsistent across mobile browsers; seeking still works without capture.
+    }
+  };
+
+  const isSeekPointerActive = (event: PointerEvent<HTMLInputElement>) => {
+    try {
+      return isSeekingRef.current || event.currentTarget.hasPointerCapture(event.pointerId);
+    } catch {
+      return isSeekingRef.current;
+    }
   };
 
   const shouldIgnoreOpen = (target: EventTarget | null) => (
@@ -635,20 +665,26 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
             min={0}
             max={duration || 0}
             step={0.01}
-            value={isSeeking ? seekValue : currentTime}
+            value={displayTime}
             onClick={(event) => event.stopPropagation()}
-            onPointerDown={previewSeekFromPointer}
+            onPointerDown={(event) => {
+              event.stopPropagation();
+              captureSeekPointer(event);
+              previewSeekFromPointer(event);
+            }}
+            onPointerMove={(event) => {
+              if (isSeekPointerActive(event)) {
+                previewSeekFromPointer(event);
+              }
+            }}
             onChange={(e) => {
               e.stopPropagation();
               const v = Number(e.currentTarget.value);
               setSeekValue(v);
               setIsSeeking(true);
             }}
-            onPointerUp={(e) => {
-              e.stopPropagation();
-              const v = Number(e.currentTarget.value);
-              commitSeek(v);
-            }}
+            onPointerUp={commitSeekFromPointer}
+            onPointerCancel={commitSeekFromPointer}
             onMouseUp={(event) => {
               event.stopPropagation();
               commitSeek();
@@ -673,16 +709,16 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
               if (isSeeking) commitSeek();
             }}
             disabled={!duration}
-            className="mini-range w-full"
+            className="mini-range -my-1.5 w-full"
             style={{
-              background: `linear-gradient(90deg, rgba(201,211,176,1) ${progress}%, rgba(255,255,255,0.06) ${progress}%)`,
+              backgroundImage: `linear-gradient(90deg, rgba(201,211,176,1) ${progress}%, rgba(255,255,255,0.06) ${progress}%)`,
             }}
           />
         </div>
-        <style>{`\n          .mini-range {\n            -webkit-appearance: none;\n            appearance: none;\n            height: 6px;\n            border-radius: 9999px;\n            outline: none;\n            background-clip: padding-box;\n          }\n          .mini-range::-webkit-slider-runnable-track {\n            height: 6px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-webkit-slider-thumb {\n            -webkit-appearance: none;\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: #c9d3b0;\n            border: 3px solid rgba(0,0,0,0.25);\n            margin-top: -4px;\n            box-shadow: 0 4px 10px rgba(0,0,0,0.45);\n          }\n          .mini-range::-moz-range-track {\n            height: 6px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-moz-range-thumb {\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: #c9d3b0;\n            border: 3px solid rgba(0,0,0,0.25);\n            box-shadow: 0 4px 10px rgba(0,0,0,0.45);\n          }\n        `}</style>
+        <style>{`\n          .mini-range {\n            -webkit-appearance: none;\n            appearance: none;\n            height: 20px;\n            border-radius: 9999px;\n            outline: none;\n            background-clip: padding-box;\n            background-position: center;\n            background-repeat: no-repeat;\n            background-size: 100% 5px;\n            cursor: pointer;\n            touch-action: none;\n            transition: filter 160ms ease, opacity 160ms ease;\n          }\n          .mini-range:disabled {\n            cursor: not-allowed;\n            opacity: 0.45;\n          }\n          .mini-range:focus-visible {\n            filter: drop-shadow(0 0 0.4rem rgba(201,211,176,0.34));\n          }\n          .mini-range::-webkit-slider-runnable-track {\n            height: 5px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-webkit-slider-thumb {\n            -webkit-appearance: none;\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: #c9d3b0;\n            border: 2px solid rgba(0,0,0,0.28);\n            margin-top: -4.5px;\n            box-shadow: 0 3px 8px rgba(0,0,0,0.42);\n            transition: transform 150ms ease, box-shadow 150ms ease;\n          }\n          .mini-range:active::-webkit-slider-thumb {\n            transform: scale(1.1);\n            box-shadow: 0 5px 14px rgba(0,0,0,0.48), 0 0 0 4px rgba(201,211,176,0.12);\n          }\n          .mini-range::-moz-range-track {\n            height: 5px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-moz-range-thumb {\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: #c9d3b0;\n            border: 2px solid rgba(0,0,0,0.28);\n            box-shadow: 0 3px 8px rgba(0,0,0,0.42);\n            transition: transform 150ms ease, box-shadow 150ms ease;\n          }\n          .mini-range:active::-moz-range-thumb {\n            transform: scale(1.1);\n            box-shadow: 0 5px 14px rgba(0,0,0,0.48), 0 0 0 4px rgba(201,211,176,0.12);\n          }\n        `}</style>
 
         <div className="mt-1 grid grid-cols-3 items-center text-[9px] font-semibold text-subtle">
-          <span className="text-left">{formatTime(isSeeking ? seekValue : currentTime)}</span>
+          <span className="text-left">{formatTime(displayTime)}</span>
           <span className="text-center">{selectedSource.bitrateKbps} kbps</span>
           <span className="text-right">{formatTime(duration)}</span>
         </div>
@@ -785,14 +821,14 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
               <X size={22} />
             </button>
 
-            <section className="relative flex shrink-0 flex-col justify-center border-b border-border/45 px-5 pb-3 pt-14 md:min-h-screen md:border-b-0 md:border-r md:px-10 md:py-20 lg:px-14">
-              <div className="mx-auto flex w-full max-w-[28rem] flex-col gap-3.5 md:mx-0 md:gap-7">
+            <section className="relative flex shrink-0 flex-col justify-start border-b border-border/45 px-5 pb-3 pt-12 md:min-h-screen md:justify-center md:border-b-0 md:border-r md:px-10 md:py-20 lg:px-14">
+              <div className="mx-auto flex w-full max-w-[24rem] flex-col gap-2.5 md:mx-0 md:max-w-[28rem] md:gap-7">
                 <p className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.22em] text-warm-accent md:text-[10px]">
                   <Music2 size={13} />
                   Now playing
                 </p>
                 <motion.div
-                  className="w-[min(38vw,9rem)] overflow-hidden rounded-[1.25rem] border border-white/10 bg-bg/40 shadow-2xl shadow-black/30 md:w-full md:rounded-[1.65rem]"
+                  className="w-[min(34vw,7.75rem)] overflow-hidden rounded-[1.15rem] border border-white/10 bg-bg/40 shadow-2xl shadow-black/30 md:w-full md:rounded-[1.65rem]"
                   animate={isPlaying && !shouldReduceMotion
                     ? {
                       scale: [1, 1.006, 1],
@@ -813,14 +849,14 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                 </motion.div>
 
                 <div>
-                  <h2 className="text-2xl font-bold leading-none tracking-tight text-text sm:text-4xl md:text-5xl">
+                  <h2 className="text-[1.65rem] font-bold leading-none tracking-tight text-text sm:text-4xl md:text-5xl">
                     {track.title}
                   </h2>
-                  <p className="mt-1 text-base font-medium text-muted md:mt-2 md:text-xl">{track.artist}</p>
+                  <p className="mt-1 text-sm font-medium text-muted sm:text-base md:mt-2 md:text-xl">{track.artist}</p>
                 </div>
 
-              <div className="w-full rounded-[1.35rem] border border-white/10 bg-bg/40 p-3.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.04] backdrop-blur-xl md:rounded-[1.6rem] md:p-4">
-                <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-center gap-3 md:grid-cols-[3.75rem_minmax(0,1fr)] md:gap-4">
+              <div className="w-full rounded-[1.35rem] border border-white/10 bg-bg/55 p-3 shadow-2xl shadow-black/20 ring-1 ring-white/[0.04] backdrop-blur-xl md:rounded-[1.6rem] md:p-4">
+                <div className="grid grid-cols-[2.9rem_minmax(0,1fr)] items-center gap-3 md:grid-cols-[3.75rem_minmax(0,1fr)] md:gap-4">
                   <motion.button
                     type="button"
                     onClick={(event) => {
@@ -828,7 +864,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                       void togglePlayback();
                     }}
                     disabled={hasAudioError}
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-xl shadow-accent/10 transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-45 md:h-[3.75rem] md:w-[3.75rem]"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-xl shadow-accent/10 transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-45 md:h-[3.75rem] md:w-[3.75rem]"
                     aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
                     whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
                     animate={isPlaying && !shouldReduceMotion
@@ -840,25 +876,32 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                   </motion.button>
                   <div className="min-w-0 flex-1">
                     <input
+                      data-player-control="true"
                       aria-label={`Seek ${track.title}`}
                       type="range"
                       min={0}
                       max={duration || 0}
                       step={0.01}
-                      value={isSeeking ? seekValue : currentTime}
+                      value={displayTime}
                       onClick={(event) => event.stopPropagation()}
-                      onPointerDown={previewSeekFromPointer}
+                      onPointerDown={(event) => {
+                        event.stopPropagation();
+                        captureSeekPointer(event);
+                        previewSeekFromPointer(event);
+                      }}
+                      onPointerMove={(event) => {
+                        if (isSeekPointerActive(event)) {
+                          previewSeekFromPointer(event);
+                        }
+                      }}
                       onChange={(event) => {
                         event.stopPropagation();
                         const value = Number(event.currentTarget.value);
                         setSeekValue(value);
                         setIsSeeking(true);
                       }}
-                      onPointerUp={(event) => {
-                        event.stopPropagation();
-                        const value = Number(event.currentTarget.value);
-                        commitSeek(value);
-                      }}
+                      onPointerUp={commitSeekFromPointer}
+                      onPointerCancel={commitSeekFromPointer}
                       onMouseUp={(event) => {
                         event.stopPropagation();
                         commitSeek();
@@ -868,13 +911,13 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                         commitSeek();
                       }}
                       disabled={!duration}
-                      className="mini-range w-full"
+                      className="mini-range -my-1 w-full"
                       style={{
-                        background: `linear-gradient(90deg, rgba(201,211,176,1) ${progress}%, rgba(255,255,255,0.06) ${progress}%)`,
+                        backgroundImage: `linear-gradient(90deg, rgba(201,211,176,1) ${progress}%, rgba(255,255,255,0.06) ${progress}%)`,
                       }}
                     />
                     <div className="mt-2 grid grid-cols-3 text-[10px] font-semibold text-muted md:text-xs">
-                      <span>{formatTime(isSeeking ? seekValue : currentTime)}</span>
+                      <span>{formatTime(displayTime)}</span>
                       <span className="text-center text-subtle">{selectedSource.bitrateKbps} kbps</span>
                       <span className="text-right">{formatTime(duration)}</span>
                     </div>
@@ -889,12 +932,12 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
               </div>
             </section>
 
-            <section className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-5 pb-6 pt-2 md:min-h-screen md:px-10 md:py-20 lg:px-16">
+            <section className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-5 pb-5 pt-1 md:min-h-screen md:px-10 md:py-20 lg:px-16">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-surface via-surface/70 to-transparent" />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-surface via-surface/70 to-transparent" />
               <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-20 bg-gradient-to-r from-surface to-transparent md:block" />
               <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-20 bg-gradient-to-l from-surface to-transparent md:block" />
-              <div className="relative mx-auto h-[min(42dvh,22rem)] min-h-[11rem] w-full max-w-4xl overflow-hidden py-3 md:h-[min(68vh,42rem)] md:py-8">
+              <div className="relative mx-auto h-[min(36dvh,18rem)] min-h-[9.75rem] w-full max-w-4xl overflow-hidden py-3 md:h-[min(70vh,44rem)] md:py-8">
                 {lyrics.length > 0 ? (
                   expandedLyrics.map(({ line, index }) => {
                     const isActive = hasReachedFirstLyric && index === currentLyricIndex;
@@ -945,7 +988,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
                                     : 'translateY(0) scale(1)',
                                   transition: shouldReduceMotion
                                     ? 'opacity 180ms ease'
-                                    : 'transform 360ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms ease, text-shadow 360ms ease',
+                                    : 'transform 180ms cubic-bezier(0.23, 1, 0.32, 1), opacity 160ms ease, text-shadow 180ms ease',
                                   willChange: tokenIndex === activeTokenIndex ? 'transform' : undefined,
                                 } : undefined}
                               >

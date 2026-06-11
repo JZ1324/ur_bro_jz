@@ -29,6 +29,7 @@ export type ProfileTrack = {
   artworkSrc: string;
   sources: ProfileTrackSource[];
   lyrics?: string;
+  lyricLeadSeconds?: number;
 };
 
 export type StoryItem = {
@@ -175,6 +176,7 @@ export const profileData: ProfileData = {
       },
     ],
     lyrics: `${supabaseFunctionsUrl}/get-track-lyrics`,
+    lyricLeadSeconds: 0.2,
   },
 };
 
@@ -311,17 +313,17 @@ export const nowItems: NowItem[] = [
   {
     label: 'Building',
     title: 'This archive',
-    body: 'A small profile site with projects, music, and a few locked parts that do not need to sit in public.',
+    body: 'A fun little page about me, made with AI help.',
   },
   {
     label: 'Projects',
     title: 'Pinned builds',
-    body: 'Small tools and live pages, with just enough context to show what they do.',
+    body: 'These are some projects I have worked on before.',
   },
   {
     label: 'Music',
-    title: 'Classified track',
-    body: 'This song is staying here for a reason. Maybe it is about a crush.',
+    title: "It's So Easy to?",
+    body: 'Yeah, this is a good song.',
   },
 ];
 
@@ -355,8 +357,8 @@ export const aboutSections: AboutSection[] = [
     title: 'The longer version.',
     level: 2,
     body: [
-      'This is the part of the site that explains me a bit more than the front page does.',
-      'I still keep it locked because I do not want every detail about me sitting out in public. The outside page can stay simple. This page can have a little more context.',
+      'This is the part of the site with more context than the front page.',
+      'I keep it locked because not every detail needs to sit in public. The outside can stay simple; this page can be a little more honest.',
     ],
   },
   {
@@ -365,7 +367,7 @@ export const aboutSections: AboutSection[] = [
     level: 3,
     body: [
       'I build small websites, app ideas, and random UI experiments.',
-      'Most of my projects start because I see something that could look or feel better, then I mess with it until it feels right.',
+      'Most projects start because I see something that could look or feel better, then I keep messing with it until it feels right.',
       'I like things that are clean, a bit cinematic, and not too loud. That is why this site feels more like a private archive than a normal portfolio.',
     ],
   },
@@ -396,7 +398,8 @@ export const aboutSections: AboutSection[] = [
     title: 'Creative Projects',
     level: 4,
     body: [
-      'The projects are mostly things I built while learning, testing ideas, or trying to make a better version of something I wanted to use.',
+      'The projects are mostly things I built while learning, testing ideas, or making a cleaner version of something I wanted to use.',
+      'Flaccer is the newest one: a macOS-style audio tool for checking whether lossless files are actually lossless.',
     ],
   },
   {
@@ -420,7 +423,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Now',
     level: 3,
     body: [
-      'Right now I am still cleaning the site up: making the music player smoother, making projects clearer, and removing anything that feels like filler.',
+      'Right now I am cleaning the site up: smoother music, clearer projects, less filler.',
       'Private notes and photos stay out of the public code. If someone needs access, they can ask me.',
     ],
   },
@@ -429,7 +432,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Links',
     level: 3,
     body: [
-      'Instagram is still the easiest way to reach me. The project section is here so the site is not just another bio link.',
+      'Instagram is still the easiest way to reach me. The project section is here so the site shows the work too.',
     ],
   },
 ];
@@ -503,12 +506,12 @@ export const projects: Project[] = [
   {
     id: 'pro-timetable',
     title: 'Pro Timetable',
-    description: 'A cleaner school timetable app with a live Vercel deployment and a more focused schedule UI.',
-    longDescription: 'A standalone timetable build focused on making school schedule planning easier to scan. It is one of the more complete public projects because it has a real live deployment and a clear use case.',
-    what: 'A web timetable app for viewing and managing class schedule information in a cleaner interface.',
-    why: 'School schedules are easy to make cluttered. This project tests how far a timetable can feel polished while still being practical.',
-    learned: 'I learned how much spacing, hierarchy, and small controls matter when the same information has to be checked every day.',
-    status: 'Live on Vercel and treated as one of the main pinned builds.',
+    description: 'A cleaner school timetable app built around fast scanning and less clutter.',
+    longDescription: 'A standalone timetable build for checking a school schedule without fighting the interface. This is one of the cleaner public builds because the use case is simple and the live version is easy to test.',
+    what: 'A web timetable app for viewing class times, days, and schedule details in a calmer layout.',
+    why: 'Timetables get messy quickly. I wanted this one to feel useful first, then polished around that.',
+    learned: 'Spacing, hierarchy, and small controls matter a lot when the same screen gets checked every day.',
+    status: 'Live on Vercel and pinned as a main build.',
     image: `${import.meta.env.BASE_URL}project-pro-timetable.png`,
     tags: ['Live', 'Timetable', 'Web App'],
     tech: ['JavaScript', 'Vercel', 'Frontend UI', 'Deployment'],
@@ -518,12 +521,12 @@ export const projects: Project[] = [
   {
     id: 'imessaging',
     title: 'iMessage Stats',
-    description: 'A local analytics project that turns iMessage data into readable stats and private reports.',
-    longDescription: 'A local-report project for generating iMessage stats without sending message data to an external AI service. It focuses on counts, response timing, per-chat breakdowns, and standalone HTML reports.',
-    what: 'A local stats tool and product page for turning chat data into readable summaries.',
-    why: 'Message data is personal, so the interesting part is making the report useful while keeping the workflow local and controlled.',
-    learned: 'This helped me think more seriously about privacy, local processing, and how to present personal data without making it feel messy.',
-    status: 'Live product page on GitHub Pages, with local reporting work behind it.',
+    description: 'A local stats project for turning iMessage data into readable reports.',
+    longDescription: 'A local-report project for iMessage stats: counts, response timing, chat breakdowns, and standalone HTML reports. The point was to make personal data readable without sending it away.',
+    what: 'A local stats tool with a public page and generated report output.',
+    why: 'Message data is personal, so the useful part is keeping the workflow local and controlled.',
+    learned: 'It pushed privacy, local processing, and data presentation into the same problem.',
+    status: 'Live product page on GitHub Pages.',
     image: liveScreenshot('https://jz1324.github.io/Imessaging/'),
     tags: ['Live', 'macOS', 'Stats'],
     tech: ['Swift', 'SwiftUI', 'Python', 'HTML Reports', 'GitHub Pages'],
@@ -533,12 +536,12 @@ export const projects: Project[] = [
   {
     id: 'clipboard-manager',
     title: 'Clipboard Manager',
-    description: 'A macOS clipboard manager concept for history, search, passcode protection, and themes.',
-    longDescription: 'A macOS clipboard manager concept focused on making copied content easier to find, protect, and reuse. The public page explains the product idea and the feature direction.',
-    what: 'A clipboard history utility concept with a public project page and macOS-focused interaction ideas.',
-    why: 'Clipboard history is useful but usually hidden. This project explores a more controlled and searchable version of it.',
-    learned: 'It pushed me to think about utility design: quick access, search, protection, and keeping a tool simple enough to trust.',
-    status: 'Live on GitHub Pages as a project page and useful as a product-direction prototype.',
+    description: 'A macOS clipboard concept for history, search, protection, and themes.',
+    longDescription: 'A macOS clipboard manager concept focused on finding, protecting, and reusing copied content. The public page is more product direction than finished app, but the interface idea is clear.',
+    what: 'A clipboard history utility concept with macOS-style interaction ideas.',
+    why: 'Clipboard history is useful but usually buried. I wanted to make it feel searchable and controlled.',
+    learned: 'Utility design needs quick access, trust, and restraint more than extra features.',
+    status: 'Live on GitHub Pages as a product-direction prototype.',
     image: liveScreenshot('https://jz1324.github.io/ClipBoard-Manager/'),
     tags: ['Live', 'macOS', 'Utility'],
     tech: ['CSS', 'macOS UI', 'GitHub Pages', 'Frontend'],
@@ -546,14 +549,29 @@ export const projects: Project[] = [
     aiAssisted: true,
   },
   {
+    id: 'flaccer',
+    title: 'Flaccer',
+    description: 'A macOS fake-lossless detector for checking what is really inside audio files.',
+    longDescription: 'A macOS audio utility page and preview build for finding fake lossless files. It checks spectral content instead of trusting extensions, bitrate labels, or file size.',
+    what: 'A local-first macOS tool for scanning FLAC, WAV, AIFF, ALAC, MP3, AAC, playlists, and Rekordbox XML.',
+    why: 'A .flac file can still be fake. I wanted a cleaner way to catch upscaled audio before it ends up in a music library.',
+    learned: 'This pushed the project direction closer to a real product: native macOS workflow, download builds, update notes, trust copy, and a sharper landing page.',
+    status: 'Live on GitHub Pages with a preview DMG.',
+    image: liveScreenshot('https://jz1324.github.io/Flaccer/'),
+    tags: ['Live', 'macOS', 'Audio'],
+    tech: ['HTML', 'CSS', 'JavaScript', 'GitHub Pages', 'macOS'],
+    link: 'https://jz1324.github.io/Flaccer/',
+    aiAssisted: true,
+  },
+  {
     id: 'ur-bro-jz',
     title: 'ur_bro_jz',
-    description: 'This site: a dark profile archive with projects, music, locked sections, and private Supabase-backed access.',
-    longDescription: 'The current portfolio archive. It combines an Instagram-inspired profile, project cards, a music player, locked story sections, and Supabase-backed private archive access.',
+    description: 'This site: profile, projects, music, locked sections, and Supabase-backed access.',
+    longDescription: 'The current archive site. It mixes a profile card, project case files, a synced music player, locked story sections, and Supabase functions for private access.',
     what: 'A Vite + React personal archive with public profile/project content and private sections kept outside the static bundle.',
-    why: 'A normal bio link felt too flat. This turns the profile into a more memorable archive while keeping private content separated.',
+    why: 'A normal bio link felt too flat. This makes the profile feel like a small archive instead.',
     learned: 'This is where I learned the most about polish: scroll locking, overlays, music sync, private functions, and making copy sound like me.',
-    status: 'Live and actively being polished as the main personal site.',
+    status: 'Live and actively polished as the main personal site.',
     image: liveScreenshot('https://jz1324.github.io/ur_bro_jz/'),
     tags: ['Live', 'Archive', 'React'],
     tech: ['Vite', 'React', 'TypeScript', 'Tailwind CSS', 'Supabase'],
@@ -563,12 +581,12 @@ export const projects: Project[] = [
   {
     id: 'premium-timetable',
     title: 'Premium Timetable',
-    description: 'The original timetable build that led into the newer Pro Timetable direction.',
-    longDescription: 'The earlier timetable project and documentation base. It captures setup, deployment notes, parser work, and the first version of the schedule interface.',
-    what: 'An older timetable web project with docs and feature experiments that became the base for later timetable work.',
-    why: 'It shows the rougher first pass and the iteration path before the cleaner standalone version.',
-    learned: 'It showed me which parts of the timetable idea were useful and which parts needed a cleaner second version.',
-    status: 'Live on GitHub Pages as an older but useful checkpoint.',
+    description: 'The earlier timetable build that shaped the newer Pro version.',
+    longDescription: 'The first timetable direction: setup notes, parser work, deployment notes, and the rougher schedule interface before the cleaner Pro Timetable pass.',
+    what: 'An older timetable project with docs and feature experiments.',
+    why: 'It shows the first pass and why the idea needed a cleaner second version.',
+    learned: 'It made the useful parts of the timetable idea easier to separate from the noise.',
+    status: 'Live on GitHub Pages as an older checkpoint.',
     image: liveScreenshot('https://jz1324.github.io/Premium-Timetable/'),
     tags: ['Live', 'Timetable', 'Docs'],
     tech: ['JavaScript', 'GitHub Pages', 'Documentation', 'Frontend'],
@@ -578,11 +596,11 @@ export const projects: Project[] = [
   {
     id: 'about-me',
     title: 'about-me',
-    description: 'A TypeScript personal-site experiment used to test earlier about-me layout ideas.',
-    longDescription: 'A smaller TypeScript personal site that works as an earlier design checkpoint. It helped test profile copy, layout structure, and what a personal homepage should feel like.',
+    description: 'An earlier TypeScript personal-site experiment.',
+    longDescription: 'A smaller personal site used to test layout, copy, and the basic about-me direction before this darker archive version became the main one.',
     what: 'A static personal website experiment deployed on GitHub Pages.',
-    why: 'It gave a quick place to test the about-me direction before moving the stronger ideas into this archive.',
-    learned: 'It helped me see what felt too plain, what felt too much like a template, and why this archive direction worked better.',
+    why: 'It gave me a quick place to test what felt too plain and what was worth keeping.',
+    learned: 'It showed why the archive direction felt more personal than a normal template page.',
     status: 'Live on GitHub Pages as a design checkpoint.',
     image: liveScreenshot('https://jz1324.github.io/about-me/'),
     tags: ['Live', 'About', 'TypeScript'],

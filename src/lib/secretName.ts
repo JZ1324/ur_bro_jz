@@ -3,7 +3,7 @@ type SecretNameErrorCode =
   | 'invalid_response'
   | 'request_failed';
 
-export type SecretPuzzleStage = 'fragment' | 'hex' | 'cipher';
+export type SecretPuzzleStage = 'fragment' | 'payload' | 'hex' | 'cipher';
 
 type SecretPuzzleResponse = {
   matched: boolean;
