@@ -22,6 +22,7 @@ import { StoryHighlights } from './components/StoryHighlights';
 import { TextScramble } from './components/TextScramble';
 import Stepper, { Step } from './components/ui/Stepper';
 import { ThemeToggle, type Theme } from './components/ui/ThemeToggle';
+import { readStoredTheme, storeTheme } from './themePreference';
 import { useBodyScrollLock } from './hooks/useBodyScrollLock';
 import {
   aboutSections,
@@ -365,7 +366,7 @@ export default function App() {
   const [privateArchiveSections, setPrivateArchiveSections] = useState<Partial<Record<ArchiveSectionId, PrivateArchiveSection>>>({});
   const [archiveAccessKey, setArchiveAccessKey] = useState<string | null>(null);
   const [archiveErrorMessage, setArchiveErrorMessage] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(() => readStoredTheme() === 'dark');
   const { scrollYProgress: pageScrollProgress } = useScroll();
   const { scrollYProgress: meadowScrollProgress } = useScroll({
     target: meadowRef,
@@ -389,6 +390,8 @@ export default function App() {
     } else {
       document.documentElement.classList.remove('dark');
     }
+    document.documentElement.dataset.theme = isDarkMode ? 'dark' : 'light';
+    storeTheme(isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
   useEffect(() => {

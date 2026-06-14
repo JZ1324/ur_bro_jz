@@ -6,6 +6,7 @@ import {
   useTransform,
   type MotionValue,
 } from 'motion/react';
+import { advanceCelestialCycle } from './celestialCycle';
 import { gardenTiming } from './gardenTiming';
 
 type MeadowTheme = 'day' | 'evening';
@@ -441,6 +442,9 @@ function CelestialCycle({
   theme: MeadowTheme;
   reducedMotion: boolean;
 }) {
+  const cycleRef = useRef({ theme, cycle: 0 });
+  cycleRef.current = advanceCelestialCycle(cycleRef.current, theme);
+  const cycle = cycleRef.current.cycle;
   const transition = reducedMotion
     ? { duration: 0 }
     : { duration: 0.9, ease: [0.45, 0, 0.2, 1] as const };
@@ -448,13 +452,14 @@ function CelestialCycle({
   return (
     <AnimatePresence initial={false} mode="sync">
       <motion.div
-        key={theme}
+        key={`${theme}-${cycle}`}
         initial={reducedMotion ? false : { x: '-34vw', y: '18vh', rotate: -34, opacity: 0 }}
         animate={{ x: 0, y: 0, rotate: 0, opacity: 1 }}
         exit={reducedMotion ? { opacity: 0 } : { x: '58vw', y: '18vh', rotate: 34, opacity: 0 }}
         transition={transition}
         className="pixel-garden-sprite absolute inset-0 h-full w-full"
         data-meadow-celestial-body={theme === 'evening' ? 'moon' : 'sun'}
+        data-meadow-celestial-cycle={cycle}
       >
         {theme === 'evening' ? (
           <div className="h-full w-full -rotate-12 scale-110">

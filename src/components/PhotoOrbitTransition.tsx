@@ -16,6 +16,8 @@ type PhotoSlot = {
   angle: number;
   tilt: number;
   depth: number;
+  stamps: string[];
+  stampTilt: number;
   mobileHidden?: boolean;
 };
 
@@ -27,6 +29,8 @@ const photoSlots: PhotoSlot[] = [
     angle: -158,
     tilt: -8,
     depth: 0.55,
+    stamps: ['/photo-gallery/stamps/stamp-01.png'],
+    stampTilt: -4,
   },
   {
     id: 'photo-02',
@@ -35,6 +39,8 @@ const photoSlots: PhotoSlot[] = [
     angle: -88,
     tilt: 7,
     depth: 0.82,
+    stamps: ['/photo-gallery/stamps/stamp-02.png'],
+    stampTilt: 3,
   },
   {
     id: 'photo-03',
@@ -43,6 +49,8 @@ const photoSlots: PhotoSlot[] = [
     angle: -18,
     tilt: -4,
     depth: 1,
+    stamps: ['/photo-gallery/stamps/stamp-03.png', '/photo-gallery/stamps/stamp-06.png'],
+    stampTilt: -3,
   },
   {
     id: 'photo-04',
@@ -51,6 +59,8 @@ const photoSlots: PhotoSlot[] = [
     angle: 54,
     tilt: 9,
     depth: 0.72,
+    stamps: ['/photo-gallery/stamps/stamp-04.png'],
+    stampTilt: 4,
     mobileHidden: true,
   },
   {
@@ -60,6 +70,8 @@ const photoSlots: PhotoSlot[] = [
     angle: 126,
     tilt: -6,
     depth: 0.64,
+    stamps: ['/photo-gallery/stamps/stamp-05.png'],
+    stampTilt: -2,
     mobileHidden: true,
   },
 ];
@@ -102,23 +114,60 @@ function BlankPhotoFace({ slot }: { slot: PhotoSlot }) {
           <span className="absolute bottom-[10%] left-[10%] h-1.5 w-1.5 rotate-45 border border-accent/35" />
         </div>
       )}
-      <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-border/35" />
+      <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-border/35 dark:ring-[#8B9B79]/25" />
     </div>
   );
 }
 
-function PhotoBack() {
+function PhotoBack({ slot }: { slot: PhotoSlot }) {
+  const hasPairedStamps = slot.stamps.length > 1;
+
   return (
     <div
-      className="absolute inset-0 overflow-hidden rounded-[0.18rem] bg-[color-mix(in_srgb,var(--color-surface)_88%,var(--color-bg))] [backface-visibility:hidden]"
+      className="absolute inset-0 overflow-hidden rounded-[0.18rem] bg-[#E9E1D2] text-[#675E50] transition-colors duration-300 [backface-visibility:hidden] dark:bg-[#20271D] dark:text-[#ADB79C]"
       style={{ transform: 'rotateY(180deg)' }}
+      data-photo-back
     >
-      <span className="absolute inset-x-[14%] top-[24%] h-px bg-border/55" />
-      <span className="absolute inset-x-[22%] top-[36%] h-px bg-border/35" />
-      <span className="absolute inset-x-[18%] top-[48%] h-px bg-border/45" />
-      <span className="absolute bottom-[18%] right-[14%] h-7 w-7 rotate-6 border border-dashed border-warm-accent/40" />
-      <span className="absolute bottom-[12%] left-[14%] h-2 w-2 rotate-45 bg-accent/25" />
-      <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-border/35" />
+      <span className="absolute inset-0 bg-[linear-gradient(155deg,rgba(255,255,255,0.2),transparent_44%),repeating-linear-gradient(0deg,rgba(100,80,58,0.025)_0_1px,transparent_1px_3px)] dark:bg-[linear-gradient(155deg,rgba(204,219,181,0.06),transparent_44%),repeating-linear-gradient(0deg,rgba(198,213,176,0.025)_0_1px,transparent_1px_3px)]" />
+      <span className="absolute bottom-[12%] top-[14%] left-[56%] w-px bg-[#8B7B66]/24 dark:bg-[#9BAA89]/24" />
+
+      <span className="absolute left-[10%] top-[25%] h-px w-[34%] bg-[#776B5A]/40 dark:bg-[#AAB99A]/38" />
+      <span className="absolute left-[10%] top-[38%] h-px w-[38%] bg-[#776B5A]/30 dark:bg-[#AAB99A]/28" />
+      <span className="absolute left-[10%] top-[51%] h-px w-[31%] bg-[#776B5A]/35 dark:bg-[#AAB99A]/32" />
+      <span className="absolute bottom-[13%] left-[11%] h-2 w-2 rotate-45 border border-[#9A725D]/35 dark:border-[#D18A72]/35" />
+
+      <span className="absolute right-[38%] top-[20%] h-[30%] w-[30%] rounded-full border border-[#756856]/20 dark:border-[#9BAA89]/20" />
+      <span className="absolute right-[42%] top-[24%] h-[22%] w-[22%] rounded-full border border-[#756856]/18 dark:border-[#9BAA89]/18" />
+      <span className="absolute right-[24%] top-[30%] h-px w-[34%] -rotate-6 bg-[#756856]/22 dark:bg-[#9BAA89]/22" />
+      <span className="absolute right-[22%] top-[36%] h-px w-[36%] -rotate-6 bg-[#756856]/18 dark:bg-[#9BAA89]/18" />
+      <span className="absolute right-[25%] top-[42%] h-px w-[31%] -rotate-6 bg-[#756856]/16 dark:bg-[#9BAA89]/16" />
+
+      <span
+        className={`absolute right-[7%] top-[7%] ${hasPairedStamps ? 'h-[43%] w-[45%]' : 'h-[39%] w-[34%]'}`}
+        style={{ transform: `rotate(${slot.stampTilt}deg)` }}
+      >
+        {slot.stamps.map((stamp, index) => (
+          <img
+            key={stamp}
+            src={stamp}
+            alt=""
+            width="500"
+            height="500"
+            loading="lazy"
+            decoding="async"
+            aria-hidden="true"
+            data-photo-stamp
+            className={`absolute object-contain drop-shadow-[1px_2px_1px_rgba(72,54,38,0.2)] transition-[filter] duration-300 dark:brightness-[0.76] dark:saturate-[0.78] dark:drop-shadow-[1px_2px_1px_rgba(0,0,0,0.38)] ${
+              hasPairedStamps
+                ? index === 0
+                  ? 'left-0 top-0 h-[76%] w-[66%] -rotate-6'
+                  : 'bottom-0 right-0 h-[76%] w-[66%] rotate-6'
+                : 'inset-0 h-full w-full'
+            }`}
+          />
+        ))}
+      </span>
+      <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-[#B9AA93]/32 dark:ring-[#8B9B79]/28" />
     </div>
   );
 }
@@ -163,7 +212,7 @@ function OrbitPhoto({
     <motion.button
       type="button"
       onClick={() => setFlipped((current) => !current)}
-      className={`absolute left-1/2 top-1/2 aspect-[4/5] w-[clamp(6.2rem,11vw,8.5rem)] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-[0.22rem] bg-[#D9D1C1] p-[clamp(0.34rem,0.7vw,0.5rem)] pb-[clamp(0.7rem,1.4vw,1rem)] shadow-xl shadow-black/20 outline-none focus-visible:ring-2 focus-visible:ring-accent dark:bg-[#EEE5D5] ${slot.mobileHidden ? 'hidden sm:block' : ''}`}
+      className={`absolute left-1/2 top-1/2 aspect-[4/5] w-[clamp(6.2rem,11vw,8.5rem)] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-[0.22rem] bg-[#D9D1C1] p-[clamp(0.34rem,0.7vw,0.5rem)] pb-[clamp(0.7rem,1.4vw,1rem)] shadow-xl shadow-black/20 ring-1 ring-[#BEB39F]/25 outline-none transition-[background-color,box-shadow,ring-color] duration-300 focus-visible:ring-2 focus-visible:ring-accent dark:bg-[#252C22] dark:shadow-black/45 dark:ring-[#667359]/35 ${slot.mobileHidden ? 'hidden sm:block' : ''}`}
       style={{ x, y, scale, rotate, opacity, zIndex: Math.round(slot.depth * 10) }}
       whileHover={reducedMotion ? undefined : { scale: 1.04 }}
       whileTap={reducedMotion ? undefined : { scale: 0.98 }}
@@ -177,7 +226,7 @@ function OrbitPhoto({
         transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 24 }}
       >
         <BlankPhotoFace slot={slot} />
-        <PhotoBack />
+        <PhotoBack slot={slot} />
       </motion.span>
     </motion.button>
   );
