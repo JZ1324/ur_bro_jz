@@ -24,6 +24,7 @@ import Stepper, { Step } from './components/ui/Stepper';
 import { ThemeToggle, type Theme } from './components/ui/ThemeToggle';
 import { readStoredTheme, storeTheme } from './themePreference';
 import { useBodyScrollLock } from './hooks/useBodyScrollLock';
+import { requestCappedPageScroll, useCappedPageScroll } from './hooks/pageScrollLimiter';
 import {
   aboutSections,
   archiveSections,
@@ -383,6 +384,7 @@ export default function App() {
       : accessStatusCopy.checking;
 
   useBodyScrollLock(showModal);
+  useCappedPageScroll();
 
   useEffect(() => {
     if (isDarkMode) {
@@ -594,7 +596,7 @@ export default function App() {
       <header className="fixed top-0 left-0 w-full z-40 bg-bg/85 backdrop-blur-md border-b border-border/50 flex justify-center px-4 py-3">
         <div className="w-full max-w-container-max flex justify-between items-center">
           <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => requestCappedPageScroll(0)}
             className="text-xl font-bold tracking-tight text-text"
             aria-label="Back to top"
           >
