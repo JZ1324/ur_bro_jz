@@ -13,6 +13,12 @@
   --color-accent-soft: #E5DDCF;
   --color-border: #D0C6B6;
   --color-warm-accent: #E49A78;
+  --garden-vine: #557A48;
+  --garden-vine-bright: #82A86D;
+  --garden-leaf: #679556;
+  --garden-vine-ink: #263F22;
+  --garden-pixel-glow: rgba(55, 85, 45, 0.28);
+  --garden-pixel-shadow: rgba(65, 35, 31, 0.2);
 
   --dark-color-bg: #11150F;
   --dark-color-surface: #1B2018;
@@ -24,6 +30,12 @@
   --dark-color-accent-soft: #23291F;
   --dark-color-border: #303728;
   --dark-color-warm-accent: #E49A78;
+  --dark-garden-vine: #6F915F;
+  --dark-garden-vine-bright: #A8C58A;
+  --dark-garden-leaf: #789B68;
+  --dark-garden-vine-ink: #3D5436;
+  --dark-garden-pixel-glow: rgba(196, 224, 155, 0.24);
+  --dark-garden-pixel-shadow: rgba(0, 0, 0, 0.42);
   
   /* Map these for easier use with Tailwind utility classes */
   --color-primary: var(--color-accent);
@@ -43,6 +55,8 @@
 
 @layer base {
   html {
+    position: relative;
+    overscroll-behavior-y: none;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -56,14 +70,14 @@
   body {
     @apply bg-bg text-text antialiased;
     position: relative;
+    overscroll-behavior-y: none;
     background:
       radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 34rem),
       radial-gradient(circle at 90% 12%, color-mix(in srgb, var(--color-warm-accent) 10%, transparent), transparent 24rem),
       var(--color-bg);
   }
 
-  body::before,
-  body::after {
+  body::before {
     content: '';
     position: fixed;
     inset: 0;
@@ -78,16 +92,6 @@
       linear-gradient(90deg, color-mix(in srgb, var(--color-border) 18%, transparent) 1px, transparent 1px);
     background-size: 72px 72px;
     mask-image: radial-gradient(circle at 50% 16%, black, transparent 72%);
-  }
-
-  body::after {
-    opacity: 0.22;
-    background-image:
-      radial-gradient(circle at 20% 30%, color-mix(in srgb, var(--color-accent) 18%, transparent) 0 1px, transparent 1.5px),
-      radial-gradient(circle at 70% 60%, color-mix(in srgb, var(--color-warm-accent) 16%, transparent) 0 1px, transparent 1.5px);
-    background-size: 38px 38px, 54px 54px;
-    animation: archive-ambient-drift 28s linear infinite;
-    mask-image: linear-gradient(to bottom, transparent, black 14%, black 82%, transparent);
   }
 
   #root {
@@ -107,9 +111,24 @@
   --color-accent-soft: var(--dark-color-accent-soft);
   --color-border: var(--dark-color-border);
   --color-warm-accent: var(--dark-color-warm-accent);
+  --garden-vine: var(--dark-garden-vine);
+  --garden-vine-bright: var(--dark-garden-vine-bright);
+  --garden-leaf: var(--dark-garden-leaf);
+  --garden-vine-ink: var(--dark-garden-vine-ink);
+  --garden-pixel-glow: var(--dark-garden-pixel-glow);
+  --garden-pixel-shadow: var(--dark-garden-pixel-shadow);
 }
 
 @layer utilities {
+  .pixel-garden-sprite {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    filter:
+      drop-shadow(1px 1px 0 var(--garden-pixel-shadow))
+      drop-shadow(0 0 3px var(--garden-pixel-glow));
+    transform-origin: center;
+  }
+
   .premium-transition {
     transition-property: color, background-color, border-color, box-shadow, opacity, transform;
     transition-duration: 180ms;
@@ -149,18 +168,6 @@
     58%, 100% {
       opacity: 0;
       transform: translateX(120%) skewX(-10deg);
-    }
-  }
-
-  @keyframes archive-ambient-drift {
-    0% {
-      transform: translate3d(0, 0, 0);
-    }
-    50% {
-      transform: translate3d(-14px, 10px, 0);
-    }
-    100% {
-      transform: translate3d(0, 0, 0);
     }
   }
 
@@ -340,7 +347,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .profile-avatar-shine,
-  body::after,
   .archive-brand-signal::before,
   .animate-shimmer,
   .animate-caret-blink,

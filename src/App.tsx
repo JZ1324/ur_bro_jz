@@ -8,10 +8,13 @@ import { ExternalLink, Folder, GraduationCap, LayoutGrid, Lock, Menu, Music, Plu
 import { AnimatePresence, motion, useScroll } from 'motion/react';
 import { ArchiveVault } from './components/ArchiveVault';
 import { AboutOverlay } from './components/AboutOverlay';
+import { GardenScrollScene } from './components/GardenScrollScene';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from './components/InputOTP';
 import { JesusOverlay } from './components/JesusOverlay';
 import { NowSection } from './components/NowSection';
 import { ParallaxLayer } from './components/ParallaxLayer';
+import { PhotoOrbitTransition } from './components/PhotoOrbitTransition';
+import { PixelMeadow } from './components/PixelMeadow';
 import { ProfileCard } from './components/ProfileCard';
 import { ProjectOverlays } from './components/ProjectOverlays';
 import { SecretPuzzleOverlay } from './components/SecretPuzzleOverlay';
@@ -337,6 +340,7 @@ function ArchiveMapOverlay({
 
 export default function App() {
   const homeRef = useRef<HTMLElement>(null);
+  const meadowRef = useRef<HTMLElement>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
@@ -362,6 +366,11 @@ export default function App() {
   const [archiveAccessKey, setArchiveAccessKey] = useState<string | null>(null);
   const [archiveErrorMessage, setArchiveErrorMessage] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const { scrollYProgress: pageScrollProgress } = useScroll();
+  const { scrollYProgress: meadowScrollProgress } = useScroll({
+    target: meadowRef,
+    offset: ['start end', 'end end'],
+  });
   const { scrollYProgress: homeScrollProgress } = useScroll({
     target: homeRef,
     offset: ['start start', 'end start'],
@@ -577,7 +586,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-10 flex flex-col items-center bg-bg selection:bg-accent-soft/40">
+    <div className="relative isolate min-h-screen pt-20 flex flex-col items-center bg-bg selection:bg-accent-soft/40">
+      <GardenScrollScene progress={pageScrollProgress} theme={isDarkMode ? 'evening' : 'day'} />
       <header className="fixed top-0 left-0 w-full z-40 bg-bg/85 backdrop-blur-md border-b border-border/50 flex justify-center px-4 py-3">
         <div className="w-full max-w-container-max flex justify-between items-center">
           <button
@@ -620,7 +630,7 @@ export default function App() {
         </div>
       </header>
 
-      <main ref={homeRef} className="w-full max-w-container-max px-4 flex flex-col gap-12 flex-grow">
+      <main ref={homeRef} className="relative z-20 w-full max-w-container-max px-4 flex flex-col gap-10 flex-grow sm:gap-[clamp(2.75rem,6vh,4.25rem)]">
         <ProfileCard
           profile={profileData}
           faithHover={faithHover}
@@ -649,6 +659,7 @@ export default function App() {
         >
           <NowSection items={nowItems} onSecretClick={() => setShowSecretPuzzle(true)} />
         </ParallaxLayer>
+        <PhotoOrbitTransition />
 
         <motion.hr
           initial={{ opacity: 0 }}
@@ -690,6 +701,13 @@ export default function App() {
           </div>
         </footer>
       </main>
+
+      <PixelMeadow
+        progress={meadowScrollProgress}
+        pageProgress={pageScrollProgress}
+        sectionRef={meadowRef}
+        theme={isDarkMode ? 'evening' : 'day'}
+      />
 
       <AnimatePresence>
         {showModal && (

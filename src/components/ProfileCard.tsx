@@ -26,7 +26,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.42, ease: [0.23, 1, 0.32, 1] }}
-      className="archive-corner-panel relative mx-auto mt-4 grid w-full max-w-4xl grid-cols-1 items-center gap-5 overflow-hidden rounded-[1.35rem] border border-border/60 bg-surface px-4 py-4 shadow-2xl shadow-black/20 ring-1 ring-accent/5 sm:mt-6 sm:gap-6 sm:rounded-2xl sm:px-6 sm:py-6 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)] md:gap-8 md:px-8 md:py-7 lg:gap-9"
+      className="archive-corner-panel relative mx-auto mt-4 grid w-full max-w-4xl grid-cols-1 items-center gap-5 overflow-hidden rounded-[1.35rem] border border-border/60 bg-surface px-4 py-4 shadow-2xl shadow-black/20 ring-1 ring-accent/5 sm:mt-6 sm:gap-6 sm:rounded-2xl sm:px-6 sm:py-6 md:grid-cols-2 md:gap-8 md:px-8 md:py-7 lg:gap-9"
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(201,211,176,0.12),transparent_46%),radial-gradient(circle_at_85%_25%,rgba(228,154,120,0.09),transparent_34%)]" />
       <div className="relative z-10 flex w-full min-w-0 flex-col items-center justify-center justify-self-center">

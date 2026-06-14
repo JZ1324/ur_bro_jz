@@ -584,7 +584,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   return (
     <>
     <div
-      className="relative z-10 mt-3 min-h-[6.25rem] w-full max-w-[13rem] cursor-pointer overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-200 ease-out hover:-translate-y-px active:scale-[0.99]"
+      className="relative z-10 mt-3 min-h-[6.25rem] w-full max-w-[13rem] cursor-pointer overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-200 ease-out hover:-translate-y-px active:scale-[0.99] md:max-w-[15rem]"
       role="button"
       tabIndex={0}
       onClick={(event) => {
