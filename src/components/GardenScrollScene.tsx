@@ -43,7 +43,6 @@ type BloomSpriteSpec = {
   breeze: number;
   path?: string;
   themedPaths?: Record<GardenTheme, string>;
-  particlePalettes?: Record<GardenTheme, string[]>;
 };
 
 const vineSegments: GardenCubicSegment[] = [
@@ -72,10 +71,6 @@ const vineSegments: GardenCubicSegment[] = [
     end: { x: 86.5, y: 84 },
   },
 ];
-
-const vineParticleTargets = vineSegments.flatMap((segment, segmentIndex) => (
-  Array.from({ length: 25 }, (_, index) => cubicPoint(segment, (index + (segmentIndex === 0 ? 0 : 1)) / 25))
-));
 
 const bloomSprites: BloomSpriteSpec[] = [
   {
@@ -144,10 +139,6 @@ const bloomSprites: BloomSpriteSpec[] = [
     themedPaths: {
       day: '/garden-pixel/rose-bloom-pink-day-strip.png?v=rounded-1',
       evening: '/garden-pixel/rose-bloom-pink-evening-strip.png?v=rounded-1',
-    },
-    particlePalettes: {
-      day: ['#673044', '#965062', '#c56875', '#e58990', '#f9beae', '#78945f'],
-      evening: ['#491439', '#801f60', '#bb3084', '#e65ba5', '#ffa8d2', '#9bc27e'],
     },
   },
   {
@@ -507,114 +498,6 @@ function PixelLeaf({
   );
 }
 
-function PixelParticleCanvas({
-  progress,
-  reducedMotion,
-  theme,
-}: {
-  progress: MotionValue<number>;
-  reducedMotion: boolean;
-  theme: GardenTheme;
-}) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pointerRef = useRef({ x: 0, y: 0 });
-  const frameRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (reducedMotion) return;
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const context = canvas.getContext('2d');
-    if (!context) return;
-
-    let width = 0;
-    let height = 0;
-    let pixelRatio = 1;
-    let isVisible = !document.hidden;
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    const particleCap = isMobile ? 48 : 90;
-    const defaultPalette = ['#65162b', '#a8243b', '#d84759', '#f08a79', '#78945f', '#c9d3b0'];
-
-    const resize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
-      canvas.width = Math.round(width * pixelRatio);
-      canvas.height = Math.round(height * pixelRatio);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-    };
-
-    const draw = () => {
-      frameRef.current = null;
-      context.clearRect(0, 0, width, height);
-      if (!isVisible) return;
-
-      const value = progress.get();
-      const activePoint = vineParticleTargets[Math.min(
-        vineParticleTargets.length - 1,
-        Math.floor((value / 0.84) * vineParticleTargets.length),
-      )];
-      const activeBloom = bloomSprites.find((sprite) => value >= sprite.grow[0] - 0.03 && value <= sprite.bloom[1] + 0.04);
-      const palette = activeBloom?.particlePalettes?.[theme] ?? defaultPalette;
-      const center = activeBloom ? bloomPathPoint(activeBloom) : activePoint;
-      if (!center || value <= 0.005 || value >= 0.94) return;
-
-      const centerX = (center.x / 100) * width;
-      const centerY = (center.y / 100) * height;
-      for (let index = 0; index < particleCap; index += 1) {
-        const angle = index * 2.399 + value * 8;
-        const radius = 5 + ((index * 11) % (activeBloom ? 48 : 28));
-        const size = 2 + (index % 3);
-        context.globalAlpha = 0.22 + (index % 4) * 0.1;
-        context.fillStyle = palette[index % palette.length];
-        context.fillRect(
-          Math.round(centerX + Math.cos(angle) * radius + pointerRef.current.x * 0.006),
-          Math.round(centerY + Math.sin(angle) * radius + pointerRef.current.y * 0.004),
-          size,
-          size,
-        );
-      }
-      context.globalAlpha = 1;
-    };
-
-    const scheduleDraw = () => {
-      if (frameRef.current === null) frameRef.current = requestAnimationFrame(draw);
-    };
-    const handlePointer = (event: PointerEvent) => {
-      pointerRef.current = {
-        x: event.clientX - window.innerWidth / 2,
-        y: event.clientY - window.innerHeight / 2,
-      };
-      scheduleDraw();
-    };
-    const handleVisibility = () => {
-      isVisible = !document.hidden;
-      scheduleDraw();
-    };
-
-    resize();
-    const unsubscribe = progress.on('change', scheduleDraw);
-    window.addEventListener('resize', resize);
-    window.addEventListener('pointermove', handlePointer, { passive: true });
-    document.addEventListener('visibilitychange', handleVisibility);
-    scheduleDraw();
-
-    return () => {
-      unsubscribe();
-      window.removeEventListener('resize', resize);
-      window.removeEventListener('pointermove', handlePointer);
-      document.removeEventListener('visibilitychange', handleVisibility);
-      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
-    };
-  }, [progress, reducedMotion, theme]);
-
-  if (reducedMotion) return null;
-  return <canvas ref={canvasRef} className="fixed inset-0 h-full w-full" />;
-}
-
 type FallingPetal = {
   x: number;
   y: number;
@@ -838,7 +721,6 @@ export function GardenScrollScene({ progress, theme }: GardenScrollSceneProps) {
         />
       ))}
 
-      <PixelParticleCanvas progress={gardenProgress} reducedMotion={reducedMotion} theme={theme} />
       <FallingPetalCanvas reducedMotion={reducedMotion} theme={theme} />
     </div>
   );
