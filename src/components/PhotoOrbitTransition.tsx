@@ -18,7 +18,6 @@ type PhotoSlot = {
   depth: number;
   stamps: string[];
   stampTilt: number;
-  mobileHidden?: boolean;
 };
 
 const photoSlots: PhotoSlot[] = [
@@ -61,7 +60,6 @@ const photoSlots: PhotoSlot[] = [
     depth: 0.72,
     stamps: ['/photo-gallery/stamps/stamp-04.png'],
     stampTilt: 4,
-    mobileHidden: true,
   },
   {
     id: 'photo-05',
@@ -72,7 +70,6 @@ const photoSlots: PhotoSlot[] = [
     depth: 0.64,
     stamps: ['/photo-gallery/stamps/stamp-05.png'],
     stampTilt: -2,
-    mobileHidden: true,
   },
 ];
 
@@ -212,7 +209,7 @@ function OrbitPhoto({
     <motion.button
       type="button"
       onClick={() => setFlipped((current) => !current)}
-      className={`absolute left-1/2 top-1/2 aspect-[4/5] w-[clamp(6.2rem,11vw,8.5rem)] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-[0.22rem] bg-[#D9D1C1] p-[clamp(0.34rem,0.7vw,0.5rem)] pb-[clamp(0.7rem,1.4vw,1rem)] shadow-xl shadow-black/20 ring-1 ring-[#BEB39F]/25 outline-none transition-[background-color,box-shadow,ring-color] duration-300 focus-visible:ring-2 focus-visible:ring-accent dark:bg-[#252C22] dark:shadow-black/45 dark:ring-[#667359]/35 ${slot.mobileHidden ? 'hidden sm:block' : ''}`}
+      className="absolute left-1/2 top-1/2 aspect-[4/5] w-[clamp(5rem,22vw,5.75rem)] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-[0.22rem] bg-[#D9D1C1] p-[clamp(0.34rem,0.7vw,0.5rem)] pb-[clamp(0.7rem,1.4vw,1rem)] shadow-xl shadow-black/20 ring-1 ring-[#BEB39F]/25 outline-none transition-[background-color,box-shadow,ring-color] duration-300 focus-visible:ring-2 focus-visible:ring-accent sm:w-[clamp(6.2rem,11vw,8.5rem)] dark:bg-[#252C22] dark:shadow-black/45 dark:ring-[#667359]/35"
       style={{ x, y, scale, rotate, opacity, zIndex: Math.round(slot.depth * 10) }}
       whileHover={reducedMotion ? undefined : { scale: 1.04 }}
       whileTap={reducedMotion ? undefined : { scale: 0.98 }}
