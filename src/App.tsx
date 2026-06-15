@@ -600,7 +600,7 @@ export default function App() {
             className="text-xl font-bold tracking-tight text-text"
             aria-label="Back to top"
           >
-            <TextScramble text="jz.archive" className="archive-brand-signal scale-75 origin-left" />
+            <TextScramble text="About.JZ" className="archive-brand-signal scale-75 origin-left" />
           </button>
           <div className="flex items-center gap-2 text-accent">
             <ThemeToggle
@@ -698,10 +698,10 @@ export default function App() {
           </div>
           <div className="mt-6 flex items-center justify-between gap-4 border-t border-border/35 pt-5">
             <span className="font-bold tracking-wide text-accent">
-              <TextScramble text="jz.archive" className="scale-90" />
+              <TextScramble text="About.JZ" className="scale-90" />
             </span>
             <span className="text-right text-[10px] font-bold uppercase tracking-widest text-[#8E927F]">
-              © {new Date().getFullYear()} joshua.archive
+              © {new Date().getFullYear()} About.JZ
             </span>
           </div>
         </footer>

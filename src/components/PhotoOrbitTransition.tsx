@@ -18,6 +18,7 @@ type PhotoSlot = {
   depth: number;
   stamps: string[];
   stampTilt: number;
+  note: string;
 };
 
 const photoSlots: PhotoSlot[] = [
@@ -30,6 +31,7 @@ const photoSlots: PhotoSlot[] = [
     depth: 0.55,
     stamps: ['/photo-gallery/stamps/stamp-01.png'],
     stampTilt: -4,
+    note: 'bike ride to the beach',
   },
   {
     id: 'photo-02',
@@ -40,6 +42,7 @@ const photoSlots: PhotoSlot[] = [
     depth: 0.82,
     stamps: ['/photo-gallery/stamps/stamp-02.png'],
     stampTilt: 3,
+    note: 'camp photo',
   },
   {
     id: 'photo-03',
@@ -50,6 +53,7 @@ const photoSlots: PhotoSlot[] = [
     depth: 1,
     stamps: ['/photo-gallery/stamps/stamp-03.png', '/photo-gallery/stamps/stamp-06.png'],
     stampTilt: -3,
+    note: 'camp photo',
   },
   {
     id: 'photo-04',
@@ -60,6 +64,7 @@ const photoSlots: PhotoSlot[] = [
     depth: 0.72,
     stamps: ['/photo-gallery/stamps/stamp-04.png'],
     stampTilt: 4,
+    note: 'photo shoot',
   },
   {
     id: 'photo-05',
@@ -70,6 +75,7 @@ const photoSlots: PhotoSlot[] = [
     depth: 0.64,
     stamps: ['/photo-gallery/stamps/stamp-05.png'],
     stampTilt: -2,
+    note: 'bike ride',
   },
 ];
 
@@ -128,9 +134,13 @@ function PhotoBack({ slot }: { slot: PhotoSlot }) {
       <span className="absolute inset-0 bg-[linear-gradient(155deg,rgba(255,255,255,0.2),transparent_44%),repeating-linear-gradient(0deg,rgba(100,80,58,0.025)_0_1px,transparent_1px_3px)] dark:bg-[linear-gradient(155deg,rgba(204,219,181,0.06),transparent_44%),repeating-linear-gradient(0deg,rgba(198,213,176,0.025)_0_1px,transparent_1px_3px)]" />
       <span className="absolute bottom-[12%] top-[14%] left-[56%] w-px bg-[#8B7B66]/24 dark:bg-[#9BAA89]/24" />
 
-      <span className="absolute left-[10%] top-[25%] h-px w-[34%] bg-[#776B5A]/40 dark:bg-[#AAB99A]/38" />
-      <span className="absolute left-[10%] top-[38%] h-px w-[38%] bg-[#776B5A]/30 dark:bg-[#AAB99A]/28" />
-      <span className="absolute left-[10%] top-[51%] h-px w-[31%] bg-[#776B5A]/35 dark:bg-[#AAB99A]/32" />
+      <span
+        className="absolute left-[9%] top-[22%] w-[40%] -rotate-3 font-[Caveat] text-[clamp(0.58rem,1.25vw,0.82rem)] font-medium leading-[1.05] tracking-[0.01em] text-[#675646]/80 dark:text-[#C7BFA7]/82"
+        data-photo-note={slot.note}
+      >
+        {slot.note}
+      </span>
+      <span className="absolute left-[10%] top-[53%] h-px w-[32%] -rotate-2 bg-[#776B5A]/25 dark:bg-[#AAB99A]/22" />
       <span className="absolute bottom-[13%] left-[11%] h-2 w-2 rotate-45 border border-[#9A725D]/35 dark:border-[#D18A72]/35" />
 
       <span className="absolute right-[38%] top-[20%] h-[30%] w-[30%] rounded-full border border-[#756856]/20 dark:border-[#9BAA89]/20" />
