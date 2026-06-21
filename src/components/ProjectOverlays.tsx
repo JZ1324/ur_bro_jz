@@ -120,9 +120,13 @@ export function ProjectOverlays({
                 <label className="relative block">
                   <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
                   <input
+                    type="search"
+                    name="project-search"
+                    aria-label="Search projects"
+                    autoComplete="off"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search projects, tech, notes..."
+                    placeholder="Search projects, tech, notes…"
                     className="h-10 w-full rounded-xl border border-border/35 bg-bg/55 pl-11 pr-4 text-sm font-semibold text-text outline-none transition-[border-color,box-shadow,background-color] duration-150 ease-out placeholder:text-muted/65 focus:border-accent/50 focus:ring-2 focus:ring-accent/15"
                   />
                 </label>
@@ -135,7 +139,7 @@ export function ProjectOverlays({
                         key={filter}
                         type="button"
                         onClick={() => setActiveFilter(filter)}
-                        className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold transition-[transform,background-color,border-color,color,box-shadow] duration-150 ease-out active:scale-[0.97] ${
+                        className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold transition-[transform,background-color,border-color,color,box-shadow] duration-150 ease-out active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${
                           isActive
                             ? 'border-accent bg-accent text-bg shadow-lg shadow-accent/10'
                             : 'border-border/45 bg-bg/45 text-muted hover:border-accent/40 hover:text-text'
@@ -154,20 +158,33 @@ export function ProjectOverlays({
                     key={project.id}
                     type="button"
                     onClick={() => onCardClick(project.id)}
+                    aria-label={`Open case file for ${project.title}`}
                     className="archive-project-card group flex min-h-[330px] flex-col overflow-hidden rounded-2xl border border-border/55 bg-surface text-left shadow-xl shadow-black/20 transition-[transform,border-color,box-shadow,background-color] duration-200 ease-out hover:-translate-y-1 hover:border-accent/40 hover:bg-surface/95 hover:shadow-2xl hover:shadow-warm-accent/10 active:scale-[0.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   >
                     <div className="project-screenshot-frame relative aspect-[16/9] w-full overflow-hidden bg-[#0E130D]">
-                      <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_50%_0%,rgba(201,211,176,0.14),transparent_46%),linear-gradient(135deg,#1B2018,#11150F)] p-6 text-center">
-                        <span className="text-xl font-bold text-text">{project.title}</span>
+                      <div className="project-fallback absolute inset-0 flex items-center justify-center p-6 text-center">
+                        <div className="relative z-10">
+                          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">Case {getCaseNumber(project)}</p>
+                          <p className="mt-2 text-xl font-bold text-[#F3F4EA]">{project.title}</p>
+                          <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-[#B7BBA8]">{project.description}</p>
+                        </div>
                       </div>
                       <img
                         src={project.image}
                         alt={project.title}
+                        width={960}
+                        height={540}
                         referrerPolicy="no-referrer"
+                        onLoad={(event) => {
+                          const fallback = event.currentTarget.previousElementSibling;
+                          if (fallback instanceof HTMLElement) {
+                            fallback.style.display = 'none';
+                          }
+                        }}
                         onError={(event) => {
                           event.currentTarget.style.display = 'none';
                         }}
-                        className="relative z-[1] h-full w-full object-cover object-top opacity-[0.94] transition-[transform,opacity] duration-300 ease-out group-hover:scale-[1.01] group-hover:opacity-100"
+                        className="relative z-[1] h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]"
                       />
                       <div className="absolute inset-0 z-[2] bg-linear-to-b from-bg/5 via-bg/8 to-bg/46" />
                       <span className="absolute right-3 top-3 z-[3] rounded-md border border-accent/35 bg-bg/75 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-accent backdrop-blur-sm">
@@ -231,12 +248,25 @@ export function ProjectOverlays({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="relative aspect-[16/8] min-h-[240px] overflow-hidden bg-[#0E130D] sm:min-h-[340px]">
-                <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_50%_0%,rgba(201,211,176,0.14),transparent_46%),linear-gradient(135deg,#1B2018,#11150F)] p-6 text-center">
-                  <span className="text-3xl font-bold text-text">{selectedProject.title}</span>
+                <div className="project-fallback absolute inset-0 flex items-center justify-center p-6 text-center">
+                  <div className="relative z-10 max-w-lg">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">Case file / {selectedProjectNumber}</p>
+                    <p className="mt-2 text-3xl font-bold text-[#F3F4EA]">{selectedProject.title}</p>
+                    <p className="mt-3 text-sm font-semibold leading-6 text-[#B7BBA8]">{selectedProject.description}</p>
+                  </div>
                 </div>
                 <img
                   src={selectedProject.image}
                   alt={selectedProject.title}
+                  width={1280}
+                  height={640}
+                  referrerPolicy="no-referrer"
+                  onLoad={(event) => {
+                    const fallback = event.currentTarget.previousElementSibling;
+                    if (fallback instanceof HTMLElement) {
+                      fallback.style.display = 'none';
+                    }
+                  }}
                   onError={(event) => {
                     event.currentTarget.style.display = 'none';
                   }}
@@ -277,11 +307,12 @@ export function ProjectOverlays({
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {[
-                    ['What it is', selectedProject.what],
-                    ['What I learned', selectedProject.learned ?? selectedProject.why],
-                    ['Built with', selectedProject.tech.join(', ')],
-                    ['Status', selectedProject.status],
-                  ].map(([label, body]) => (
+                    { label: 'What it is', body: selectedProject.what },
+                    { label: 'Why it exists', body: selectedProject.why },
+                    { label: 'What changed', body: selectedProject.learned ?? 'The idea got cleaner once the useful part was separated from the noise.' },
+                    { label: 'Built with', body: selectedProject.tech.join(', ') },
+                    { label: 'Status', body: selectedProject.status },
+                  ].map(({ label, body }) => (
                     <div key={label} className="rounded-2xl border border-border/45 bg-bg/70 p-4">
                       <h4 className="text-[10px] font-bold uppercase tracking-[0.18em] text-warm-accent">{label}</h4>
                       <p className="mt-2 text-sm leading-relaxed text-text">{body}</p>

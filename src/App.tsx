@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { ExternalLink, Folder, GraduationCap, LayoutGrid, Lock, Menu, Music, Plus, Sparkles, User, Users, X } from 'lucide-react';
+import { ExternalLink, Folder, GraduationCap, Lock, Map, Music, Sparkles, User, Users, X } from 'lucide-react';
 import { AnimatePresence, motion, useScroll } from 'motion/react';
 import { ArchiveVault } from './components/ArchiveVault';
 import { AboutOverlay } from './components/AboutOverlay';
@@ -14,6 +14,7 @@ import { JesusOverlay } from './components/JesusOverlay';
 import { NowSection } from './components/NowSection';
 import { ParallaxLayer } from './components/ParallaxLayer';
 import { PhotoOrbitTransition } from './components/PhotoOrbitTransition';
+import { PixelArchiveMap, type PixelArchiveMapLocation } from './components/PixelArchiveMap';
 import { PixelMeadow } from './components/PixelMeadow';
 import { ProfileCard } from './components/ProfileCard';
 import { ProjectOverlays } from './components/ProjectOverlays';
@@ -65,7 +66,6 @@ const accessStatusCopy = {
 };
 
 type UnlockDestination = 'archive' | 'about';
-type ArchiveMapStatus = 'locked' | 'public' | 'external' | 'hidden';
 
 type ArchiveSignalOverlayProps = {
   isOpen: boolean;
@@ -201,87 +201,108 @@ function ArchiveMapOverlay({
 }: ArchiveMapOverlayProps) {
   useBodyScrollLock(isOpen);
 
-  const lockedItems: Array<{
-    title: string;
-    body: string;
-    status: ArchiveMapStatus;
-    icon: typeof Lock;
-    action: () => void;
-  }> = [
-    { title: 'Locked About', body: 'Private context and longer notes.', status: 'locked', icon: User, action: onOpenAbout },
-    { title: 'School', body: 'Coursework and study archive.', status: 'locked', icon: GraduationCap, action: () => onOpenArchiveSection('school') },
-    { title: 'Music', body: 'Practice, references, and sounds.', status: 'locked', icon: Music, action: () => onOpenArchiveSection('music') },
-    { title: 'Leadership', body: 'Roles, values, and lessons.', status: 'locked', icon: Users, action: () => onOpenArchiveSection('leadership') },
-  ];
-
-  const publicItems: Array<{
-    title: string;
-    body: string;
-    status: ArchiveMapStatus;
-    icon: typeof Lock;
-    action?: () => void;
-    href?: string;
-  }> = [
-    { title: 'Projects', body: 'Live builds and notes.', status: 'public', icon: Folder, action: onOpenProjects },
-    { title: 'Jesus', body: 'Why I follow Him.', status: 'public', icon: Sparkles, action: onOpenJesus },
-    { title: 'Instagram', body: 'Main contact path.', status: 'external', icon: ExternalLink, href: profileData.instagramUrl },
-    { title: 'My Dumpy', body: 'Second profile link.', status: 'external', icon: ExternalLink, href: profileData.dumpsUrl },
+  const mapLocations: PixelArchiveMapLocation[] = [
+    {
+      title: 'Locked About',
+      body: 'Private context and longer notes.',
+      status: 'locked',
+      place: 'Private Keep',
+      icon: User,
+      position: {
+        desktop: { x: 20, y: 23 },
+        mobile: { x: 21, y: 22 },
+      },
+      action: onOpenAbout,
+    },
+    {
+      title: 'School',
+      body: 'Coursework and study archive.',
+      status: 'locked',
+      place: 'Study Hills',
+      icon: GraduationCap,
+      position: {
+        desktop: { x: 66, y: 25 },
+        mobile: { x: 66, y: 25 },
+      },
+      action: () => onOpenArchiveSection('school'),
+    },
+    {
+      title: 'Music',
+      body: 'Practice, references, and sounds.',
+      status: 'locked',
+      place: 'Sound Grove',
+      icon: Music,
+      position: {
+        desktop: { x: 14, y: 55 },
+        mobile: { x: 23, y: 55 },
+      },
+      action: () => onOpenArchiveSection('music'),
+    },
+    {
+      title: 'Leadership',
+      body: 'Roles, values, and lessons.',
+      status: 'locked',
+      place: 'Council Peak',
+      icon: Users,
+      position: {
+        desktop: { x: 42, y: 37 },
+        mobile: { x: 42, y: 37 },
+      },
+      action: () => onOpenArchiveSection('leadership'),
+    },
+    {
+      title: 'Projects',
+      body: 'Live builds and notes.',
+      status: 'public',
+      place: 'Build Town',
+      icon: Folder,
+      position: {
+        desktop: { x: 38, y: 76 },
+        mobile: { x: 38, y: 76 },
+      },
+      action: onOpenProjects,
+    },
+    {
+      title: 'Jesus',
+      body: 'Why I follow Him.',
+      status: 'public',
+      place: 'Chapel Garden',
+      icon: Sparkles,
+      position: {
+        desktop: { x: 70, y: 70 },
+        mobile: { x: 70, y: 70 },
+      },
+      action: onOpenJesus,
+    },
+    {
+      title: 'Instagram',
+      body: 'Main contact path.',
+      status: 'external',
+      place: 'North Dock',
+      icon: ExternalLink,
+      position: {
+        desktop: { x: 87, y: 22 },
+        mobile: { x: 78, y: 22 },
+      },
+      href: profileData.instagramUrl,
+    },
+    {
+      title: 'My Dumpy',
+      body: 'Second profile link.',
+      status: 'external',
+      place: 'South Pier',
+      icon: ExternalLink,
+      position: {
+        desktop: { x: 87, y: 81 },
+        mobile: { x: 78, y: 81 },
+      },
+      href: profileData.dumpsUrl,
+    },
   ];
 
   const handleAction = (action: () => void) => {
     onClose();
     action();
-  };
-
-  const renderItem = (item: (typeof lockedItems[number]) | (typeof publicItems[number])) => {
-    const Icon = item.icon;
-    const content = (
-      <>
-        <div className="flex items-start justify-between gap-3">
-          <Icon size={22} className="mt-1 text-accent" />
-          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${
-            item.status === 'locked'
-              ? 'border-warm-accent/35 bg-warm-accent/10 text-warm-accent'
-              : item.status === 'external'
-                ? 'border-border/50 bg-bg/45 text-muted'
-                : 'border-accent/30 bg-accent/10 text-accent'
-          }`}
-          >
-            {item.status}
-          </span>
-        </div>
-        <div className="mt-4">
-          <h3 className="text-lg font-bold text-text">{item.title}</h3>
-          <p className="mt-1 text-sm font-medium leading-relaxed text-muted">{item.body}</p>
-        </div>
-      </>
-    );
-
-    if ('href' in item && item.href) {
-      return (
-        <a
-          key={item.title}
-          href={item.href}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={onClose}
-          className="rounded-2xl border border-border/45 bg-bg/45 p-4 text-left transition-[transform,background-color,border-color] duration-180 ease-out hover:-translate-y-px hover:border-accent/35 hover:bg-accent-soft/45 active:scale-[0.99]"
-        >
-          {content}
-        </a>
-      );
-    }
-
-    return (
-      <button
-        key={item.title}
-        type="button"
-        onClick={() => item.action && handleAction(item.action)}
-        className="rounded-2xl border border-border/45 bg-bg/45 p-4 text-left transition-[transform,background-color,border-color] duration-180 ease-out hover:-translate-y-px hover:border-accent/35 hover:bg-accent-soft/45 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-      >
-        {content}
-      </button>
-    );
   };
 
   return (
@@ -299,40 +320,31 @@ function ArchiveMapOverlay({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 18, scale: 0.98 }}
             transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-            className="mx-auto w-full max-w-4xl rounded-3xl border border-border/60 bg-surface p-5 shadow-2xl shadow-black/35 sm:p-7"
+            className="mx-auto w-full max-w-5xl rounded-3xl border border-border/60 bg-surface p-4 shadow-2xl shadow-black/35 sm:p-5"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="flex flex-col gap-2">
                 <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-warm-accent">Archive Map</p>
-                <h2 className="text-3xl font-bold tracking-tight text-text sm:text-4xl">Where everything is</h2>
-                <p className="max-w-2xl text-sm font-medium leading-relaxed text-muted sm:text-base">
-                  Public paths, locked sections, and the quiet external links in one place.
+                <h2 className="text-3xl font-bold tracking-tight text-text sm:text-[2.35rem]">Archive Atlas</h2>
+                <p className="max-w-2xl text-sm font-medium leading-relaxed text-muted">
+                  Public paths, locked landmarks, and quiet external docks in one small world.
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="rounded-full bg-accent-soft p-3 text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent/15 active:scale-[0.96]"
+                className="rounded-full bg-accent-soft p-3 text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent/15 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
                 aria-label="Close archive map"
               >
                 <X size={22} />
               </button>
             </div>
 
-            <div className="mt-7 grid gap-5">
-              <section>
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#8E927F]">Locked</h3>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  {lockedItems.map(renderItem)}
-                </div>
-              </section>
-              <section>
-                <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#8E927F]">Public / external</h3>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  {publicItems.map(renderItem)}
-                </div>
-              </section>
-            </div>
+            <PixelArchiveMap
+              locations={mapLocations}
+              onRunAction={handleAction}
+              onExternalClick={onClose}
+            />
           </motion.div>
         </motion.div>
       )}
@@ -596,40 +608,27 @@ export default function App() {
       <header className="fixed top-0 left-0 w-full z-40 bg-bg/85 backdrop-blur-md border-b border-border/50 flex justify-center px-4 py-3">
         <div className="w-full max-w-container-max flex justify-between items-center">
           <button
+            type="button"
             onClick={() => requestCappedPageScroll(0)}
-            className="text-xl font-bold tracking-tight text-text"
+            className="shrink-0 whitespace-nowrap rounded-full text-xl font-bold tracking-tight text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
             aria-label="Back to top"
           >
             <TextScramble text="About.JZ" className="archive-brand-signal scale-75 origin-left" />
           </button>
-          <div className="flex items-center gap-2 text-accent">
+          <div className="flex items-center gap-1.5 text-accent sm:gap-2">
             <ThemeToggle
               defaultTheme={isDarkMode ? 'dark' : 'light'}
               onThemeChange={handleThemeChange}
             />
             <button
-              onClick={() => setShowArchiveSignal(true)}
-              className="p-2 rounded-full text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent-soft active:scale-[0.96]"
-              title="Archive signal"
-              aria-label="Open archive signal"
-            >
-              <Plus size={24} />
-            </button>
-            <button
-              onClick={() => setShowBento(true)}
-              className="p-2 rounded-full text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent-soft active:scale-[0.96]"
-              title="Project explorer"
-              aria-label="Open project explorer"
-            >
-              <LayoutGrid size={24} />
-            </button>
-            <button
+              type="button"
               onClick={() => setShowArchiveMap(true)}
-              className="p-2 rounded-full text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent-soft active:scale-[0.96]"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-full px-2.5 text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent-soft active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:px-3"
               title="Archive map"
               aria-label="Open archive map"
             >
-              <Menu size={24} />
+              <Map size={18} aria-hidden="true" />
+              <span className="hidden text-[11px] font-bold uppercase tracking-[0.16em] sm:inline">Map</span>
             </button>
           </div>
         </div>
@@ -660,7 +659,6 @@ export default function App() {
           inputRange={[0.2, 0.72]}
           y={[26, -30]}
           scale={[0.99, 1.01]}
-          opacity={[0.96, 1]}
         >
           <NowSection items={nowItems} onSecretClick={() => setShowSecretPuzzle(true)} />
         </ParallaxLayer>
@@ -673,30 +671,49 @@ export default function App() {
           className="border-t border-border/30 w-full"
         />
 
-        <footer className="w-full overflow-hidden rounded-3xl border border-border/45 bg-surface p-5 shadow-2xl shadow-black/20 sm:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              onClick={showArchive}
-              className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-bg transition-[transform,background-color,box-shadow] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97]"
-            >
-              Open Archive
-            </button>
-            <button
-              onClick={openAbout}
-              className="rounded-full border border-accent/30 bg-accent-soft px-6 py-3 text-sm font-bold text-text transition-[transform,background-color,border-color] duration-150 ease-out hover:bg-[#2A3125] active:scale-[0.97]"
-            >
-              Locked About
-            </button>
-            <a
-              href={profileData.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full border border-border/60 px-6 py-3 text-center text-sm font-bold text-muted transition-[transform,color,border-color] duration-150 ease-out hover:border-accent/40 hover:text-accent active:scale-[0.97]"
-            >
-              Instagram
-            </a>
+        <footer className="relative isolate w-full overflow-hidden rounded-[1.35rem] border border-border/45 bg-surface p-4 shadow-xl shadow-black/15 backdrop-blur-sm sm:p-[1.125rem]">
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <div className="min-w-0">
+              <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-warm-accent">Contact path</p>
+              <h2 className="mt-1.5 text-lg font-bold tracking-tight text-text sm:text-xl">Instagram first. Archive stays locked.</h2>
+              <p className="mt-1.5 max-w-md text-xs font-medium leading-5 text-muted sm:text-[13px]">
+                Public builds are open. Private notes need the key.
+              </p>
+            </div>
+            <div className="grid gap-2 min-[420px]:grid-cols-2 sm:min-w-[20rem]">
+              <a
+                href={profileData.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-9 items-center justify-center rounded-full bg-accent px-4 py-2 text-center text-xs font-bold text-bg shadow-md shadow-accent/10 transition-[transform,background-color,box-shadow] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              >
+                Instagram
+              </a>
+              <a
+                href={profileData.dumpsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-9 items-center justify-center rounded-full border border-warm-accent/42 bg-warm-accent/10 px-4 py-2 text-center text-xs font-bold text-text transition-[transform,background-color,border-color] duration-150 ease-out hover:bg-warm-accent/15 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              >
+                My Dumpy
+              </a>
+              <button
+                type="button"
+                onClick={showArchive}
+                className="inline-flex min-h-9 items-center justify-center rounded-full border border-border/55 bg-bg/40 px-4 py-2 text-xs font-bold text-text transition-[transform,border-color,background-color] duration-150 ease-out hover:border-accent/40 hover:bg-accent-soft/45 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              >
+                Archive
+              </button>
+              <button
+                type="button"
+                onClick={openAbout}
+                className="inline-flex min-h-9 items-center justify-center rounded-full border border-border/55 bg-bg/40 px-4 py-2 text-xs font-bold text-text transition-[transform,border-color,background-color] duration-150 ease-out hover:border-accent/40 hover:bg-accent-soft/45 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              >
+                Locked About
+              </button>
+            </div>
           </div>
-          <div className="mt-6 flex items-center justify-between gap-4 border-t border-border/35 pt-5">
+          <div className="mt-4 flex items-center justify-between gap-4 border-t border-border/30 pt-3.5">
             <span className="font-bold tracking-wide text-accent">
               <TextScramble text="About.JZ" className="scale-90" />
             </span>

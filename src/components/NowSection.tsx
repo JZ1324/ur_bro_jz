@@ -1,7 +1,43 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import type { NowItem } from '../data/site';
 import { FlipWords } from './ui/flip-words';
 import { SquigglyText } from './ui/squiggly-text';
+
+const lastUpdateIso = typeof __LAST_UPDATE_ISO__ === 'string' ? __LAST_UPDATE_ISO__ : '';
+
+const relativeUnits = [
+  { maxSeconds: 60, seconds: 1, singular: 'sec', plural: 'sec', article: 'a' },
+  { maxSeconds: 60 * 60, seconds: 60, singular: 'min', plural: 'min', article: 'a' },
+  { maxSeconds: 60 * 60 * 24, seconds: 60 * 60, singular: 'hr', plural: 'hr', article: 'an' },
+  { maxSeconds: 60 * 60 * 24 * 7, seconds: 60 * 60 * 24, singular: 'day', plural: 'days', article: 'a' },
+  { maxSeconds: 60 * 60 * 24 * 30, seconds: 60 * 60 * 24 * 7, singular: 'week', plural: 'weeks', article: 'a' },
+  { maxSeconds: 60 * 60 * 24 * 365, seconds: 60 * 60 * 24 * 30, singular: 'month', plural: 'months', article: 'a' },
+  { maxSeconds: Number.POSITIVE_INFINITY, seconds: 60 * 60 * 24 * 365, singular: 'year', plural: 'years', article: 'a' },
+] as const;
+
+function formatRelativeLastUpdate(iso: string, now = Date.now()) {
+  const updatedAt = Date.parse(iso);
+
+  if (!Number.isFinite(updatedAt)) {
+    return 'just now';
+  }
+
+  const elapsedSeconds = Math.max(0, Math.floor((now - updatedAt) / 1000));
+
+  if (elapsedSeconds < 1) {
+    return 'just now';
+  }
+
+  const unit = relativeUnits.find((candidate) => elapsedSeconds < candidate.maxSeconds) ?? relativeUnits[relativeUnits.length - 1];
+  const value = Math.max(1, Math.floor(elapsedSeconds / unit.seconds));
+
+  if (value === 1) {
+    return `${unit.article} ${unit.singular} ago`;
+  }
+
+  return `${value} ${unit.plural} ago`;
+}
 
 type NowSectionProps = {
   items: NowItem[];
@@ -9,6 +45,16 @@ type NowSectionProps = {
 };
 
 export function NowSection({ items, onSecretClick }: NowSectionProps) {
+  const [lastUpdateLabel, setLastUpdateLabel] = useState(() => formatRelativeLastUpdate(lastUpdateIso));
+
+  useEffect(() => {
+    const updateLabel = () => setLastUpdateLabel(formatRelativeLastUpdate(lastUpdateIso));
+    updateLabel();
+
+    const intervalId = window.setInterval(updateLabel, 1000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 18 }}
@@ -17,6 +63,16 @@ export function NowSection({ items, onSecretClick }: NowSectionProps) {
       className="grid gap-3 sm:grid-cols-3"
       aria-label="Current archive updates"
     >
+      <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-surface px-4 py-3 shadow-lg shadow-black/10 backdrop-blur-sm sm:col-span-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold tracking-tight text-text">When was the last update?</h2>
+          </div>
+          <span className="rounded-full border border-border/45 bg-bg/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+            {lastUpdateLabel}
+          </span>
+        </div>
+      </div>
       {items.map((item, index) => (
         <article
           key={item.label}

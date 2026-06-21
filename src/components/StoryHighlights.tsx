@@ -34,8 +34,9 @@ export function StoryHighlights({ stories, isUnlocked, lockedPulseId, onStoryCli
           return (
             <button
               key={story.id}
+              type="button"
               onClick={() => onStoryClick(story)}
-              className="group flex w-[5rem] flex-shrink-0 cursor-pointer flex-col items-center gap-2 transition-transform duration-150 ease-out active:scale-[0.98] md:w-auto md:gap-2.5"
+              className="group flex w-[5rem] flex-shrink-0 cursor-pointer flex-col items-center gap-2 rounded-2xl transition-transform duration-150 ease-out active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg md:w-auto md:gap-2.5"
             >
               <div
                 className={`relative h-[4.35rem] w-[4.35rem] rounded-full p-1 transition-[transform,background-color,box-shadow,opacity] duration-200 ease-out group-hover:bg-accent-soft/30 md:h-20 md:w-20 ${
@@ -62,6 +63,20 @@ export function StoryHighlights({ stories, isUnlocked, lockedPulseId, onStoryCli
             </button>
           );
         })}
+      </div>
+      <div className="mx-auto mt-1 flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-2xl border border-border/35 bg-surface/55 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted shadow-lg shadow-black/10">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+          Public
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full border border-warm-accent bg-warm-accent/25" aria-hidden="true" />
+          Locked
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full border border-border bg-bg" aria-hidden="true" />
+          External in Map
+        </span>
       </div>
     </motion.section>
   );

@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { TypewriterEffectSmooth } from './ui/typewriter-effect';
 import { FaithHoverCard } from './ui/faith-hover-card';
+import { BibleVerseHoverCard } from './ui/bible-verse-hover-card';
 import { MiniMusicPlayer } from './MiniMusicPlayer';
 import { ShinyText } from './ui/ShinyText';
 import type { FaithHover, ProfileData, ProfileStat } from '../data/site';
@@ -99,7 +100,16 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
             {profile.handle}
           </a>
           <span className="text-border" aria-hidden="true">/</span>
-          <span className="text-muted">{profile.bio}</span>
+          {profile.bibleVersePreview ? (
+            <BibleVerseHoverCard
+              verse={profile.bibleVersePreview}
+              className="-mx-1 rounded-full px-1.5 py-0.5 text-muted underline decoration-warm-accent/60 decoration-dotted underline-offset-4 premium-transition hover:bg-warm-accent/10 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent/70"
+            >
+              {profile.bio}
+            </BibleVerseHoverCard>
+          ) : (
+            <span className="text-muted">{profile.bio}</span>
+          )}
         </div>
 
         <div className="grid w-full max-w-[18rem] grid-cols-2 gap-1.5 rounded-2xl border border-border/45 bg-bg/25 p-1.5 sm:max-w-xs md:max-w-sm">

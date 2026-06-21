@@ -7,6 +7,7 @@ export type ProfileData = {
   displayName: string;
   handle: string;
   bio: string;
+  bibleVersePreview?: BibleVersePreview;
   imageSrc: string;
   instagramUrl: string;
   dumpsUrl: string;
@@ -97,6 +98,16 @@ export type FaithHover = {
   closing: string;
 };
 
+export type BibleVersePreview = {
+  reference: string;
+  translation: string;
+  summary: string;
+  verses: {
+    verse: string;
+    text: string;
+  }[];
+};
+
 export type FaithSection = {
   id: string;
   title: string;
@@ -125,15 +136,18 @@ export type ToolItem = {
   note: string;
 };
 
-const supabaseStorageUrl = `${(import.meta.env.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
+const viteEnv = (import.meta.env ?? {}) as Partial<ImportMetaEnv>;
+const baseUrl = viteEnv.BASE_URL ?? '/';
+
+const supabaseStorageUrl = `${(viteEnv.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
   /\/$/,
   '',
 )}/storage/v1/object/public/licensed-audio`;
-const supabasePublicVideoUrl = `${(import.meta.env.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
+const supabasePublicVideoUrl = `${(viteEnv.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
   /\/$/,
   '',
 )}/storage/v1/object/public/public-video-previews`;
-const supabaseFunctionsUrl = `${(import.meta.env.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
+const supabaseFunctionsUrl = `${(viteEnv.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
   /\/$/,
   '',
 )}/functions/v1`;
@@ -142,7 +156,38 @@ export const profileData: ProfileData = {
   displayName: 'ur_bro_jz',
   handle: '@ur_bro_jz',
   bio: 'Romans 12:16-21',
-  imageSrc: `${import.meta.env.BASE_URL}instagram-profile.jpg`,
+  bibleVersePreview: {
+    reference: 'Romans 12:16-21',
+    translation: 'KJV',
+    summary: 'A call to humility, peace, mercy, and overcoming evil with good.',
+    verses: [
+      {
+        verse: '16',
+        text: 'Be of the same mind one toward another. Mind not high things, but condescend to men of low estate. Be not wise in your own conceits.',
+      },
+      {
+        verse: '17',
+        text: 'Recompense to no man evil for evil. Provide things honest in the sight of all men.',
+      },
+      {
+        verse: '18',
+        text: 'If it be possible, as much as lieth in you, live peaceably with all men.',
+      },
+      {
+        verse: '19',
+        text: 'Dearly beloved, avenge not yourselves, but rather give place unto wrath: for it is written, Vengeance is mine; I will repay, saith the Lord.',
+      },
+      {
+        verse: '20',
+        text: 'Therefore if thine enemy hunger, feed him; if he thirst, give him drink: for in so doing thou shalt heap coals of fire on his head.',
+      },
+      {
+        verse: '21',
+        text: 'Be not overcome of evil, but overcome evil with good.',
+      },
+    ],
+  },
+  imageSrc: `${baseUrl}instagram-profile.jpg`,
   instagramUrl: 'https://www.instagram.com/ur_bro_jz/',
   dumpsUrl: 'https://www.instagram.com/ur_bro._.jz',
   stats: [
@@ -154,7 +199,7 @@ export const profileData: ProfileData = {
     artist: 'Olivia Dean',
     note: 'licensed Supabase stream',
     provider: 'Supabase',
-    artworkSrc: `${import.meta.env.BASE_URL}olivia-dean-art-of-loving-cover.jpg`,
+    artworkSrc: `${baseUrl}olivia-dean-art-of-loving-cover.jpg`,
     sources: [
       {
         src: `${supabaseStorageUrl}/so-easy-320.mp3`,
@@ -323,7 +368,7 @@ export const nowItems: NowItem[] = [
   {
     label: 'Music',
     title: "It's So Easy to?",
-    body: 'Yeah, this is a good song.',
+    body: 'This song is staying here for a reason. Maybe it is about someone?',
   },
 ];
 
@@ -506,13 +551,13 @@ export const projects: Project[] = [
   {
     id: 'pro-timetable',
     title: 'Pro Timetable',
-    description: 'A cleaner school timetable app built around fast scanning and less clutter.',
-    longDescription: 'A standalone timetable build for checking a school schedule without fighting the interface. This is one of the cleaner public builds because the use case is simple and the live version is easy to test.',
+    description: 'A school timetable app tuned for fast scanning, calmer spacing, and less clutter.',
+    longDescription: 'A standalone timetable build for checking a school schedule without fighting the interface. It is the clearest public build because the use case is simple, the screen is easy to scan, and the live version is ready to test.',
     what: 'A web timetable app for viewing class times, days, and schedule details in a calmer layout.',
     why: 'Timetables get messy quickly. I wanted this one to feel useful first, then polished around that.',
     learned: 'Spacing, hierarchy, and small controls matter a lot when the same screen gets checked every day.',
     status: 'Live on Vercel and pinned as a main build.',
-    image: `${import.meta.env.BASE_URL}project-pro-timetable.png`,
+    image: `${baseUrl}project-pro-timetable.png`,
     tags: ['Live', 'Timetable', 'Web App'],
     tech: ['JavaScript', 'Vercel', 'Frontend UI', 'Deployment'],
     link: 'https://pro-timetable.vercel.app',
@@ -567,7 +612,7 @@ export const projects: Project[] = [
     id: 'ur-bro-jz',
     title: 'ur_bro_jz',
     description: 'This site: profile, projects, music, locked sections, and Supabase-backed access.',
-    longDescription: 'The current archive site. It mixes a profile card, project case files, a synced music player, locked story sections, and Supabase functions for private access.',
+    longDescription: 'The current archive site. It mixes a profile card, project case files, a synced music player, locked story sections, and Supabase functions for private access while keeping the public side easy to scan.',
     what: 'A Vite + React personal archive with public profile/project content and private sections kept outside the static bundle.',
     why: 'A normal bio link felt too flat. This makes the profile feel like a small archive instead.',
     learned: 'This is where I learned the most about polish: scroll locking, overlays, music sync, private functions, and making copy sound like me.',
