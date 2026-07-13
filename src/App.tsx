@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, Folder, GraduationCap, Lock, Map, Music, Sparkles, User, Users, X } from 'lucide-react';
-import { AnimatePresence, motion, useScroll } from 'motion/react';
+import { AnimatePresence, motion, useScroll, useTransform, type MotionValue } from 'motion/react';
 import { ArchiveVault } from './components/ArchiveVault';
 import { AboutOverlay } from './components/AboutOverlay';
 import { GardenScrollScene } from './components/GardenScrollScene';
@@ -19,13 +19,13 @@ import { PixelMeadow } from './components/PixelMeadow';
 import { ProfileCard } from './components/ProfileCard';
 import { ProjectOverlays } from './components/ProjectOverlays';
 import { SecretPuzzleOverlay } from './components/SecretPuzzleOverlay';
+import { ScrollChapter } from './components/ScrollChapter';
 import { StoryHighlights } from './components/StoryHighlights';
 import { TextScramble } from './components/TextScramble';
 import Stepper, { Step } from './components/ui/Stepper';
 import { ThemeToggle, type Theme } from './components/ui/ThemeToggle';
 import { readStoredTheme, storeTheme } from './themePreference';
 import { useBodyScrollLock } from './hooks/useBodyScrollLock';
-import { requestCappedPageScroll, useCappedPageScroll } from './hooks/pageScrollLimiter';
 import {
   aboutSections,
   archiveSections,
@@ -64,6 +64,29 @@ const accessStatusCopy = {
     body: 'Try the key again. The archive stayed closed.',
   },
 };
+
+function ScrollEntryCue({ progress, reducedMotion }: { progress: MotionValue<number>; reducedMotion: boolean }) {
+  const opacity = useTransform(progress, [0, 0.035, 0.12], reducedMotion ? [0, 0, 0] : [1, 1, 0]);
+  const y = useTransform(progress, [0, 0.12], reducedMotion ? [0, 0] : [0, 18]);
+  const scaleY = useTransform(progress, [0, 0.1], reducedMotion ? [1, 1] : [0.25, 1]);
+
+  if (reducedMotion) return null;
+  return (
+    <motion.div
+      className="pointer-events-none absolute bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-2"
+      style={{ opacity, y }}
+      aria-hidden="true"
+      data-scroll-entry-cue
+    >
+      <span className="text-[9px] font-bold uppercase tracking-[0.24em] text-muted">Scroll to enter</span>
+      <motion.span
+        className="h-9 w-[3px] origin-top bg-[linear-gradient(to_bottom,var(--garden-vine-bright),var(--garden-vine))] shadow-[1px_0_0_var(--garden-pixel-shadow)]"
+        style={{ scaleY }}
+      />
+      <span className="h-2 w-2 rotate-45 border border-warm-accent/60 bg-bg" />
+    </motion.div>
+  );
+}
 
 type UnlockDestination = 'archive' | 'about';
 
@@ -355,6 +378,7 @@ function ArchiveMapOverlay({
 export default function App() {
   const homeRef = useRef<HTMLElement>(null);
   const meadowRef = useRef<HTMLElement>(null);
+  const headerTrackRef = useRef<HTMLDivElement>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [passwordInput, setPasswordInput] = useState('');
@@ -380,11 +404,13 @@ export default function App() {
   const [archiveAccessKey, setArchiveAccessKey] = useState<string | null>(null);
   const [archiveErrorMessage, setArchiveErrorMessage] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(() => readStoredTheme() === 'dark');
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(() => (
+    typeof window !== 'undefined' && window.scrollY > 96
+  ));
+  const [expandedHeaderWidth, setExpandedHeaderWidth] = useState(() => (
+    typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640
+  ));
   const { scrollYProgress: pageScrollProgress } = useScroll();
-  const { scrollYProgress: meadowScrollProgress } = useScroll({
-    target: meadowRef,
-    offset: ['start end', 'end end'],
-  });
   const { scrollYProgress: homeScrollProgress } = useScroll({
     target: homeRef,
     offset: ['start start', 'end start'],
@@ -396,7 +422,37 @@ export default function App() {
       : accessStatusCopy.checking;
 
   useBodyScrollLock(showModal);
-  useCappedPageScroll();
+
+  useEffect(() => {
+    let frame: number | null = null;
+    const updateHeaderState = () => {
+      frame = null;
+      setIsHeaderCollapsed((collapsed) => (
+        collapsed ? window.scrollY > 24 : window.scrollY > 96
+      ));
+    };
+    const scheduleUpdate = () => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(updateHeaderState);
+    };
+
+    updateHeaderState();
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  useEffect(() => {
+    const track = headerTrackRef.current;
+    if (!track) return;
+    const updateWidth = () => setExpandedHeaderWidth(track.getBoundingClientRect().width);
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(track);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -603,66 +659,163 @@ export default function App() {
   };
 
   return (
-    <div className="relative isolate min-h-screen pt-20 flex flex-col items-center bg-bg selection:bg-accent-soft/40">
+    <div className="relative isolate flex min-h-screen flex-col items-center bg-bg selection:bg-accent-soft/40" data-living-archive>
       <GardenScrollScene progress={pageScrollProgress} theme={isDarkMode ? 'evening' : 'day'} />
-      <header className="fixed top-0 left-0 w-full z-40 bg-bg/85 backdrop-blur-md border-b border-border/50 flex justify-center px-4 py-3">
-        <div className="w-full max-w-container-max flex justify-between items-center">
-          <button
-            type="button"
-            onClick={() => requestCappedPageScroll(0)}
-            className="shrink-0 whitespace-nowrap rounded-full text-xl font-bold tracking-tight text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
-            aria-label="Back to top"
+      <motion.header
+        className="pointer-events-none fixed left-0 top-0 z-40 flex w-full justify-center px-4 py-3"
+        data-header-collapsed={isHeaderCollapsed ? 'true' : 'false'}
+      >
+        <div ref={headerTrackRef} className="relative h-[60px] w-full max-w-container-max" data-header-glass-track>
+          <motion.div
+            className="pointer-events-none absolute overflow-hidden border border-border/50 bg-bg/78 backdrop-blur-2xl"
+            style={{ left: '50%', top: '50%', x: '-50%', y: '-50%' }}
+            initial={false}
+            animate={{
+              width: isHeaderCollapsed ? Math.min(158, expandedHeaderWidth) : expandedHeaderWidth,
+              height: isHeaderCollapsed ? 52 : 60,
+              borderRadius: isHeaderCollapsed ? 999 : 21.6,
+              boxShadow: isHeaderCollapsed
+                ? '0 14px 34px rgba(0,0,0,0.17), inset 0 1px 0 rgba(255,255,255,0.14)'
+                : '0 9px 24px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.11)',
+            }}
+            transition={{ type: 'spring', stiffness: 215, damping: 29, mass: 0.78 }}
+            data-header-glass-shell
           >
-            <TextScramble text="About.JZ" className="archive-brand-signal scale-75 origin-left" />
-          </button>
-          <div className="flex items-center gap-1.5 text-accent sm:gap-2">
-            <ThemeToggle
-              defaultTheme={isDarkMode ? 'dark' : 'light'}
-              onThemeChange={handleThemeChange}
+            <div className="absolute inset-px rounded-[inherit] bg-linear-to-b from-white/14 via-transparent to-black/5" />
+            <motion.div
+              className="absolute -top-8 h-14 w-28 rounded-full bg-white/12 blur-xl"
+              animate={{ left: isHeaderCollapsed ? '34%' : '8%', opacity: isHeaderCollapsed ? 0.3 : 0.5 }}
+              transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1] }}
             />
-            <button
-              type="button"
-              onClick={() => setShowArchiveMap(true)}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-full px-2.5 text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent-soft active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:px-3"
-              title="Archive map"
-              aria-label="Open archive map"
-            >
-              <Map size={18} aria-hidden="true" />
-              <span className="hidden text-[11px] font-bold uppercase tracking-[0.16em] sm:inline">Map</span>
-            </button>
-          </div>
-        </div>
-      </header>
+          </motion.div>
 
-      <main ref={homeRef} className="relative z-20 w-full max-w-container-max px-4 flex flex-col gap-10 flex-grow sm:gap-[clamp(2.75rem,6vh,4.25rem)]">
-        <ProfileCard
-          profile={profileData}
-          faithHover={faithHover}
-          onFaithClick={() => setShowJesus(true)}
-        />
+          <AnimatePresence initial={false} mode="sync">
+            <motion.div
+              key={isHeaderCollapsed ? 'compact-header-content' : 'expanded-header-content'}
+              initial={{ opacity: 0, y: isHeaderCollapsed ? -4 : 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: isHeaderCollapsed ? 4 : -4 }}
+              transition={{ duration: 0.26, delay: 0.04, ease: [0.22, 1, 0.36, 1] }}
+              className={`pointer-events-auto absolute inset-0 flex items-center ${
+                isHeaderCollapsed ? 'justify-center gap-2 px-2' : 'justify-between px-4 sm:px-5'
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => window.scrollTo({
+                  top: 0,
+                  behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                })}
+                className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-full font-bold tracking-tight text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg ${isHeaderCollapsed ? 'px-1.5 text-sm' : 'h-10 text-[15px] leading-none'}`}
+                aria-label="Back to top"
+              >
+                {isHeaderCollapsed ? (
+                  <span className="px-1 font-mono text-[12px] font-black uppercase tracking-[0.18em]">JZ</span>
+                ) : (
+                  <TextScramble text="About.JZ" className="archive-brand-signal translate-y-[2px]" />
+                )}
+              </button>
+              <div className="flex items-center gap-1.5 text-accent sm:gap-2">
+                <ThemeToggle
+                  defaultTheme={isDarkMode ? 'dark' : 'light'}
+                  onThemeChange={handleThemeChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowArchiveMap(true)}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-full px-2.5 text-accent transition-[transform,background-color] duration-150 ease-out hover:bg-accent-soft active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:px-3"
+                  title="Archive map"
+                  aria-label="Open archive map"
+                >
+                  <Map size={18} aria-hidden="true" />
+                  {!isHeaderCollapsed && (
+                    <span className="hidden whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.16em] sm:inline">
+                      Map
+                    </span>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </motion.header>
+
+      <main ref={homeRef} className="relative z-20 flex w-full max-w-container-max flex-grow flex-col gap-10 px-4 sm:gap-[clamp(2.75rem,6vh,4.25rem)]">
+        <ScrollChapter
+          id="profile"
+          desktopVh={200}
+          mobileVh={150}
+          stickyClassName="flex items-center justify-center pt-16 pb-10 sm:pt-20 sm:pb-12"
+          ariaLabel="Profile opening scroll scene"
+          className="-mx-1"
+        >
+          {(scrollMotion) => (
+            <>
+              <div className="relative w-full" data-vine-anchor="profile">
+                <ProfileCard
+                  profile={profileData}
+                  faithHover={faithHover}
+                  onFaithClick={() => setShowJesus(true)}
+                  scrollMotion={scrollMotion}
+                />
+              </div>
+              <ScrollEntryCue progress={scrollMotion.progress} reducedMotion={scrollMotion.reducedMotion} />
+            </>
+          )}
+        </ScrollChapter>
         <ArchiveRail />
         <ParallaxLayer
           progress={homeScrollProgress}
           inputRange={[0.12, 0.58]}
-          y={[18, -26]}
+          x={[-18, 16]}
+          y={[24, -34]}
           opacity={[1, 0.98]}
+          rotate={[-0.7, 0.55]}
+          blur={[0, 0.6]}
+          className="relative"
         >
-          <StoryHighlights
-            stories={storyItems}
-            isUnlocked={isUnlocked}
-            lockedPulseId={lockedStoryPulseId}
-            onStoryClick={handleStoryClick}
-          />
+          <div data-vine-anchor="stories">
+            <StoryHighlights
+              stories={storyItems}
+              isUnlocked={isUnlocked}
+              lockedPulseId={lockedStoryPulseId}
+              onStoryClick={handleStoryClick}
+            />
+          </div>
         </ParallaxLayer>
         <ParallaxLayer
           progress={homeScrollProgress}
           inputRange={[0.2, 0.72]}
-          y={[26, -30]}
+          x={[20, -20]}
+          y={[34, -38]}
           scale={[0.99, 1.01]}
+          rotate={[0.65, -0.55]}
+          blur={[0.5, 0]}
         >
-          <NowSection items={nowItems} onSecretClick={() => setShowSecretPuzzle(true)} />
+          <div data-vine-anchor="now">
+            <NowSection items={nowItems} onSecretClick={() => setShowSecretPuzzle(true)} />
+          </div>
         </ParallaxLayer>
-        <PhotoOrbitTransition />
+        <ScrollChapter
+          id="photos"
+          desktopVh={220}
+          mobileVh={160}
+          stickyClassName="flex items-center justify-center pt-14"
+          ariaLabel="Photographic memories scroll scene"
+          className="scroll-chapter--viewport"
+        >
+          {(photoMotion) => (
+            <div className="h-[calc(100svh-4.5rem)] w-full" data-vine-anchor="photos">
+              <PhotoOrbitTransition
+                progress={photoMotion.progress}
+                pointerX={photoMotion.pointerX}
+                pointerY={photoMotion.pointerY}
+                reducedMotion={photoMotion.reducedMotion}
+                theme={isDarkMode ? 'evening' : 'day'}
+              />
+            </div>
+          )}
+        </ScrollChapter>
 
         <motion.hr
           initial={{ opacity: 0 }}
@@ -724,12 +877,27 @@ export default function App() {
         </footer>
       </main>
 
-      <PixelMeadow
-        progress={meadowScrollProgress}
-        pageProgress={pageScrollProgress}
-        sectionRef={meadowRef}
-        theme={isDarkMode ? 'evening' : 'day'}
-      />
+      <ScrollChapter
+        id="meadow"
+        desktopVh={185}
+        mobileVh={145}
+        stickyClassName="flex items-end justify-center"
+        ariaLabel="Pixel meadow finale scroll scene"
+        className="mt-[clamp(3rem,8vh,5rem)] w-full"
+      >
+        {(meadowMotion) => (
+          <div className="h-[100svh] w-full" data-vine-anchor="meadow">
+            <PixelMeadow
+              progress={meadowMotion.progress}
+              pageProgress={pageScrollProgress}
+              sectionRef={meadowRef}
+              theme={isDarkMode ? 'evening' : 'day'}
+              pointerX={meadowMotion.pointerX}
+              pointerY={meadowMotion.pointerY}
+            />
+          </div>
+        )}
+      </ScrollChapter>
 
       <AnimatePresence>
         {showModal && (

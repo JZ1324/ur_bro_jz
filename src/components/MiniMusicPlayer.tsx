@@ -517,7 +517,10 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
       try {
         await audio.play();
       } catch {
-        setHasAudioError(true);
+        // The media element's error event handles actual stream failures.
+        // A rejected play promise can also mean playback was blocked by the browser,
+        // so it should not permanently disable an otherwise healthy stream.
+        setIsPlaying(false);
       }
       return;
     }
@@ -584,7 +587,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   return (
     <>
     <div
-      className="relative z-10 mt-3 min-h-[6.25rem] w-full max-w-[13rem] cursor-pointer overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-200 ease-out hover:-translate-y-px active:scale-[0.99] md:max-w-[15rem]"
+      className="relative z-10 mx-auto mt-3 min-h-[6.25rem] w-full max-w-[13rem] cursor-pointer overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-200 ease-out hover:-translate-y-px active:scale-[0.99] md:max-w-[15rem]"
       role="button"
       tabIndex={0}
       onClick={(event) => {
@@ -772,8 +775,8 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
       </div>
 
       {hasAudioError && (
-        <p className="relative mt-2 text-[10px] font-semibold text-warm-accent">
-          Upload the licensed audio files to Supabase Storage to enable playback.
+        <p className="relative mt-2 text-[10px] font-semibold text-warm-accent" role="status" aria-live="polite">
+          Audio stream is unavailable right now. Please try again shortly.
         </p>
       )}
     </div>

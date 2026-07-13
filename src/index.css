@@ -58,25 +58,33 @@
 @layer base {
   html {
     position: relative;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: auto;
+    scroll-behavior: smooth;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
 
   html::-webkit-scrollbar,
-  body::-webkit-scrollbar,
-  *::-webkit-scrollbar {
+  body::-webkit-scrollbar {
     display: none;
+    width: 0;
+    height: 0;
   }
 
   body {
     @apply bg-bg text-text antialiased;
     position: relative;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: auto;
     background:
       radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 34rem),
       radial-gradient(circle at 90% 12%, color-mix(in srgb, var(--color-warm-accent) 10%, transparent), transparent 24rem),
       var(--color-bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   body::before {
@@ -119,6 +127,69 @@
   --garden-vine-ink: var(--dark-garden-vine-ink);
   --garden-pixel-glow: var(--dark-garden-pixel-glow);
   --garden-pixel-shadow: var(--dark-garden-pixel-shadow);
+}
+
+@layer components {
+  .scroll-chapter {
+    position: relative;
+    width: 100%;
+    height: var(--chapter-desktop-height);
+    isolation: isolate;
+  }
+
+  .scroll-chapter--viewport {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+  }
+
+  .scroll-chapter-sticky {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100svh;
+    overflow: clip;
+    perspective: 1200px;
+    perspective-origin: 50% 28%;
+    transform-style: preserve-3d;
+  }
+
+  [data-photo-orbit-slot],
+  [data-scroll-atmosphere] {
+    will-change: transform, opacity, filter;
+  }
+
+  [data-vine-anchor] {
+    position: relative;
+  }
+
+  @media (max-width: 767px) {
+    .scroll-chapter {
+      height: var(--chapter-mobile-height);
+    }
+
+    [data-vine-anchor] {
+      padding-left: 0.35rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-chapter {
+      height: auto;
+    }
+
+    .scroll-chapter-sticky {
+      position: relative;
+      top: auto;
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    [data-photo-orbit-slot],
+    [data-scroll-atmosphere] {
+      will-change: auto;
+    }
+  }
 }
 
 @layer utilities {

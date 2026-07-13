@@ -21,6 +21,7 @@ import {
   vineGrowthToPageProgress,
   type VineAttachment,
 } from './gardenVineAttachments';
+import { desktopVineSegments, getVineContinuationSegments, getVineDrawProgress, getVineLandingProgress, getVineSegments } from './scrollJourney';
 
 type GardenScrollSceneProps = {
   progress: MotionValue<number>;
@@ -44,33 +45,6 @@ type BloomSpriteSpec = {
   path?: string;
   themedPaths?: Record<GardenTheme, string>;
 };
-
-const vineSegments: GardenCubicSegment[] = [
-  {
-    start: { x: 91, y: 17.8 },
-    controlA: { x: 94, y: 24 },
-    controlB: { x: 79, y: 31 },
-    end: { x: 56, y: 34 },
-  },
-  {
-    start: { x: 56, y: 34 },
-    controlA: { x: 35, y: 36.5 },
-    controlB: { x: 14.5, y: 34 },
-    end: { x: 10, y: 43 },
-  },
-  {
-    start: { x: 10, y: 43 },
-    controlA: { x: 4.5, y: 54 },
-    controlB: { x: 25, y: 57.5 },
-    end: { x: 52, y: 61 },
-  },
-  {
-    start: { x: 52, y: 61 },
-    controlA: { x: 76, y: 64.5 },
-    controlB: { x: 92.5, y: 71.5 },
-    end: { x: 86.5, y: 84 },
-  },
-];
 
 const bloomSprites: BloomSpriteSpec[] = [
   {
@@ -191,8 +165,8 @@ const bloomSprites: BloomSpriteSpec[] = [
   },
 ];
 
-function bloomPathPoint(spec: BloomSpriteSpec) {
-  return cubicPoint(vineSegments[spec.attachment.segmentIndex], spec.attachment.t);
+function bloomPathPoint(spec: BloomSpriteSpec, segments: GardenCubicSegment[] = desktopVineSegments) {
+  return cubicPoint(segments[spec.attachment.segmentIndex], spec.attachment.t);
 }
 
 const roseHeadVisiblePercent = [64, 64, 66, 68, 71, 72, 73, 73];
@@ -237,6 +211,10 @@ function PixelVineCanvas({
     let height = 0;
     let ratio = 1;
     let fullVinePoints: GardenPoint[] = [];
+    let mainVinePoints: GardenPoint[] = [];
+    let continuationVinePoints: GardenPoint[] = [];
+    let vineEndY = 0;
+    let rebuildEndpointOnNextFrame = false;
     const styles = getComputedStyle(document.documentElement);
     const palette = {
       ink: styles.getPropertyValue('--garden-vine-ink').trim(),
@@ -260,7 +238,7 @@ function PixelVineCanvas({
       context.imageSmoothingEnabled = false;
     };
 
-    const buildFullVinePath = () => {
+    const buildFullVinePath = (updateAttachments = true) => {
       const rose = document.querySelector<HTMLElement>('[data-meadow-final-rose-anchor]');
       if (!rose) return;
 
@@ -270,50 +248,48 @@ function PixelVineCanvas({
         x: roseRect.left + roseRect.width * 0.5,
         y: window.scrollY + roseRect.top + roseRect.height * 0.78 - maxScroll,
       };
-      const mainPoints = sampleCubicSegments(vineSegments, 96).map((point) => ({
+      vineEndY = end.y;
+      const activeVineSegments = getVineSegments(width < 640);
+      const mainPoints = sampleCubicSegments(activeVineSegments, 96).map((point) => ({
         x: (point.x / 100) * width,
         y: (point.y / 100) * height,
       }));
       const start = mainPoints[mainPoints.length - 1];
-      const previous = mainPoints[mainPoints.length - 2];
-      const tangentLength = Math.max(1, Math.hypot(start.x - previous.x, start.y - previous.y));
-      const tangent = {
-        x: (start.x - previous.x) / tangentLength,
-        y: (start.y - previous.y) / tangentLength,
-      };
-      const distance = Math.max(1, Math.hypot(end.x - start.x, end.y - start.y));
-      const continuation: GardenCubicSegment = {
-        start,
-        controlA: {
-          x: start.x + tangent.x * distance * 0.38,
-          y: start.y + tangent.y * distance * 0.38,
-        },
-        controlB: {
-          x: end.x + Math.min(28, width * 0.025),
-          y: end.y - distance * 0.34,
-        },
-        end,
-      };
-      const densePath = [...mainPoints, ...sampleCubicSegments([continuation], 160).slice(1)];
-      fullVinePoints = resamplePathByDistance(densePath, width < 640 ? 3 : 4);
+      const continuation = getVineContinuationSegments(start, end, width, height, width < 640);
+      mainVinePoints = resamplePathByDistance(mainPoints, width < 640 ? 3 : 4);
+      continuationVinePoints = resamplePathByDistance(
+        sampleCubicSegments(continuation, 92),
+        width < 640 ? 3 : 4,
+      );
+      fullVinePoints = [...mainVinePoints, ...continuationVinePoints.slice(1)];
       canvas.dataset.vineTotalPoints = String(fullVinePoints.length);
-      onAttachmentsChange(resolveVineAttachments(
-        fullVinePoints,
-        bloomSprites.map((spec) => {
-          const target = bloomPathPoint(spec);
-          return {
-            id: spec.id,
-            target: {
-              x: (target.x / 100) * width,
-              y: (target.y / 100) * height,
-            },
-          };
-        }),
-      ));
+      canvas.dataset.vineEndX = end.x.toFixed(2);
+      canvas.dataset.vineEndY = end.y.toFixed(2);
+
+      canvas.dataset.vineAnchorCount = String(document.querySelectorAll('[data-vine-anchor]').length);
+      if (updateAttachments) {
+        onAttachmentsChange(resolveVineAttachments(
+          fullVinePoints,
+          bloomSprites.map((spec) => {
+            const target = bloomPathPoint(spec, activeVineSegments);
+            return {
+              id: spec.id,
+              target: {
+                x: (target.x / 100) * width,
+                y: (target.y / 100) * height,
+              },
+            };
+          }),
+        ));
+      }
     };
 
     const draw = () => {
       frameRef.current = null;
+      if (rebuildEndpointOnNextFrame) {
+        buildFullVinePath(false);
+        rebuildEndpointOnNextFrame = false;
+      }
       context.clearRect(0, 0, width, height);
 
       const growth = reducedMotion
@@ -330,7 +306,14 @@ function PixelVineCanvas({
         return;
       }
 
-      const points = progressivePoints(fullVinePoints, growth).map((point, index) => {
+      const landingProgress = reducedMotion ? 0 : getVineLandingProgress(vineEndY, height);
+      const { mainGrowth, continuationGrowth } = getVineDrawProgress(growth, landingProgress);
+      canvas.dataset.vineLandingProgress = landingProgress.toFixed(4);
+      const drawnMain = progressivePoints(mainVinePoints, mainGrowth);
+      const drawnContinuation = continuationGrowth > 0
+        ? progressivePoints(continuationVinePoints, continuationGrowth).slice(1)
+        : [];
+      const points = [...drawnMain, ...drawnContinuation].map((point, index) => {
         const edgeFade = Math.min(1, index / 8, (fullVinePoints.length - 1 - index) / 8);
         const organicOffset = Math.sin(index * 0.87) * 0.55 * edgeFade;
         return {
@@ -345,10 +328,15 @@ function PixelVineCanvas({
         seed: 2,
         endDetailClearance: 34,
       });
+
     };
 
     const scheduleDraw = () => {
       if (frameRef.current === null) frameRef.current = requestAnimationFrame(draw);
+    };
+    const scheduleScrollDraw = () => {
+      if (rawProgress.get() >= 0.86) rebuildEndpointOnNextFrame = true;
+      scheduleDraw();
     };
 
     resize();
@@ -364,14 +352,15 @@ function PixelVineCanvas({
     };
     const layoutObserver = new ResizeObserver(handleLoad);
     layoutObserver.observe(document.documentElement);
+    document.querySelectorAll<HTMLElement>('[data-vine-anchor]').forEach((anchor) => layoutObserver.observe(anchor));
     buildFullVinePath();
-    window.addEventListener('scroll', scheduleDraw, { passive: true });
+    window.addEventListener('scroll', scheduleScrollDraw, { passive: true });
     window.addEventListener('resize', handleResize);
     window.addEventListener('load', handleLoad);
     draw();
     return () => {
       unsubscribe();
-      window.removeEventListener('scroll', scheduleDraw);
+      window.removeEventListener('scroll', scheduleScrollDraw);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('load', handleLoad);
       layoutObserver.disconnect();
@@ -666,6 +655,7 @@ function FallingPetalCanvas({
 export function GardenScrollScene({ progress, theme }: GardenScrollSceneProps) {
   const reducedMotion = Boolean(useReducedMotion());
   const gardenProgress = useTransform(progress, (value) => (reducedMotion ? 1 : value));
+  const atmosphereOpacity = useTransform(progress, [0, 0.4, 1], reducedMotion ? [0, 0, 0] : [0, 0.12, 0.34]);
   const breezeX = useMotionValue(0);
   const [attachments, setAttachments] = useState<Record<string, VineAttachment>>({});
   const handleAttachmentsChange = useCallback((next: Record<string, VineAttachment>) => {
@@ -698,30 +688,42 @@ export function GardenScrollScene({ progress, theme }: GardenScrollSceneProps) {
   }, [breezeX, reducedMotion]);
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[15] overflow-hidden" aria-hidden="true" data-garden-scene>
-      <PixelVineCanvas
-        rawProgress={progress}
-        reducedMotion={reducedMotion}
-        theme={theme}
-        onAttachmentsChange={handleAttachmentsChange}
-      />
-
-      {leafSprites.map((leaf) => (
-        <PixelLeaf key={leaf.id} leaf={leaf} progress={gardenProgress} breezeX={breezeX} />
-      ))}
-
-      {bloomSprites.map((sprite) => (
-        <PixelBloomSprite
-          key={sprite.id}
-          spec={sprite}
-          attachment={attachments[sprite.id]}
-          progress={gardenProgress}
-          breezeX={breezeX}
-          theme={theme}
+    <>
+      <div className="pointer-events-none fixed inset-0 z-[15] overflow-hidden" aria-hidden="true" data-garden-scene>
+        <motion.div
+          className="absolute inset-0"
+          style={{
+            opacity: atmosphereOpacity,
+            background: theme === 'evening'
+              ? 'rgba(4, 10, 16, 0.48)'
+              : 'rgba(179, 112, 72, 0.24)',
+          }}
+          data-scroll-atmosphere={theme}
         />
-      ))}
+        <PixelVineCanvas
+          rawProgress={progress}
+          reducedMotion={reducedMotion}
+          theme={theme}
+          onAttachmentsChange={handleAttachmentsChange}
+        />
 
-      <FallingPetalCanvas reducedMotion={reducedMotion} theme={theme} />
-    </div>
+        {leafSprites.map((leaf) => (
+          <PixelLeaf key={leaf.id} leaf={leaf} progress={gardenProgress} breezeX={breezeX} />
+        ))}
+
+        {bloomSprites.map((sprite) => (
+          <PixelBloomSprite
+            key={sprite.id}
+            spec={sprite}
+            attachment={attachments[sprite.id]}
+            progress={gardenProgress}
+            breezeX={breezeX}
+            theme={theme}
+          />
+        ))}
+
+        <FallingPetalCanvas reducedMotion={reducedMotion} theme={theme} />
+      </div>
+    </>
   );
 }
