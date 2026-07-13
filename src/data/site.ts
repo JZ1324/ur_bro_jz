@@ -139,10 +139,6 @@ export type ToolItem = {
 const viteEnv = (import.meta.env ?? {}) as Partial<ImportMetaEnv>;
 const baseUrl = viteEnv.BASE_URL ?? '/';
 
-const supabaseStorageUrl = `${(viteEnv.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
-  /\/$/,
-  '',
-)}/storage/v1/object/public/licensed-audio`;
 const supabasePublicVideoUrl = `${(viteEnv.VITE_SUPABASE_URL || 'https://uajpewjagduzdpwlynrv.supabase.co').replace(
   /\/$/,
   '',
@@ -202,19 +198,19 @@ export const profileData: ProfileData = {
     artworkSrc: `${baseUrl}olivia-dean-art-of-loving-cover.jpg`,
     sources: [
       {
-        src: `${supabaseStorageUrl}/so-easy-320.mp3`,
+        src: `${supabaseFunctionsUrl}/get-track-audio?quality=high`,
         type: 'audio/mpeg',
         quality: 'high',
         bitrateKbps: 320,
       },
       {
-        src: `${supabaseStorageUrl}/so-easy-160.mp3`,
+        src: `${supabaseFunctionsUrl}/get-track-audio?quality=medium`,
         type: 'audio/mpeg',
         quality: 'medium',
         bitrateKbps: 160,
       },
       {
-        src: `${supabaseStorageUrl}/so-easy-96.mp3`,
+        src: `${supabaseFunctionsUrl}/get-track-audio?quality=low`,
         type: 'audio/mpeg',
         quality: 'low',
         bitrateKbps: 96,

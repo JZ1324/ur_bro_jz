@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion, useMotionValue, useTransform, type MotionValue } from 'motion/react';
 import { TypewriterEffectSmooth } from './ui/typewriter-effect';
 import { FaithHoverCard } from './ui/faith-hover-card';
 import { BibleVerseHoverCard } from './ui/bible-verse-hover-card';
@@ -6,10 +6,16 @@ import { MiniMusicPlayer } from './MiniMusicPlayer';
 import { ShinyText } from './ui/ShinyText';
 import type { FaithHover, ProfileData, ProfileStat } from '../data/site';
 
+type ProfileCardMotion = {
+  progress: MotionValue<number>;
+  reducedMotion: boolean;
+};
+
 type ProfileCardProps = {
   profile: ProfileData;
   faithHover: FaithHover;
   onFaithClick: () => void;
+  scrollMotion?: ProfileCardMotion;
 };
 
 function ProfileStatItem({ stat }: { stat: ProfileStat }) {
@@ -21,13 +27,21 @@ function ProfileStatItem({ stat }: { stat: ProfileStat }) {
   );
 }
 
-export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardProps) {
+export function ProfileCard({ profile, faithHover, onFaithClick, scrollMotion }: ProfileCardProps) {
+  const fallbackProgress = useMotionValue(0);
+  const progress = scrollMotion?.progress ?? fallbackProgress;
+  const reducedMotion = scrollMotion?.reducedMotion ?? true;
+
+  const cardOpacity = useTransform(progress, [0, 0.88, 0.98, 1], reducedMotion ? [1, 1, 1, 1] : [1, 1, 0.35, 0]);
+
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.42, ease: [0.23, 1, 0.32, 1] }}
-      className="archive-corner-panel relative mx-auto mt-4 grid w-full max-w-4xl grid-cols-1 items-center gap-5 overflow-hidden rounded-[1.35rem] border border-border/60 bg-surface px-4 py-4 shadow-2xl shadow-black/20 ring-1 ring-accent/5 sm:mt-6 sm:gap-6 sm:rounded-2xl sm:px-6 sm:py-6 md:grid-cols-2 md:gap-8 md:px-8 md:py-7 lg:gap-9"
+      className="archive-corner-panel relative mx-auto grid w-full max-w-4xl grid-cols-1 items-center gap-5 overflow-hidden rounded-[1.35rem] border border-border/60 bg-surface px-4 py-4 shadow-2xl shadow-black/20 ring-1 ring-accent/5 min-[560px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] min-[560px]:gap-6 min-[560px]:px-6 min-[560px]:py-6 sm:rounded-2xl md:grid-cols-2 md:gap-8 md:px-8 md:py-7 lg:gap-9"
+      style={{ opacity: cardOpacity }}
+      data-profile-card
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(201,211,176,0.12),transparent_46%),radial-gradient(circle_at_85%_25%,rgba(228,154,120,0.09),transparent_34%)]" />
       <div className="relative z-10 flex w-full min-w-0 flex-col items-center justify-center justify-self-center">
@@ -72,44 +86,50 @@ export function ProfileCard({ profile, faithHover, onFaithClick }: ProfileCardPr
           </motion.div>
         </div>
 
-        {profile.track && <MiniMusicPlayer track={profile.track} />}
+        {profile.track && (
+          <div className="flex w-full justify-center">
+            <MiniMusicPlayer track={profile.track} />
+          </div>
+        )}
       </div>
 
       <div className="relative z-10 flex w-full max-w-[22rem] min-w-0 flex-col items-center gap-2.5 justify-self-center text-center sm:max-w-[24rem] md:gap-3">
-        <h1 className="text-3xl font-bold tracking-tight text-text md:text-[2.35rem]" aria-label={profile.displayName}>
-          <TypewriterEffectSmooth
-            words={[
-              {
-                text: profile.displayName,
-                className: 'text-text',
-              },
-            ]}
-            className="justify-center text-3xl md:text-[2.35rem]"
-            cursorClassName="bg-warm-accent"
-            characterDelay={0.34}
-            revealDuration={4.6}
-          />
-        </h1>
-        <div className="flex max-w-[18rem] flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs font-semibold tracking-wide text-muted sm:max-w-none sm:text-sm">
-          <a
-            href={profile.instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-accent premium-transition"
-          >
-            {profile.handle}
-          </a>
-          <span className="text-border" aria-hidden="true">/</span>
-          {profile.bibleVersePreview ? (
-            <BibleVerseHoverCard
-              verse={profile.bibleVersePreview}
-              className="-mx-1 rounded-full px-1.5 py-0.5 text-muted underline decoration-warm-accent/60 decoration-dotted underline-offset-4 premium-transition hover:bg-warm-accent/10 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent/70"
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-text md:text-[2.35rem]" aria-label={profile.displayName}>
+            <TypewriterEffectSmooth
+              words={[
+                {
+                  text: profile.displayName,
+                  className: 'text-text',
+                },
+              ]}
+              className="justify-center text-3xl md:text-[2.35rem]"
+              cursorClassName="bg-warm-accent"
+              characterDelay={0.34}
+              revealDuration={4.6}
+            />
+          </h1>
+          <div className="flex max-w-[18rem] flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs font-semibold tracking-wide text-muted sm:max-w-none sm:text-sm">
+            <a
+              href={profile.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-accent premium-transition"
             >
-              {profile.bio}
-            </BibleVerseHoverCard>
-          ) : (
-            <span className="text-muted">{profile.bio}</span>
-          )}
+              {profile.handle}
+            </a>
+            <span className="text-border" aria-hidden="true">/</span>
+            {profile.bibleVersePreview ? (
+              <BibleVerseHoverCard
+                verse={profile.bibleVersePreview}
+                className="-mx-1 rounded-full px-1.5 py-0.5 text-muted underline decoration-warm-accent/60 decoration-dotted underline-offset-4 premium-transition hover:bg-warm-accent/10 hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent/70"
+              >
+                {profile.bio}
+              </BibleVerseHoverCard>
+            ) : (
+              <span className="text-muted">{profile.bio}</span>
+            )}
+          </div>
         </div>
 
         <div className="grid w-full max-w-[18rem] grid-cols-2 gap-1.5 rounded-2xl border border-border/45 bg-bg/25 p-1.5 sm:max-w-xs md:max-w-sm">

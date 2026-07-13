@@ -8,6 +8,7 @@ Current Supabase project:
 Name: JZ's about me
 Ref: uajpewjagduzdpwlynrv
 Function: https://uajpewjagduzdpwlynrv.supabase.co/functions/v1/get-private-archive
+Audio Function: https://uajpewjagduzdpwlynrv.supabase.co/functions/v1/get-track-audio
 Bucket: private-archive
 ```
 
@@ -74,6 +75,10 @@ supabase secrets set SECRET_PUZZLE_HEX_HASH="paste-normalized-cipher-line-hash-h
 supabase secrets set SECRET_PUZZLE_CIPHER_HASH="paste-normalized-cipher-answer-hash-here"
 supabase secrets set ARCHIVE_BUCKET="private-archive"
 supabase secrets set SIGNED_URL_TTL_SECONDS="600"
+supabase secrets set TRACK_AUDIO_BUCKET="licensed-audio"
+supabase secrets set TRACK_AUDIO_HIGH_PATH="so-easy-320.mp3"
+supabase secrets set TRACK_AUDIO_MEDIUM_PATH="so-easy-160.mp3"
+supabase secrets set TRACK_AUDIO_LOW_PATH="so-easy-96.mp3"
 supabase secrets set ALLOWED_ORIGINS="https://your-site.example,http://localhost:3000"
 ```
 
@@ -89,6 +94,7 @@ The function uses its own access-key check, so deploy it as a public Edge Functi
 ```bash
 supabase functions deploy get-private-archive --no-verify-jwt
 supabase functions deploy check-secret-name --no-verify-jwt
+supabase functions deploy get-track-audio --no-verify-jwt
 ```
 
 The endpoint will be:

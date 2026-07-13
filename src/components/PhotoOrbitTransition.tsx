@@ -1,13 +1,11 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   motion,
   useMotionValue,
-  useReducedMotion,
-  useScroll,
-  useSpring,
   useTransform,
   type MotionValue,
 } from 'motion/react';
+import { mapChapterProgress } from './scrollJourney';
 
 type PhotoSlot = {
   id: string;
@@ -83,17 +81,25 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-function orbitPoint(angle: number, progress: number, depth: number) {
-  const scrollRotation = (progress - 0.5) * 118;
+function orbitPoint(angle: number, progress: number, depth: number, index: number) {
+  const arrival = mapChapterProgress(progress, 0.02, 0.3);
+  const orbitProgress = mapChapterProgress(progress, 0.22, 0.82);
+  const scrollRotation = (orbitProgress - 0.5) * 92;
   const radians = ((angle + scrollRotation) * Math.PI) / 180;
-  const exitSpread = clamp((progress - 0.68) / 0.32, 0, 1);
+  const exitSpread = mapChapterProgress(progress, 0.78, 1);
+  const entrySide = index % 2 === 0 ? -1 : 1;
+  const entryLift = index === 2 ? -0.38 : index < 2 ? -0.22 : 0.22;
 
   return {
-    xFactor: Math.cos(radians) * (0.78 + exitSpread * 0.1),
-    yFactor: Math.sin(radians) * (0.74 + exitSpread * 0.1) + exitSpread * 0.12,
-    scale: 0.88 + depth * 0.13 - exitSpread * 0.08,
-    opacity: 0.62 + depth * 0.36 - exitSpread * 0.38,
-    rotate: angle * 0.035 + scrollRotation * 0.08,
+    xFactor: Math.cos(radians) * (0.64 + exitSpread * 0.42)
+      + entrySide * (1 - arrival) * (0.28 + depth * 0.18),
+    yFactor: Math.sin(radians) * (0.58 + exitSpread * 0.35)
+      + entryLift * (1 - arrival)
+      + exitSpread * (index % 2 === 0 ? -0.55 : 0.7),
+    scale: 1.4 - arrival * (0.38 - depth * 0.07) - exitSpread * 0.15,
+    opacity: Math.min(1, arrival * 1.45) * (0.68 + depth * 0.32) * (1 - exitSpread * 0.92),
+    rotate: entrySide * (1 - arrival) * 18 + angle * 0.035 + scrollRotation * 0.08 + exitSpread * entrySide * 14,
+    blur: (1 - arrival) * (10 + depth * 4) + exitSpread * 7,
   };
 }
 
@@ -187,6 +193,7 @@ function OrbitPhoto({
   orbitWidth,
   orbitHeight,
   reducedMotion,
+  index,
 }: {
   slot: PhotoSlot;
   progress: MotionValue<number>;
@@ -195,32 +202,34 @@ function OrbitPhoto({
   orbitWidth: MotionValue<number>;
   orbitHeight: MotionValue<number>;
   reducedMotion: boolean;
+  index: number;
 }) {
   const [flipped, setFlipped] = useState(false);
   const x = useTransform([progress, pointerX, orbitWidth], ([rawProgress, rawPointerX, rawWidth]) => {
-    const point = orbitPoint(slot.angle, reducedMotion ? 0.5 : Number(rawProgress), slot.depth);
+    const point = orbitPoint(slot.angle, reducedMotion ? 0.55 : Number(rawProgress), slot.depth, index);
     const width = Number(rawWidth);
     const cornerSafety = clamp(width * 0.2, 94, 126);
     const safeRadius = Math.max(0, width / 2 - cornerSafety);
-    return point.xFactor * safeRadius + Number(rawPointerX) * slot.depth * Math.min(20, width * 0.025);
+    return point.xFactor * safeRadius + Number(rawPointerX) * slot.depth * Math.min(36, width * 0.055);
   });
   const y = useTransform([progress, pointerY, orbitHeight], ([rawProgress, rawPointerY, rawHeight]) => {
-    const point = orbitPoint(slot.angle, reducedMotion ? 0.5 : Number(rawProgress), slot.depth);
+    const point = orbitPoint(slot.angle, reducedMotion ? 0.55 : Number(rawProgress), slot.depth, index);
     const height = Number(rawHeight);
     const cornerSafety = clamp(height * 0.22, 98, 132);
     const safeRadius = Math.max(0, height / 2 - cornerSafety);
-    return point.yFactor * safeRadius + Number(rawPointerY) * slot.depth * Math.min(14, height * 0.025);
+    return point.yFactor * safeRadius + Number(rawPointerY) * slot.depth * Math.min(30, height * 0.05);
   });
-  const scale = useTransform(progress, (value) => orbitPoint(slot.angle, reducedMotion ? 0.5 : value, slot.depth).scale);
-  const opacity = useTransform(progress, (value) => orbitPoint(slot.angle, reducedMotion ? 0.5 : value, slot.depth).opacity);
-  const rotate = useTransform(progress, (value) => slot.tilt + orbitPoint(slot.angle, reducedMotion ? 0.5 : value, slot.depth).rotate);
+  const scale = useTransform(progress, (value) => orbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).scale);
+  const opacity = useTransform(progress, (value) => orbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).opacity);
+  const rotate = useTransform(progress, (value) => slot.tilt + orbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).rotate);
+  const filter = useTransform(progress, (value) => `blur(${orbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).blur}px)`);
 
   return (
     <motion.button
       type="button"
       onClick={() => setFlipped((current) => !current)}
       className="absolute left-1/2 top-1/2 aspect-[4/5] w-[clamp(5rem,22vw,5.75rem)] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-[0.22rem] bg-[#D9D1C1] p-[clamp(0.34rem,0.7vw,0.5rem)] pb-[clamp(0.7rem,1.4vw,1rem)] shadow-xl shadow-black/20 ring-1 ring-[#BEB39F]/25 outline-none transition-[background-color,box-shadow,ring-color] duration-300 focus-visible:ring-2 focus-visible:ring-accent sm:w-[clamp(6.2rem,11vw,8.5rem)] dark:bg-[#252C22] dark:shadow-black/45 dark:ring-[#667359]/35"
-      style={{ x, y, scale, rotate, opacity, zIndex: Math.round(slot.depth * 10) }}
+      style={{ x, y, scale, rotate, opacity, filter, zIndex: Math.round(slot.depth * 10) }}
       whileHover={reducedMotion ? undefined : { scale: 1.04 }}
       whileTap={reducedMotion ? undefined : { scale: 0.98 }}
       aria-label={`${flipped ? 'Show front of' : 'Flip'} ${slot.alt}`}
@@ -239,33 +248,87 @@ function OrbitPhoto({
   );
 }
 
-export function PhotoOrbitTransition() {
-  const sectionRef = useRef<HTMLElement>(null);
+type PhotoOrbitTransitionProps = {
+  progress?: MotionValue<number>;
+  pointerX?: MotionValue<number>;
+  pointerY?: MotionValue<number>;
+  reducedMotion?: boolean;
+  theme?: 'day' | 'evening';
+};
+
+const scatterPetals = Array.from({ length: 9 }, (_, index) => ({
+  id: `photo-petal-${index}`,
+  x: ((index * 37) % 90) + 5,
+  drift: index % 2 === 0 ? -70 - index * 8 : 64 + index * 7,
+  delay: index * 0.014,
+  frame: index % 8,
+}));
+
+function ScatterPetal({
+  petal,
+  progress,
+  reducedMotion,
+  theme,
+}: {
+  petal: typeof scatterPetals[number];
+  progress: MotionValue<number>;
+  reducedMotion: boolean;
+  theme: 'day' | 'evening';
+}) {
+  const opacity = useTransform(progress, [0.78 + petal.delay, 0.86 + petal.delay, 1], [0, 0.9, 0]);
+  const y = useTransform(progress, [0.78, 1], [-20, 260 + petal.frame * 18]);
+  const x = useTransform(progress, [0.78, 1], [0, petal.drift]);
+  const rotate = useTransform(progress, [0.78, 1], [0, petal.drift * 1.8]);
+
+  return (
+    <motion.span
+      className="pixel-garden-sprite pointer-events-none absolute top-[44%] z-20 h-5 w-5"
+      style={{
+        left: `${petal.x}%`,
+        x,
+        y,
+        rotate,
+        opacity: reducedMotion ? 0 : opacity,
+        backgroundImage: `url(/garden-pixel/falling-petals-${theme}-strip.png)`,
+        backgroundSize: '800% 100%',
+        backgroundPosition: `${petal.frame * (100 / 7)}% 0`,
+      }}
+      aria-hidden="true"
+      data-photo-scatter-petal
+    />
+  );
+}
+
+export function PhotoOrbitTransition({
+  progress: progressProp,
+  pointerX: pointerXProp,
+  pointerY: pointerYProp,
+  reducedMotion = false,
+  theme = 'day',
+}: PhotoOrbitTransitionProps = {}) {
   const orbitRef = useRef<HTMLDivElement>(null);
-  const reducedMotion = Boolean(useReducedMotion());
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const orbitWidth = useMotionValue(0);
-  const orbitHeight = useMotionValue(0);
-  const smoothPointerX = useSpring(pointerX, { stiffness: 120, damping: 24, mass: 0.3 });
-  const smoothPointerY = useSpring(pointerY, { stiffness: 120, damping: 24, mass: 0.3 });
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'end start'],
-  });
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 95, damping: 26, mass: 0.25 });
-  const orbitRotate = useTransform([smoothProgress, smoothPointerX], ([rawProgress, rawPointerX]) => (
-    reducedMotion ? 0 : -7 + Number(rawProgress) * 14 + Number(rawPointerX) * 5
+  const fallbackProgress = useMotionValue(0.55);
+  const fallbackPointerX = useMotionValue(0);
+  const fallbackPointerY = useMotionValue(0);
+  const progress = progressProp ?? fallbackProgress;
+  const pointerX = pointerXProp ?? fallbackPointerX;
+  const pointerY = pointerYProp ?? fallbackPointerY;
+  const initialOrbitWidth = typeof window === 'undefined' ? 320 : Math.min(window.innerWidth * 0.92, 640);
+  const initialOrbitHeight = typeof window === 'undefined' ? 480 : Math.max(320, Math.min(window.innerHeight * 0.88, 620));
+  const orbitWidth = useMotionValue(initialOrbitWidth);
+  const orbitHeight = useMotionValue(initialOrbitHeight);
+  const orbitRotate = useTransform([progress, pointerX], ([rawProgress, rawPointerX]) => (
+    reducedMotion ? 0 : -7 + Number(rawProgress) * 14 + Number(rawPointerX) * 9
   ));
-  const orbitScale = useTransform(smoothProgress, [0, 0.5, 1], reducedMotion ? [1, 1, 1] : [0.94, 1, 0.96]);
+  const orbitScale = useTransform(progress, [0, 0.5, 1], reducedMotion ? [1, 1, 1] : [0.96, 1.02, 0.92]);
 
   useEffect(() => {
     const orbit = orbitRef.current;
     if (!orbit) return;
 
     const updateBounds = () => {
-      orbitWidth.set(orbit.clientWidth);
-      orbitHeight.set(orbit.clientHeight);
+      if (orbit.clientWidth > 0) orbitWidth.set(orbit.clientWidth);
+      if (orbit.clientHeight > 0) orbitHeight.set(orbit.clientHeight);
     };
     const observer = new ResizeObserver(updateBounds);
     observer.observe(orbit);
@@ -274,47 +337,42 @@ export function PhotoOrbitTransition() {
     return () => observer.disconnect();
   }, [orbitHeight, orbitWidth]);
 
-  const handlePointerMove = (event: ReactPointerEvent<HTMLElement>) => {
-    if (reducedMotion || event.pointerType === 'touch') return;
-    const bounds = event.currentTarget.getBoundingClientRect();
-    pointerX.set(clamp((event.clientX - bounds.left) / bounds.width - 0.5, -0.5, 0.5));
-    pointerY.set(clamp((event.clientY - bounds.top) / bounds.height - 0.5, -0.5, 0.5));
-  };
-
-  const resetPointer = () => {
-    pointerX.set(0);
-    pointerY.set(0);
-  };
-
   return (
-    <section
-      ref={sectionRef}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={resetPointer}
-      className="relative h-[62vh] min-h-[31rem] max-h-[44rem] w-full overflow-hidden"
+    <div
+      className="relative h-full min-h-[31rem] w-full overflow-hidden"
+      style={{
+        maskImage: 'radial-gradient(ellipse 94% 90% at center, black 68%, transparent 100%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 94% 90% at center, black 68%, transparent 100%)',
+      }}
       aria-label="Interactive personal photo carousel"
       data-photo-orbit
     >
-      <motion.div
-        ref={orbitRef}
-        className="absolute inset-[4%_2%_8%] rounded-[50%]"
-        style={{ rotate: orbitRotate, scale: orbitScale }}
-      >
-        <span className="pointer-events-none absolute left-1/2 top-1/2 h-[44%] w-[72%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-dashed border-border/20 opacity-45 [mask-image:linear-gradient(to_right,transparent,black_28%,black_72%,transparent)]" />
-        <span className="pointer-events-none absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-warm-accent/25" />
-        {photoSlots.map((slot) => (
-          <OrbitPhoto
-            key={slot.id}
-            slot={slot}
-            progress={smoothProgress}
-            pointerX={smoothPointerX}
-            pointerY={smoothPointerY}
-            orbitWidth={orbitWidth}
-            orbitHeight={orbitHeight}
-            reducedMotion={reducedMotion}
-          />
-        ))}
-      </motion.div>
-    </section>
+      {scatterPetals.map((petal) => (
+        <ScatterPetal key={petal.id} petal={petal} progress={progress} reducedMotion={reducedMotion} theme={theme} />
+      ))}
+      <div className="absolute inset-[4%_0_8%] flex justify-center">
+        <motion.div
+          ref={orbitRef}
+          className="relative h-full w-[min(92%,40rem)] rounded-[50%]"
+          style={{ rotate: orbitRotate, scale: orbitScale }}
+        >
+          <span className="pointer-events-none absolute left-1/2 top-1/2 h-[44%] w-[72%] -translate-x-1/2 -translate-y-1/2 rounded-[50%] border border-dashed border-border/20 opacity-45 [mask-image:linear-gradient(to_right,transparent,black_28%,black_72%,transparent)]" />
+          <span className="pointer-events-none absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-warm-accent/25" />
+          {photoSlots.map((slot, index) => (
+            <OrbitPhoto
+              key={slot.id}
+              slot={slot}
+              progress={progress}
+              pointerX={pointerX}
+              pointerY={pointerY}
+              orbitWidth={orbitWidth}
+              orbitHeight={orbitHeight}
+              reducedMotion={reducedMotion}
+              index={index}
+            />
+          ))}
+        </motion.div>
+      </div>
+    </div>
   );
 }

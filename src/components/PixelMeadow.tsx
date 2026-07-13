@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import {
   AnimatePresence,
   motion,
+  useMotionValue,
   useReducedMotion,
   useTransform,
   type MotionValue,
@@ -16,6 +18,8 @@ type PixelMeadowProps = {
   pageProgress: MotionValue<number>;
   sectionRef: RefObject<HTMLElement | null>;
   theme: MeadowTheme;
+  pointerX?: MotionValue<number>;
+  pointerY?: MotionValue<number>;
 };
 
 type TerrainLayerSpec = {
@@ -93,7 +97,6 @@ type RoseSpriteSpec = {
   id: string;
   path: string;
   frameCount: number;
-  x: number;
   bottom: number;
   size: string;
   grow: [number, number];
@@ -192,7 +195,6 @@ const finalRose: RoseSpriteSpec = {
   id: 'final-rose',
   path: '/garden-pixel/rose-bloom-detailed-strip.png?v=rounded-1',
   frameCount: 8,
-  x: 84,
   bottom: 10,
   size: 'clamp(2.55rem, 4.1vw, 3.4rem)',
   grow: gardenTiming.finalRose.grow,
@@ -525,6 +527,8 @@ function FinalRose({
   scrollRange: number;
   reducedMotion: boolean;
 }) {
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const [anchorRect, setAnchorRect] = useState<DOMRectReadOnly | null>(null);
   const opacity = useRange(progress, spec.grow, [0, 1]);
   const scale = useRange(progress, spec.grow, [0.5, 1]);
   const backgroundPosition = useTransform(progress, (value) => {
@@ -543,41 +547,77 @@ function FinalRose({
     reducedMotion ? 0 : (value - 1) * scrollRange
   ));
 
+  useEffect(() => {
+    const anchor = anchorRef.current;
+    if (!anchor) return;
+
+    let frame: number | null = null;
+    const measure = () => {
+      frame = null;
+      setAnchorRect(anchor.getBoundingClientRect());
+    };
+    const scheduleMeasure = () => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(measure);
+    };
+
+    measure();
+    const observer = new ResizeObserver(scheduleMeasure);
+    observer.observe(anchor);
+    window.addEventListener('scroll', scheduleMeasure, { passive: true });
+    window.addEventListener('resize', scheduleMeasure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('scroll', scheduleMeasure);
+      window.removeEventListener('resize', scheduleMeasure);
+      if (frame !== null) cancelAnimationFrame(frame);
+    };
+  }, []);
+
   return (
-    <div
-      className="absolute z-40"
-      style={{
-        left: `${spec.x}%`,
-        bottom: `${spec.bottom}%`,
-        width: spec.size,
-        aspectRatio: '1 / 1',
-        transform: 'translateX(-50%)',
-      }}
-      data-meadow-final-rose-anchor
-    >
-      <motion.div
-        className="h-full w-full"
+    <>
+      <div
+        ref={anchorRef}
+        className="absolute left-[30%] sm:left-[84%]"
         style={{
-          opacity,
-          scale,
-          y: connectionY,
-          transformOrigin: '50% 100%',
+          bottom: `${spec.bottom}%`,
+          width: spec.size,
+          aspectRatio: '1 / 1',
+          transform: 'translateX(-50%)',
         }}
-        data-meadow-final-rose
-      >
-        <motion.span
-          className="pixel-garden-sprite block h-full w-full"
+        data-meadow-final-rose-anchor
+      />
+      {anchorRect && createPortal(
+        <motion.div
+          className="pointer-events-none fixed"
           style={{
-            clipPath: headClip,
-            y: headY,
-            backgroundImage: `url(${spec.path})`,
-            backgroundSize: `${spec.frameCount * 100}% 100%`,
-            backgroundPosition,
-            backgroundRepeat: 'no-repeat',
+            left: anchorRect.left,
+            top: anchorRect.top,
+            width: anchorRect.width,
+            height: anchorRect.height,
+            opacity,
+            scale,
+            y: connectionY,
+            transformOrigin: '50% 100%',
+            zIndex: 40,
           }}
-        />
-      </motion.div>
-    </div>
+          data-meadow-final-rose
+        >
+          <motion.span
+            className="pixel-garden-sprite block h-full w-full"
+            style={{
+              clipPath: headClip,
+              y: headY,
+              backgroundImage: `url(${spec.path})`,
+              backgroundSize: `${spec.frameCount * 100}% 100%`,
+              backgroundPosition,
+              backgroundRepeat: 'no-repeat',
+            }}
+          />
+        </motion.div>,
+        document.body,
+      )}
+    </>
   );
 }
 
@@ -849,14 +889,21 @@ function PixelBush({
   );
 }
 
-export function PixelMeadow({ progress, pageProgress, sectionRef, theme }: PixelMeadowProps) {
+export function PixelMeadow({ progress, pageProgress, sectionRef, theme, pointerX, pointerY }: PixelMeadowProps) {
   const reducedMotion = Boolean(useReducedMotion());
+  const fallbackPointerX = useMotionValue(0);
+  const fallbackPointerY = useMotionValue(0);
+  const meadowPointerX = pointerX ?? fallbackPointerX;
+  const meadowPointerY = pointerY ?? fallbackPointerY;
   const [isIdle, setIsIdle] = useState(false);
   const [scrollRange, setScrollRange] = useState(0);
   const visualProgress = useTransform(progress, (value) => (reducedMotion ? 1 : value));
   const finalRoseProgress = useTransform(pageProgress, (value) => (reducedMotion ? 1 : value));
   const celestialOpacity = useRange(visualProgress, [0.5, 0.72], [0, 0.82]);
   const celestialScale = useRange(visualProgress, [0.5, 0.72], [0.72, 1]);
+  const sceneX = useTransform(meadowPointerX, [-0.5, 0.5], reducedMotion ? [0, 0] : [-16, 16]);
+  const sceneY = useTransform(meadowPointerY, [-0.5, 0.5], reducedMotion ? [0, 0] : [-10, 10]);
+  const sceneRotateX = useTransform(meadowPointerY, [-0.5, 0.5], reducedMotion ? [0, 0] : [1.2, -1.2]);
 
   useEffect(() => {
     const updateScrollRange = () => {
@@ -908,56 +955,66 @@ export function PixelMeadow({ progress, pageProgress, sectionRef, theme }: Pixel
   return (
     <section
       ref={sectionRef}
-      className="pixel-meadow pointer-events-none relative mt-[clamp(3rem,8vh,5rem)] h-[68dvh] min-h-[30rem] w-full overflow-hidden"
+      className="pixel-meadow pointer-events-none relative h-full min-h-[30rem] w-full overflow-hidden [transform-style:preserve-3d]"
       aria-hidden="true"
       data-pixel-meadow
       data-meadow-idle={isIdle ? 'true' : 'false'}
       data-meadow-reduced-motion={reducedMotion ? 'true' : 'false'}
     >
       <motion.div
-        className="absolute bottom-[39%] left-[27%] z-[5] w-[clamp(2.5rem,4.6vw,3.8rem)]"
-        style={{
-          aspectRatio: '1 / 1',
-          opacity: reducedMotion ? 0.82 : celestialOpacity,
-          scale: reducedMotion ? 1 : celestialScale,
-          translateX: '-50%',
-        }}
-        data-meadow-celestial
+        className="absolute inset-0 [transform-style:preserve-3d]"
+        style={{ x: sceneX, y: sceneY, rotateX: sceneRotateX, scale: reducedMotion ? 1 : 1.025 }}
+        data-meadow-scene-plane
       >
-        <CelestialCycle theme={theme} reducedMotion={reducedMotion} />
+        <motion.div
+          className="absolute bottom-[39%] left-[27%] z-[5] w-[clamp(2.5rem,4.6vw,3.8rem)]"
+          style={{
+            aspectRatio: '1 / 1',
+            opacity: reducedMotion ? 0.82 : celestialOpacity,
+            scale: reducedMotion ? 1 : celestialScale,
+            translateX: '-50%',
+          }}
+          data-meadow-celestial
+        >
+          <CelestialCycle theme={theme} reducedMotion={reducedMotion} />
+        </motion.div>
+
+        <PixelTerrainCanvas progress={visualProgress} reducedMotion={reducedMotion} theme={theme} />
+
+        {creatures.filter((creature) => creature.kind === 'bird').map((creature) => (
+          <CreatureSprite key={creature.id} spec={creature} progress={visualProgress} isIdle={isIdle} reducedMotion={reducedMotion} />
+        ))}
+
+        {bushes.map((bush) => (
+          <PixelBush
+            key={bush.id}
+            spec={bush}
+            progress={visualProgress}
+            theme={theme}
+            isIdle={isIdle}
+            reducedMotion={reducedMotion}
+          />
+        ))}
+
+        {wildAnimals.map((animal) => (
+          <WildAnimalSprite
+            key={animal.id}
+            spec={animal}
+            progress={visualProgress}
+            theme={theme}
+            isIdle={isIdle}
+            reducedMotion={reducedMotion}
+          />
+        ))}
+
+        {botanicals.map((spec) => (
+          <BotanicalSprite key={spec.id} spec={spec} progress={visualProgress} />
+        ))}
+
+        {creatures.filter((creature) => creature.kind !== 'bird').map((creature) => (
+          <CreatureSprite key={creature.id} spec={creature} progress={visualProgress} isIdle={isIdle} reducedMotion={reducedMotion} />
+        ))}
       </motion.div>
-
-      <PixelTerrainCanvas progress={visualProgress} reducedMotion={reducedMotion} theme={theme} />
-
-      {creatures.filter((creature) => creature.kind === 'bird').map((creature) => (
-        <CreatureSprite key={creature.id} spec={creature} progress={visualProgress} isIdle={isIdle} reducedMotion={reducedMotion} />
-      ))}
-
-      {bushes.map((bush) => (
-        <PixelBush
-          key={bush.id}
-          spec={bush}
-          progress={visualProgress}
-          theme={theme}
-          isIdle={isIdle}
-          reducedMotion={reducedMotion}
-        />
-      ))}
-
-      {wildAnimals.map((animal) => (
-        <WildAnimalSprite
-          key={animal.id}
-          spec={animal}
-          progress={visualProgress}
-          theme={theme}
-          isIdle={isIdle}
-          reducedMotion={reducedMotion}
-        />
-      ))}
-
-      {botanicals.map((spec) => (
-        <BotanicalSprite key={spec.id} spec={spec} progress={visualProgress} />
-      ))}
 
       <FinalRose
         spec={finalRose}
@@ -965,10 +1022,6 @@ export function PixelMeadow({ progress, pageProgress, sectionRef, theme }: Pixel
         scrollRange={scrollRange}
         reducedMotion={reducedMotion}
       />
-
-      {creatures.filter((creature) => creature.kind !== 'bird').map((creature) => (
-        <CreatureSprite key={creature.id} spec={creature} progress={visualProgress} isIdle={isIdle} reducedMotion={reducedMotion} />
-      ))}
     </section>
   );
 }

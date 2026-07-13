@@ -18,3 +18,13 @@ test('profile Bible bio has Romans 12:16-21 preview content', () => {
   assert.match(profileWithPreview.bibleVersePreview.verses[0].text, /Be of the same mind/);
   assert.match(profileWithPreview.bibleVersePreview.verses.at(-1)?.text ?? '', /overcome evil with good/);
 });
+
+test('licensed audio uses the protected Supabase function for every quality', () => {
+  const sources = profileData.track?.sources ?? [];
+
+  assert.deepEqual(sources.map((source) => source.quality), ['high', 'medium', 'low']);
+  for (const source of sources) {
+    assert.match(source.src, /\/functions\/v1\/get-track-audio\?quality=(high|medium|low)$/);
+    assert.doesNotMatch(source.src, /\/storage\/v1\/object\/public\//);
+  }
+});
