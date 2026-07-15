@@ -10,16 +10,19 @@ import {
 } from 'motion/react';
 import { advanceCelestialCycle } from './celestialCycle';
 import { gardenTiming } from './gardenTiming';
+import { mapMeadowSceneProgress } from './scrollJourney';
 
 type MeadowTheme = 'day' | 'evening';
 
 type PixelMeadowProps = {
   progress: MotionValue<number>;
+  journeyProgress: MotionValue<number>;
   pageProgress: MotionValue<number>;
   sectionRef: RefObject<HTMLElement | null>;
   theme: MeadowTheme;
   pointerX?: MotionValue<number>;
   pointerY?: MotionValue<number>;
+  performanceReduced?: boolean;
 };
 
 type TerrainLayerSpec = {
@@ -69,6 +72,9 @@ type CreatureSpec = {
   size: string;
   reveal: [number, number];
   direction?: number;
+  drift?: number;
+  phase?: number;
+  speed?: number;
 };
 
 type WildAnimalSpec = {
@@ -104,26 +110,54 @@ type RoseSpriteSpec = {
 };
 
 const TERRAIN_TILE_SIZE = 6;
-const TERRAIN_DPR_CAP = 1.5;
+const TERRAIN_DPR_CAP = 1.25;
 
 const terrainLayers: TerrainLayerSpec[] = [
   {
     id: 'distant',
-    dayPath: '/garden-pixel/landscape-quiet-day-distant.png',
-    eveningPath: '/garden-pixel/landscape-quiet-evening-distant.png',
-    contourReveal: [0.46, 0.62],
-    fillReveal: [0.52, 0.72],
-    opacity: 0.62,
+    dayPath: '/garden-pixel/landscape-day-distant.png',
+    eveningPath: '/garden-pixel/landscape-evening-distant.png',
+    contourReveal: [0.42, 0.58],
+    fillReveal: [0.48, 0.68],
+    opacity: 0.56,
+  },
+  {
+    id: 'midground',
+    dayPath: '/garden-pixel/landscape-day-midground.png',
+    eveningPath: '/garden-pixel/landscape-evening-midground.png',
+    contourReveal: [0.5, 0.68],
+    fillReveal: [0.57, 0.78],
+    opacity: 0.76,
   },
   {
     id: 'foreground',
-    dayPath: '/garden-pixel/landscape-quiet-day-foreground.png',
-    eveningPath: '/garden-pixel/landscape-quiet-evening-foreground.png',
-    contourReveal: [0.58, 0.74],
-    fillReveal: [0.64, 0.88],
-    opacity: 0.9,
+    dayPath: '/garden-pixel/landscape-day-foreground.png',
+    eveningPath: '/garden-pixel/landscape-evening-foreground.png',
+    contourReveal: [0.6, 0.76],
+    fillReveal: [0.66, 0.9],
+    opacity: 0.96,
   },
 ];
+
+const moonlitStars = [
+  { x: 12, y: 18, size: 2, delay: -1.2 },
+  { x: 21, y: 29, size: 1, delay: -2.8 },
+  { x: 31, y: 14, size: 1, delay: -0.5 },
+  { x: 42, y: 25, size: 2, delay: -3.4 },
+  { x: 53, y: 12, size: 1, delay: -1.8 },
+  { x: 61, y: 31, size: 1, delay: -4.1 },
+  { x: 72, y: 19, size: 2, delay: -2.2 },
+  { x: 83, y: 27, size: 1, delay: -0.9 },
+  { x: 91, y: 13, size: 1, delay: -3.1 },
+] as const;
+
+const meadowFireflies = [
+  { x: 15, bottom: 25, delay: -0.6 },
+  { x: 36, bottom: 19, delay: -2.4 },
+  { x: 57, bottom: 27, delay: -1.3 },
+  { x: 78, bottom: 20, delay: -3.2 },
+  { x: 89, bottom: 30, delay: -1.9 },
+] as const;
 
 const botanicals: BotanicalSpec[] = [
   { id: 'grass-left', frame: 0, x: 5, bottom: 1, size: 'clamp(1.35rem, 2.4vw, 2rem)', reveal: [0.76, 0.86], depth: 34, rotate: -4 },
@@ -141,13 +175,19 @@ const botanicals: BotanicalSpec[] = [
 ];
 
 const creatures: CreatureSpec[] = [
+  { id: 'bird-far-left', kind: 'bird', frame: 5, x: 9, y: 21, size: 'clamp(.5rem, .9vw, .72rem)', reveal: [0.86, 0.94], direction: 1, phase: -1.7 },
   { id: 'bird-left', kind: 'bird', frame: 4, x: 27, y: 29, size: 'clamp(.72rem, 1.25vw, 1rem)', reveal: [0.88, 0.95], direction: 1 },
   { id: 'bird-right', kind: 'bird', frame: 4, x: 65, y: 24, size: 'clamp(.68rem, 1.15vw, .94rem)', reveal: [0.9, 0.97], direction: -1 },
   { id: 'bird-center', kind: 'bird', frame: 5, x: 46, y: 36, size: 'clamp(.58rem, 1vw, .82rem)', reveal: [0.92, 0.98], direction: 1 },
   { id: 'butterfly', kind: 'butterfly', frame: 2, idleFrame: 3, x: 25, y: 59, size: 'clamp(.88rem, 1.5vw, 1.2rem)', reveal: [0.91, 0.98], direction: -1 },
+  { id: 'butterfly-left-trail', kind: 'butterfly', frame: 6, idleFrame: 3, x: 35, y: 68, size: 'clamp(.55rem, 1vw, .78rem)', reveal: [0.9, 0.97], direction: 1, drift: 6, phase: -2.1, speed: 4.2 },
+  { id: 'butterfly-center-high', kind: 'butterfly', frame: 2, idleFrame: 3, x: 48, y: 50, size: 'clamp(.62rem, 1.1vw, .86rem)', reveal: [0.92, 0.98], direction: -1, drift: 5, phase: -3.4, speed: 5.2 },
   { id: 'butterfly-right', kind: 'butterfly', frame: 6, idleFrame: 3, x: 79, y: 63, size: 'clamp(.7rem, 1.25vw, 1rem)', reveal: [0.93, 0.99], direction: 1 },
+  { id: 'butterfly-right-low', kind: 'butterfly', frame: 2, idleFrame: 3, x: 88, y: 72, size: 'clamp(.58rem, 1.05vw, .82rem)', reveal: [0.94, 1], direction: -1, drift: 6, phase: -1.2, speed: 4.5 },
   { id: 'bee', kind: 'bee', frame: 0, idleFrame: 1, x: 68, y: 57, size: 'clamp(.82rem, 1.4vw, 1.12rem)', reveal: [0.92, 0.99], direction: 1 },
+  { id: 'bee-center-low', kind: 'bee', frame: 7, idleFrame: 1, x: 54, y: 73, size: 'clamp(.58rem, 1vw, .82rem)', reveal: [0.93, 0.99], direction: -1, drift: 3, phase: -1.8, speed: 3.2 },
   { id: 'bee-left', kind: 'bee', frame: 7, idleFrame: 1, x: 14, y: 68, size: 'clamp(.62rem, 1.1vw, .88rem)', reveal: [0.94, 1], direction: -1 },
+  { id: 'bee-right-edge', kind: 'bee', frame: 0, idleFrame: 1, x: 94, y: 61, size: 'clamp(.5rem, .9vw, .74rem)', reveal: [0.95, 1], direction: 1, drift: 3, phase: -2.7, speed: 3.4 },
 ];
 
 const wildAnimals: WildAnimalSpec[] = [
@@ -179,6 +219,16 @@ const wildAnimals: WildAnimalSpec[] = [
     size: 'clamp(1.15rem, 1.9vw, 1.7rem)',
     reveal: [0.86, 0.96],
     depth: 33,
+    direction: -1,
+  },
+  {
+    id: 'rabbit-center-small',
+    kind: 'rabbit',
+    x: 44,
+    bottom: 7,
+    size: 'clamp(.9rem, 1.5vw, 1.3rem)',
+    reveal: [0.89, 0.97],
+    depth: 34,
     direction: -1,
   },
 ];
@@ -295,10 +345,12 @@ function PixelTerrainCanvas({
   progress,
   reducedMotion,
   theme,
+  performanceReduced,
 }: {
   progress: MotionValue<number>;
   reducedMotion: boolean;
   theme: MeadowTheme;
+  performanceReduced: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -319,7 +371,7 @@ function PixelTerrainCanvas({
     const resize = () => {
       width = canvas.clientWidth;
       height = canvas.clientHeight;
-      pixelRatio = Math.min(window.devicePixelRatio || 1, TERRAIN_DPR_CAP);
+      pixelRatio = Math.min(window.devicePixelRatio || 1, performanceReduced ? 1 : TERRAIN_DPR_CAP);
       canvas.width = Math.max(1, Math.round(width * pixelRatio));
       canvas.height = Math.max(1, Math.round(height * pixelRatio));
       context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
@@ -336,6 +388,13 @@ function PixelTerrainCanvas({
       for (const layer of loadedLayers) {
         const sourceWidth = layer.image.naturalWidth;
         const sourceHeight = layer.image.naturalHeight;
+
+        if (layer.spec.id === 'distant' && value < 0.5) {
+          const bridgeFade = Math.max(0, Math.min(1, (value - 0.28) / 0.22));
+          context.globalAlpha = layer.spec.opacity * 0.32 * (1 - bridgeFade);
+          context.drawImage(layer.image, 0, 0, sourceWidth, sourceHeight, 0, 0, width, height);
+        }
+
         context.globalAlpha = layer.spec.opacity;
 
         for (const tile of layer.tiles) {
@@ -400,7 +459,7 @@ function PixelTerrainCanvas({
       document.removeEventListener('visibilitychange', handleVisibility);
       if (frame !== null) cancelAnimationFrame(frame);
     };
-  }, [progress, reducedMotion, theme]);
+  }, [performanceReduced, progress, reducedMotion, theme]);
 
   return (
     <canvas
@@ -482,6 +541,65 @@ function CelestialCycle({
   );
 }
 
+function MeadowAtmosphere({
+  progress,
+  theme,
+  reducedMotion,
+}: {
+  progress: MotionValue<number>;
+  theme: MeadowTheme;
+  reducedMotion: boolean;
+}) {
+  const opacity = useRange(progress, [0.42, 0.74], [0, 1]);
+
+  return (
+    <motion.div
+      className="absolute inset-0 z-[1] overflow-hidden"
+      style={{ opacity: reducedMotion ? 1 : opacity }}
+      data-meadow-atmosphere={theme}
+    >
+      <div
+        className={`absolute inset-0 ${
+          theme === 'evening'
+            ? 'bg-[radial-gradient(circle_at_27%_54%,rgba(160,203,188,0.11),transparent_24%),radial-gradient(circle_at_74%_42%,rgba(217,130,147,0.07),transparent_20%),linear-gradient(to_bottom,rgba(114,151,151,0.06),transparent_54%)]'
+            : 'bg-[radial-gradient(circle_at_27%_54%,rgba(255,223,158,0.13),transparent_25%),linear-gradient(to_bottom,rgba(255,244,209,0.08),transparent_58%)]'
+        }`}
+      />
+
+      {theme === 'evening' && (
+        <>
+          <div className="absolute inset-x-0 top-[8%] h-[36%]">
+            {moonlitStars.map((star) => (
+              <span
+                key={`${star.x}-${star.y}`}
+                className="meadow-star absolute bg-[#DCE8D0] shadow-[0_0_5px_rgba(189,213,178,0.34)]"
+                style={{
+                  left: `${star.x}%`,
+                  top: `${star.y}%`,
+                  width: star.size,
+                  height: star.size,
+                  animationDelay: `${star.delay}s`,
+                }}
+              />
+            ))}
+          </div>
+          {meadowFireflies.map((firefly) => (
+            <span
+              key={`${firefly.x}-${firefly.bottom}`}
+              className="meadow-firefly absolute h-[3px] w-[3px] bg-[#D9E7A8] shadow-[0_0_7px_rgba(203,225,155,0.72)]"
+              style={{
+                left: `${firefly.x}%`,
+                bottom: `${firefly.bottom}%`,
+                animationDelay: `${firefly.delay}s`,
+              }}
+            />
+          ))}
+        </>
+      )}
+    </motion.div>
+  );
+}
+
 function BotanicalSprite({
   spec,
   progress,
@@ -528,7 +646,12 @@ function FinalRose({
   reducedMotion: boolean;
 }) {
   const anchorRef = useRef<HTMLDivElement>(null);
-  const [anchorRect, setAnchorRect] = useState<DOMRectReadOnly | null>(null);
+  const anchorReadyRef = useRef(false);
+  const [isAnchorReady, setIsAnchorReady] = useState(false);
+  const anchorX = useMotionValue(0);
+  const anchorY = useMotionValue(0);
+  const anchorWidth = useMotionValue(0);
+  const anchorHeight = useMotionValue(0);
   const opacity = useRange(progress, spec.grow, [0, 1]);
   const scale = useRange(progress, spec.grow, [0.5, 1]);
   const backgroundPosition = useTransform(progress, (value) => {
@@ -546,6 +669,10 @@ function FinalRose({
   const connectionY = useTransform(progress, (value) => (
     reducedMotion ? 0 : (value - 1) * scrollRange
   ));
+  const portalY = useTransform([anchorY, connectionY], ([rawAnchorY, rawConnectionY]) => (
+    Number(rawAnchorY) + Number(rawConnectionY)
+  ));
+  const trackingStart = Math.max(0, spec.grow[0] - 0.08);
 
   useEffect(() => {
     const anchor = anchorRef.current;
@@ -554,10 +681,19 @@ function FinalRose({
     let frame: number | null = null;
     const measure = () => {
       frame = null;
-      setAnchorRect(anchor.getBoundingClientRect());
+      const rect = anchor.getBoundingClientRect();
+      anchorX.set(rect.left);
+      anchorY.set(rect.top);
+      anchorWidth.set(rect.width);
+      anchorHeight.set(rect.height);
+      if (!anchorReadyRef.current) {
+        anchorReadyRef.current = true;
+        setIsAnchorReady(true);
+      }
     };
     const scheduleMeasure = () => {
       if (frame !== null) return;
+      if (!reducedMotion && progress.get() < trackingStart) return;
       frame = requestAnimationFrame(measure);
     };
 
@@ -572,7 +708,7 @@ function FinalRose({
       window.removeEventListener('resize', scheduleMeasure);
       if (frame !== null) cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [anchorHeight, anchorWidth, anchorX, anchorY, progress, reducedMotion, trackingStart]);
 
   return (
     <>
@@ -587,17 +723,18 @@ function FinalRose({
         }}
         data-meadow-final-rose-anchor
       />
-      {anchorRect && createPortal(
+      {isAnchorReady && createPortal(
         <motion.div
           className="pointer-events-none fixed"
           style={{
-            left: anchorRect.left,
-            top: anchorRect.top,
-            width: anchorRect.width,
-            height: anchorRect.height,
+            left: 0,
+            top: 0,
+            width: anchorWidth,
+            height: anchorHeight,
             opacity,
             scale,
-            y: connectionY,
+            x: anchorX,
+            y: portalY,
             transformOrigin: '50% 100%',
             zIndex: 40,
           }}
@@ -652,8 +789,8 @@ function CreatureSprite({
   const idleAnimation = !canIdle
     ? { x: 0, y: 0, rotate: 0 }
     : spec.kind === 'bee'
-      ? { x: [0, 4, -2, 0], y: [0, -3, 1, 0], rotate: [0, 2, -1, 0] }
-      : { x: [0, 4 * (spec.direction ?? 1), 0], y: [0, -4, 0], rotate: [0, 2 * (spec.direction ?? 1), 0] };
+      ? { x: [0, (spec.drift ?? 4), -2, 0], y: [0, -3, 1, 0], rotate: [0, 2, -1, 0] }
+      : { x: [0, (spec.drift ?? 4) * (spec.direction ?? 1), 0], y: [0, -4, 0], rotate: [0, 2 * (spec.direction ?? 1), 0] };
   const frame = alternateFrame ? (spec.idleFrame ?? spec.frame + 1) : spec.frame;
 
   return (
@@ -676,7 +813,8 @@ function CreatureSprite({
         className="pixel-garden-sprite h-full w-full"
         animate={idleAnimation}
         transition={{
-          duration: spec.kind === 'bee' ? 2.8 : 4.8,
+          duration: spec.speed ?? (spec.kind === 'bee' ? 2.8 : 4.8),
+          delay: spec.phase ?? 0,
           repeat: canIdle ? Infinity : 0,
           ease: 'easeInOut',
         }}
@@ -889,21 +1027,64 @@ function PixelBush({
   );
 }
 
-export function PixelMeadow({ progress, pageProgress, sectionRef, theme, pointerX, pointerY }: PixelMeadowProps) {
+export function PixelMeadow({
+  progress,
+  journeyProgress,
+  pageProgress,
+  sectionRef,
+  theme,
+  pointerX,
+  pointerY,
+  performanceReduced = false,
+}: PixelMeadowProps) {
   const reducedMotion = Boolean(useReducedMotion());
+  const decorativeMotionReduced = reducedMotion || performanceReduced;
   const fallbackPointerX = useMotionValue(0);
   const fallbackPointerY = useMotionValue(0);
   const meadowPointerX = pointerX ?? fallbackPointerX;
   const meadowPointerY = pointerY ?? fallbackPointerY;
+  const [mobileMotion, setMobileMotion] = useState(() => (
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches
+  ));
+  const [backdropHost, setBackdropHost] = useState<HTMLElement | null>(null);
   const [isIdle, setIsIdle] = useState(false);
   const [scrollRange, setScrollRange] = useState(0);
-  const visualProgress = useTransform(progress, (value) => (reducedMotion ? 1 : value));
+  const visualProgress = useTransform(
+    [progress, journeyProgress],
+    ([localProgress, globalProgress]) => mapMeadowSceneProgress(
+      Number(localProgress),
+      Number(globalProgress),
+      reducedMotion,
+    ),
+  );
   const finalRoseProgress = useTransform(pageProgress, (value) => (reducedMotion ? 1 : value));
   const celestialOpacity = useRange(visualProgress, [0.5, 0.72], [0, 0.82]);
   const celestialScale = useRange(visualProgress, [0.5, 0.72], [0.72, 1]);
-  const sceneX = useTransform(meadowPointerX, [-0.5, 0.5], reducedMotion ? [0, 0] : [-16, 16]);
-  const sceneY = useTransform(meadowPointerY, [-0.5, 0.5], reducedMotion ? [0, 0] : [-10, 10]);
-  const sceneRotateX = useTransform(meadowPointerY, [-0.5, 0.5], reducedMotion ? [0, 0] : [1.2, -1.2]);
+  const pointerTravelX = mobileMotion ? 10 : 24;
+  const pointerTravelY = mobileMotion ? 7 : 16;
+  const pointerTilt = mobileMotion ? 0.85 : 2;
+  const sceneX = useTransform(meadowPointerX, [-0.5, 0.5], decorativeMotionReduced ? [0, 0] : [-pointerTravelX, pointerTravelX]);
+  const scenePointerY = useTransform(meadowPointerY, [-0.5, 0.5], decorativeMotionReduced ? [0, 0] : [-pointerTravelY, pointerTravelY]);
+  const sceneDollyY = useTransform(visualProgress, [0, 0.42, 0.76, 1], reducedMotion ? [0, 0, 0, 0] : [46, 14, -18, -38]);
+  const sceneY = useTransform([scenePointerY, sceneDollyY], ([pointerOffset, dollyOffset]) => (
+    Number(pointerOffset) + Number(dollyOffset)
+  ));
+  const sceneRotateX = useTransform(meadowPointerY, [-0.5, 0.5], decorativeMotionReduced ? [0, 0] : [pointerTilt, -pointerTilt]);
+  const sceneScale = useTransform(visualProgress, [0, 0.45, 0.78, 1], reducedMotion ? [1, 1, 1, 1] : [1, 1.025, 1.085, 1.12]);
+  const celestialX = useTransform(visualProgress, [0.48, 0.7, 1], reducedMotion ? [0, 0, 0] : [-44, 0, 28]);
+  const celestialY = useTransform(visualProgress, [0.48, 0.7, 1], reducedMotion ? [0, 0, 0] : [30, -12, 7]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const updateMobileMotion = () => setMobileMotion(mediaQuery.matches);
+    updateMobileMotion();
+    mediaQuery.addEventListener('change', updateMobileMotion);
+    return () => mediaQuery.removeEventListener('change', updateMobileMotion);
+  }, []);
+
+  useEffect(() => {
+    setBackdropHost(sectionRef.current?.closest<HTMLElement>('[data-living-archive]') ?? null);
+  }, [sectionRef]);
 
   useEffect(() => {
     const updateScrollRange = () => {
@@ -953,37 +1134,57 @@ export function PixelMeadow({ progress, pageProgress, sectionRef, theme, pointer
   }, [progress, reducedMotion]);
 
   return (
-    <section
-      ref={sectionRef}
-      className="pixel-meadow pointer-events-none relative h-full min-h-[30rem] w-full overflow-hidden [transform-style:preserve-3d]"
-      aria-hidden="true"
-      data-pixel-meadow
-      data-meadow-idle={isIdle ? 'true' : 'false'}
-      data-meadow-reduced-motion={reducedMotion ? 'true' : 'false'}
-    >
-      <motion.div
-        className="absolute inset-0 [transform-style:preserve-3d]"
-        style={{ x: sceneX, y: sceneY, rotateX: sceneRotateX, scale: reducedMotion ? 1 : 1.025 }}
-        data-meadow-scene-plane
+    <>
+      {backdropHost && createPortal(
+        <motion.div
+          className="pointer-events-none fixed inset-0 z-10 overflow-hidden [transform-style:preserve-3d]"
+          style={{ x: sceneX, y: sceneY, rotateX: sceneRotateX, scale: sceneScale }}
+          aria-hidden="true"
+          data-meadow-backdrop-layer
+        >
+          <MeadowAtmosphere progress={visualProgress} theme={theme} reducedMotion={decorativeMotionReduced} />
+          <PixelTerrainCanvas
+            progress={visualProgress}
+            reducedMotion={reducedMotion}
+            theme={theme}
+            performanceReduced={performanceReduced}
+          />
+        </motion.div>,
+        backdropHost,
+      )}
+
+      <section
+        ref={sectionRef}
+        className="pixel-meadow pointer-events-none relative h-full min-h-[30rem] w-full overflow-hidden [transform-style:preserve-3d]"
+        aria-hidden="true"
+        data-pixel-meadow
+        data-meadow-idle={isIdle ? 'true' : 'false'}
+        data-meadow-reduced-motion={reducedMotion ? 'true' : 'false'}
       >
+        <motion.div
+          className="absolute inset-0 [transform-style:preserve-3d]"
+          style={{ x: sceneX, y: sceneY, rotateX: sceneRotateX, scale: sceneScale }}
+          data-meadow-scene-plane
+        >
+
         <motion.div
           className="absolute bottom-[39%] left-[27%] z-[5] w-[clamp(2.5rem,4.6vw,3.8rem)]"
           style={{
             aspectRatio: '1 / 1',
             opacity: reducedMotion ? 0.82 : celestialOpacity,
             scale: reducedMotion ? 1 : celestialScale,
+            x: celestialX,
+            y: celestialY,
             translateX: '-50%',
           }}
           data-meadow-celestial
         >
-          <CelestialCycle theme={theme} reducedMotion={reducedMotion} />
+          <CelestialCycle theme={theme} reducedMotion={decorativeMotionReduced} />
         </motion.div>
 
-        <PixelTerrainCanvas progress={visualProgress} reducedMotion={reducedMotion} theme={theme} />
-
-        {creatures.filter((creature) => creature.kind === 'bird').map((creature) => (
-          <CreatureSprite key={creature.id} spec={creature} progress={visualProgress} isIdle={isIdle} reducedMotion={reducedMotion} />
-        ))}
+          {creatures.filter((creature) => creature.kind === 'bird').map((creature) => (
+            <CreatureSprite key={creature.id} spec={creature} progress={visualProgress} isIdle={isIdle} reducedMotion={decorativeMotionReduced} />
+          ))}
 
         {bushes.map((bush) => (
           <PixelBush
@@ -992,7 +1193,7 @@ export function PixelMeadow({ progress, pageProgress, sectionRef, theme, pointer
             progress={visualProgress}
             theme={theme}
             isIdle={isIdle}
-            reducedMotion={reducedMotion}
+            reducedMotion={decorativeMotionReduced}
           />
         ))}
 
@@ -1003,7 +1204,7 @@ export function PixelMeadow({ progress, pageProgress, sectionRef, theme, pointer
             progress={visualProgress}
             theme={theme}
             isIdle={isIdle}
-            reducedMotion={reducedMotion}
+            reducedMotion={decorativeMotionReduced}
           />
         ))}
 
@@ -1012,16 +1213,17 @@ export function PixelMeadow({ progress, pageProgress, sectionRef, theme, pointer
         ))}
 
         {creatures.filter((creature) => creature.kind !== 'bird').map((creature) => (
-          <CreatureSprite key={creature.id} spec={creature} progress={visualProgress} isIdle={isIdle} reducedMotion={reducedMotion} />
+          <CreatureSprite key={creature.id} spec={creature} progress={visualProgress} isIdle={isIdle} reducedMotion={decorativeMotionReduced} />
         ))}
-      </motion.div>
+        </motion.div>
 
-      <FinalRose
-        spec={finalRose}
-        progress={finalRoseProgress}
-        scrollRange={scrollRange}
-        reducedMotion={reducedMotion}
-      />
-    </section>
+        <FinalRose
+          spec={finalRose}
+          progress={finalRoseProgress}
+          scrollRange={scrollRange}
+          reducedMotion={reducedMotion}
+        />
+      </section>
+    </>
   );
 }

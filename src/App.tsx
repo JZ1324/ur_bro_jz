@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ExternalLink, Folder, GraduationCap, Lock, Map, Music, Sparkles, User, Users, X } from 'lucide-react';
-import { AnimatePresence, motion, useScroll, useTransform, type MotionValue } from 'motion/react';
+import { AnimatePresence, motion, useMotionValue, useScroll, useTransform, type MotionValue } from 'motion/react';
+import { ArchiveBackground } from './components/ArchiveBackground';
 import { ArchiveVault } from './components/ArchiveVault';
 import { AboutOverlay } from './components/AboutOverlay';
 import { GardenScrollScene } from './components/GardenScrollScene';
@@ -20,12 +21,15 @@ import { ProfileCard } from './components/ProfileCard';
 import { ProjectOverlays } from './components/ProjectOverlays';
 import { SecretPuzzleOverlay } from './components/SecretPuzzleOverlay';
 import { ScrollChapter } from './components/ScrollChapter';
+import type { ScrollChapterId } from './components/scrollJourney';
 import { StoryHighlights } from './components/StoryHighlights';
 import { TextScramble } from './components/TextScramble';
 import Stepper, { Step } from './components/ui/Stepper';
 import { ThemeToggle, type Theme } from './components/ui/ThemeToggle';
 import { readStoredTheme, storeTheme } from './themePreference';
 import { useBodyScrollLock } from './hooks/useBodyScrollLock';
+import { useAdaptivePerformance } from './hooks/useAdaptivePerformance';
+import { useGardenCameraRig } from './hooks/useGardenCameraRig';
 import {
   aboutSections,
   archiveSections,
@@ -155,7 +159,7 @@ function ArchiveSignalOverlay({
 
             <div className="mt-6 grid gap-3">
               <div className="rounded-2xl border border-border/45 bg-bg/50 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8E927F]">Updated</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-subtle">Updated</p>
                 <p className="mt-2 text-base font-semibold leading-relaxed text-text">
                   The public side is cleaner now: profile first, projects next, private sections tucked behind the archive.
                 </p>
@@ -201,7 +205,7 @@ function ArchiveRail() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.32, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
-      className="relative mx-auto -mt-5 -mb-7 grid w-full max-w-xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-6 text-[9px] font-bold uppercase tracking-[0.2em] text-[#8E927F] max-[360px]:hidden sm:max-w-2xl sm:px-10"
+      className="relative mx-auto -mt-5 -mb-7 grid w-full max-w-xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-6 text-[9px] font-bold uppercase tracking-[0.2em] text-subtle max-[360px]:hidden sm:max-w-2xl sm:px-10"
       aria-hidden="true"
     >
       <span className="h-px bg-linear-to-r from-transparent via-border/35 to-border/10" />
@@ -376,8 +380,8 @@ function ArchiveMapOverlay({
 }
 
 export default function App() {
-  const homeRef = useRef<HTMLElement>(null);
   const meadowRef = useRef<HTMLElement>(null);
+  const journeyRef = useRef<HTMLDivElement>(null);
   const headerTrackRef = useRef<HTMLDivElement>(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -411,15 +415,22 @@ export default function App() {
     typeof window !== 'undefined' ? Math.min(640, window.innerWidth - 32) : 640
   ));
   const { scrollYProgress: pageScrollProgress } = useScroll();
-  const { scrollYProgress: homeScrollProgress } = useScroll({
-    target: homeRef,
-    offset: ['start start', 'end start'],
-  });
+  const gardenCamera = useGardenCameraRig(pageScrollProgress, journeyRef);
+  const performanceMode = useAdaptivePerformance();
+  const performanceReduced = performanceMode === 'reduced';
+  const backgroundPointerX = useMotionValue(0);
+  const backgroundPointerY = useMotionValue(0);
   const currentAccessStatusCopy = accessStatus === 'approved'
     ? accessStatusCopy.approved
     : accessStatus === 'denied'
       ? accessStatusCopy.denied
       : accessStatusCopy.checking;
+
+  const handleChapterActiveChange = useCallback((_id: ScrollChapterId, active: boolean) => {
+    if (active) return;
+    backgroundPointerX.set(0);
+    backgroundPointerY.set(0);
+  }, [backgroundPointerX, backgroundPointerY]);
 
   useBodyScrollLock(showModal);
 
@@ -660,7 +671,20 @@ export default function App() {
 
   return (
     <div className="relative isolate flex min-h-screen flex-col items-center bg-bg selection:bg-accent-soft/40" data-living-archive>
-      <GardenScrollScene progress={pageScrollProgress} theme={isDarkMode ? 'evening' : 'day'} />
+      <ArchiveBackground
+        camera={gardenCamera}
+        theme={isDarkMode ? 'evening' : 'day'}
+        pointerX={backgroundPointerX}
+        pointerY={backgroundPointerY}
+        performanceReduced={performanceReduced}
+      />
+      <GardenScrollScene
+        progress={gardenCamera.progress}
+        phase={gardenCamera.phase}
+        theme={isDarkMode ? 'evening' : 'day'}
+        butterfliesVisible={isHeaderCollapsed}
+        performanceReduced={performanceReduced}
+      />
       <motion.header
         className="pointer-events-none fixed left-0 top-0 z-40 flex w-full justify-center px-4 py-3"
         data-header-collapsed={isHeaderCollapsed ? 'true' : 'false'}
@@ -740,14 +764,19 @@ export default function App() {
         </div>
       </motion.header>
 
-      <main ref={homeRef} className="relative z-20 flex w-full max-w-container-max flex-grow flex-col gap-10 px-4 sm:gap-[clamp(2.75rem,6vh,4.25rem)]">
+      <div ref={journeyRef} className="relative z-20 flex w-full flex-col items-center" data-garden-journey>
+      <main className="relative flex w-full max-w-container-max flex-grow flex-col gap-10 px-4 sm:gap-[clamp(2.75rem,6vh,4.25rem)]">
         <ScrollChapter
           id="profile"
-          desktopVh={200}
-          mobileVh={150}
-          stickyClassName="flex items-center justify-center pt-16 pb-10 sm:pt-20 sm:pb-12"
+          desktopVh={225}
+          mobileVh={170}
+          stickyClassName="flex items-center justify-center pt-16 pb-16 sm:pt-20 sm:pb-12"
           ariaLabel="Profile opening scroll scene"
           className="-mx-1"
+          performanceReduced={performanceReduced}
+          sharedPointerX={backgroundPointerX}
+          sharedPointerY={backgroundPointerY}
+          onActiveChange={handleChapterActiveChange}
         >
           {(scrollMotion) => (
             <>
@@ -765,13 +794,10 @@ export default function App() {
         </ScrollChapter>
         <ArchiveRail />
         <ParallaxLayer
-          progress={homeScrollProgress}
-          inputRange={[0.12, 0.58]}
-          x={[-18, 16]}
-          y={[24, -34]}
-          opacity={[1, 0.98]}
-          rotate={[-0.7, 0.55]}
-          blur={[0, 0.6]}
+          progress={gardenCamera.progress}
+          inputRange={[0.19, 0.37]}
+          preset="cinematic-content"
+          performanceReduced={performanceReduced}
           className="relative"
         >
           <div data-vine-anchor="stories">
@@ -784,13 +810,10 @@ export default function App() {
           </div>
         </ParallaxLayer>
         <ParallaxLayer
-          progress={homeScrollProgress}
-          inputRange={[0.2, 0.72]}
-          x={[20, -20]}
-          y={[34, -38]}
-          scale={[0.99, 1.01]}
-          rotate={[0.65, -0.55]}
-          blur={[0.5, 0]}
+          progress={gardenCamera.progress}
+          inputRange={[0.27, 0.47]}
+          preset="cinematic-content"
+          performanceReduced={performanceReduced}
         >
           <div data-vine-anchor="now">
             <NowSection items={nowItems} onSecretClick={() => setShowSecretPuzzle(true)} />
@@ -798,11 +821,15 @@ export default function App() {
         </ParallaxLayer>
         <ScrollChapter
           id="photos"
-          desktopVh={220}
-          mobileVh={160}
+          desktopVh={250}
+          mobileVh={185}
           stickyClassName="flex items-center justify-center pt-14"
           ariaLabel="Photographic memories scroll scene"
           className="scroll-chapter--viewport"
+          performanceReduced={performanceReduced}
+          sharedPointerX={backgroundPointerX}
+          sharedPointerY={backgroundPointerY}
+          onActiveChange={handleChapterActiveChange}
         >
           {(photoMotion) => (
             <div className="h-[calc(100svh-4.5rem)] w-full" data-vine-anchor="photos">
@@ -811,6 +838,7 @@ export default function App() {
                 pointerX={photoMotion.pointerX}
                 pointerY={photoMotion.pointerY}
                 reducedMotion={photoMotion.reducedMotion}
+                performanceReduced={performanceReduced}
                 theme={isDarkMode ? 'evening' : 'day'}
               />
             </div>
@@ -870,7 +898,7 @@ export default function App() {
             <span className="font-bold tracking-wide text-accent">
               <TextScramble text="About.JZ" className="scale-90" />
             </span>
-            <span className="text-right text-[10px] font-bold uppercase tracking-widest text-[#8E927F]">
+            <span className="text-right text-[10px] font-bold uppercase tracking-widest text-subtle">
               © {new Date().getFullYear()} About.JZ
             </span>
           </div>
@@ -879,25 +907,32 @@ export default function App() {
 
       <ScrollChapter
         id="meadow"
-        desktopVh={185}
-        mobileVh={145}
+        desktopVh={210}
+        mobileVh={165}
         stickyClassName="flex items-end justify-center"
         ariaLabel="Pixel meadow finale scroll scene"
-        className="mt-[clamp(3rem,8vh,5rem)] w-full"
+        className="relative z-20 mt-[clamp(3rem,8vh,5rem)] w-full"
+        performanceReduced={performanceReduced}
+        sharedPointerX={backgroundPointerX}
+        sharedPointerY={backgroundPointerY}
+        onActiveChange={handleChapterActiveChange}
       >
         {(meadowMotion) => (
           <div className="h-[100svh] w-full" data-vine-anchor="meadow">
             <PixelMeadow
               progress={meadowMotion.progress}
+              journeyProgress={gardenCamera.progress}
               pageProgress={pageScrollProgress}
               sectionRef={meadowRef}
               theme={isDarkMode ? 'evening' : 'day'}
               pointerX={meadowMotion.pointerX}
               pointerY={meadowMotion.pointerY}
+              performanceReduced={performanceReduced}
             />
           </div>
         )}
       </ScrollChapter>
+      </div>
 
       <AnimatePresence>
         {showModal && (
@@ -937,7 +972,7 @@ export default function App() {
                       <p className="text-sm font-medium leading-relaxed text-muted">
                         Enter the access key to continue.
                       </p>
-                      <p className="text-xs leading-relaxed text-[#8E927F]">
+                      <p className="text-xs leading-relaxed text-subtle">
                         DM @ur_bro_jz for the password before opening private notes or photos.
                       </p>
                     </div>

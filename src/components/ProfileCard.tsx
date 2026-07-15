@@ -1,5 +1,4 @@
 import { motion, useMotionValue, useTransform, type MotionValue } from 'motion/react';
-import { TypewriterEffectSmooth } from './ui/typewriter-effect';
 import { FaithHoverCard } from './ui/faith-hover-card';
 import { BibleVerseHoverCard } from './ui/bible-verse-hover-card';
 import { MiniMusicPlayer } from './MiniMusicPlayer';
@@ -32,48 +31,34 @@ export function ProfileCard({ profile, faithHover, onFaithClick, scrollMotion }:
   const progress = scrollMotion?.progress ?? fallbackProgress;
   const reducedMotion = scrollMotion?.reducedMotion ?? true;
 
-  const cardOpacity = useTransform(progress, [0, 0.88, 0.98, 1], reducedMotion ? [1, 1, 1, 1] : [1, 1, 0.35, 0]);
+  const cardOpacity = useTransform(
+    progress,
+    [0, 0.16, 0.74, 1],
+    reducedMotion ? [1, 1, 1, 1] : [0.84, 1, 1, 0.72],
+  );
+  const cardY = useTransform(
+    progress,
+    [0, 0.16, 0.74, 1],
+    reducedMotion ? [0, 0, 0, 0] : [30, 0, 0, -55],
+  );
+  const cardScale = useTransform(
+    progress,
+    [0, 0.16, 0.74, 1],
+    reducedMotion ? [1, 1, 1, 1] : [0.94, 1.02, 1.02, 0.96],
+  );
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.42, ease: [0.23, 1, 0.32, 1] }}
-      className="archive-corner-panel relative mx-auto grid w-full max-w-4xl grid-cols-1 items-center gap-5 overflow-hidden rounded-[1.35rem] border border-border/60 bg-surface px-4 py-4 shadow-2xl shadow-black/20 ring-1 ring-accent/5 min-[560px]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] min-[560px]:gap-6 min-[560px]:px-6 min-[560px]:py-6 sm:rounded-2xl md:grid-cols-2 md:gap-8 md:px-8 md:py-7 lg:gap-9"
-      style={{ opacity: cardOpacity }}
+      className="archive-corner-panel relative mx-auto grid w-full max-w-4xl grid-cols-1 items-center gap-5 overflow-hidden rounded-[1.35rem] border border-border/55 bg-surface px-4 py-4 shadow-xl shadow-black/15 ring-1 ring-accent/5 min-[560px]:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] min-[560px]:gap-x-7 min-[560px]:gap-y-4 min-[560px]:px-6 min-[560px]:py-5 sm:rounded-2xl md:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] md:gap-x-9 md:px-8 md:py-6 lg:gap-x-10"
+      style={{ opacity: cardOpacity, y: cardY, scale: cardScale }}
       data-profile-card
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(201,211,176,0.12),transparent_46%),radial-gradient(circle_at_85%_25%,rgba(228,154,120,0.09),transparent_34%)]" />
-      <div className="relative z-10 flex w-full min-w-0 flex-col items-center justify-center justify-self-center">
+      <div className="relative z-10 flex w-full min-w-0 flex-col items-center justify-center gap-3.5 justify-self-center">
         <div className="group relative p-1 sm:p-1.5">
-          <motion.div
-            animate={{
-              scale: [1, 1.05, 1],
-              opacity: [0.2, 0.42, 0.2],
-            }}
-            transition={{
-              duration: 5.2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-            className="absolute inset-0 rounded-full bg-accent/20 blur-xl -z-10"
-          />
+          <div className="absolute -inset-3 -z-10 rounded-full bg-[radial-gradient(circle,rgba(201,211,176,0.2),transparent_68%)] blur-md" />
 
-          <motion.div
-            animate={{
-              boxShadow: [
-                '0 4px 20px -2px rgba(184, 121, 91, 0.15)',
-                '0 4px 25px -2px rgba(110, 115, 94, 0.25)',
-                '0 4px 20px -2px rgba(184, 121, 91, 0.15)',
-              ],
-            }}
-            transition={{
-              duration: 6.5,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-            className="relative h-[7.75rem] w-[7.75rem] overflow-hidden rounded-full border-[3px] border-accent bg-surface p-1 shadow-xl shadow-black/30 transition-transform duration-200 ease-out hover:scale-[1.01] sm:h-36 sm:w-36 md:h-[9rem] md:w-[9rem]"
-          >
+          <div className="relative h-[8rem] w-[8rem] overflow-hidden rounded-full border-[3px] border-accent bg-surface p-1 shadow-[0_14px_32px_rgba(0,0,0,0.18)] transition-transform duration-200 ease-out hover:scale-[1.01] sm:h-36 sm:w-36 md:h-[9.25rem] md:w-[9.25rem]">
             <img
               src={profile.imageSrc}
               alt={`${profile.displayName} Instagram profile`}
@@ -83,32 +68,26 @@ export function ProfileCard({ profile, faithHover, onFaithClick, scrollMotion }:
             <div className="pointer-events-none absolute inset-0 opacity-100">
               <div className="profile-avatar-shine absolute inset-0 bg-linear-to-tr from-transparent via-white/14 to-transparent" />
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {profile.track && (
-          <div className="flex w-full justify-center">
-            <MiniMusicPlayer track={profile.track} />
+          <div className="w-full max-w-[18rem]">
+            <MiniMusicPlayer track={profile.track} variant="strip" />
           </div>
         )}
       </div>
 
       <div className="relative z-10 flex w-full max-w-[22rem] min-w-0 flex-col items-center gap-2.5 justify-self-center text-center sm:max-w-[24rem] md:gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-text md:text-[2.35rem]" aria-label={profile.displayName}>
-            <TypewriterEffectSmooth
-              words={[
-                {
-                  text: profile.displayName,
-                  className: 'text-text',
-                },
-              ]}
-              className="justify-center text-3xl md:text-[2.35rem]"
-              cursorClassName="bg-warm-accent"
-              characterDelay={0.34}
-              revealDuration={4.6}
-            />
-          </h1>
+          <motion.h1
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.44, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+            className="text-3xl font-bold tracking-tight text-text md:text-[2.35rem]"
+          >
+            {profile.displayName}
+          </motion.h1>
           <div className="flex max-w-[18rem] flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs font-semibold tracking-wide text-muted sm:max-w-none sm:text-sm">
             <a
               href={profile.instagramUrl}
@@ -132,7 +111,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick, scrollMotion }:
           </div>
         </div>
 
-        <div className="grid w-full max-w-[18rem] grid-cols-2 gap-1.5 rounded-2xl border border-border/45 bg-bg/25 p-1.5 sm:max-w-xs md:max-w-sm">
+        <div className="grid w-full max-w-[18rem] grid-cols-2 divide-x divide-border/40 sm:max-w-xs md:max-w-sm">
           {profile.stats.map((stat) => stat.label === 'Relationship' ? (
             <span key={stat.label} className="min-w-0">
               <FaithHoverCard
@@ -144,7 +123,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick, scrollMotion }:
               </FaithHoverCard>
             </span>
           ) : (
-            <span key={stat.label} className="min-w-0 rounded-xl transition-colors hover:bg-accent/5">
+            <span key={stat.label} className="min-w-0 transition-colors hover:bg-accent/5">
               <ProfileStatItem stat={stat} />
             </span>
           ))}
@@ -155,7 +134,7 @@ export function ProfileCard({ profile, faithHover, onFaithClick, scrollMotion }:
             href={profile.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex min-h-[2.55rem] items-center justify-center rounded-full bg-accent px-4 py-2 text-center text-[0.92rem] font-semibold text-bg shadow-lg shadow-accent/10 premium-transition hover:bg-accent-dark active:scale-[0.97] sm:min-h-[2.7rem] sm:px-5 sm:text-[0.95rem]"
+            className="flex min-h-[2.55rem] items-center justify-center rounded-full bg-accent px-4 py-2 text-center text-[0.92rem] font-semibold text-bg shadow-sm premium-transition hover:bg-accent-dark active:scale-[0.97] sm:min-h-[2.7rem] sm:px-5 sm:text-[0.95rem]"
           >
             Instagram
           </a>

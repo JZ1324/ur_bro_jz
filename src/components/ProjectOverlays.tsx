@@ -99,7 +99,7 @@ export function ProjectOverlays({
               <section className="archive-corner-panel rounded-2xl border border-border/40 bg-surface/55 p-3 shadow-lg shadow-black/10">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#8E927F]">Tool shelf / stack</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-subtle">Tool shelf / stack</p>
                     <p className="mt-1 text-xs font-semibold text-muted">The usual stack behind these case files.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">

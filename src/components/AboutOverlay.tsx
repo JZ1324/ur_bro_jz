@@ -196,7 +196,7 @@ export function AboutOverlay({
                         </div>
 
                         <div className="rounded-2xl border border-border/35 bg-bg/35 p-4">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8E927F]">Tools I keep reaching for</p>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-subtle">Tools I keep reaching for</p>
                           <div className="mt-3 flex flex-wrap gap-2">
                             {toolItems.map((tool) => (
                               <span

@@ -8,6 +8,8 @@ import {
   getVineLandingProgress,
   getVineSegments,
   mapChapterProgress,
+  mapMeadowSceneProgress,
+  mapMeadowVisualProgress,
 } from './scrollJourney';
 
 test('chapter progress clamps and reverses deterministically', () => {
@@ -31,6 +33,22 @@ test('mobile vine remains on the left edge', () => {
   assert.ok(getVineSegments(false).some((segment) => segment.end.x > 50));
 });
 
+test('desktop vine reaches its landing without a bottom hook', () => {
+  const segments = getVineSegments(false);
+  const landing = segments[segments.length - 1];
+  const minX = Math.min(landing.start.x, landing.end.x);
+  const maxX = Math.max(landing.start.x, landing.end.x);
+  const minY = Math.min(landing.start.y, landing.end.y);
+  const maxY = Math.max(landing.start.y, landing.end.y);
+
+  assert.ok([landing.controlA, landing.controlB].every((point) => (
+    point.x >= minX && point.x <= maxX && point.y >= minY && point.y <= maxY
+  )));
+  assert.equal(landing.controlB.x, landing.end.x);
+  assert.ok(landing.controlB.y < landing.end.y);
+  assert.ok(landing.controlA.x < landing.controlB.x);
+});
+
 test('vine continuation stays joined and bounded while reaching the final rose', () => {
   const start = { x: 39, y: 776 };
   const end = { x: 332, y: 379 };
@@ -51,6 +69,13 @@ test('vine continuation stays joined and bounded while reaching the final rose',
   );
   assert.equal(desktopSegments.length, 1);
   assert.deepEqual(desktopSegments[0].end, { x: 1222, y: 807 });
+  const desktopLanding = desktopSegments[0];
+  assert.ok([desktopLanding.controlA, desktopLanding.controlB].every((point) => (
+    point.x >= Math.min(desktopLanding.start.x, desktopLanding.end.x)
+    && point.x <= Math.max(desktopLanding.start.x, desktopLanding.end.x)
+    && point.y >= Math.min(desktopLanding.start.y, desktopLanding.end.y)
+    && point.y <= Math.max(desktopLanding.start.y, desktopLanding.end.y)
+  )));
   assert.ok(desktopSegments.flatMap((segment) => [segment.start, segment.controlA, segment.controlB, segment.end])
     .every((point) => point.x >= 0 && point.x <= 1440 && point.y >= 0 && point.y <= 900));
   assert.ok(Math.min(...desktopSegments.flatMap((segment) => [segment.start.x, segment.controlA.x, segment.controlB.x, segment.end.x])) > 900);
@@ -79,4 +104,20 @@ test('reduced motion collapses cinematic chapter height', () => {
   assert.equal(getChapterHeight(200, 150, false, false), '200vh');
   assert.equal(getChapterHeight(200, 150, true, false), '150vh');
   assert.equal(getChapterHeight(200, 150, false, true), 'auto');
+});
+
+test('meadow reveal reaches its composed state before the sticky chapter ends', () => {
+  assert.equal(mapMeadowVisualProgress(0), 0);
+  assert.ok(Math.abs(mapMeadowVisualProgress(0.41) - 0.5) < 0.000001);
+  assert.equal(mapMeadowVisualProgress(0.82), 1);
+  assert.equal(mapMeadowVisualProgress(1), 1);
+  assert.equal(mapMeadowVisualProgress(0, true), 1);
+});
+
+test('shared camera introduces the meadow before local chapter growth takes over', () => {
+  assert.equal(mapMeadowSceneProgress(0, 0.78), 0);
+  assert.ok(Math.abs(mapMeadowSceneProgress(0, 0.81) - 0.38) < 0.000001);
+  assert.equal(mapMeadowSceneProgress(0, 0.84), 0.76);
+  assert.ok(mapMeadowSceneProgress(0.6, 0.81) > 0.7);
+  assert.equal(mapMeadowSceneProgress(0, 0, true), 1);
 });

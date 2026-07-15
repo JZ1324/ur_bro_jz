@@ -33,9 +33,11 @@ export const desktopVineSegments: GardenCubicSegment[] = [
   },
   {
     start: { x: 52, y: 61 },
-    controlA: { x: 76, y: 64.5 },
-    controlB: { x: 92.5, y: 71.5 },
-    end: { x: 86.5, y: 84 },
+    controlA: { x: 63.5, y: 68.6667 },
+    // Ease into the rose's vertical landing stem instead of reaching past it
+    // and doubling back into a sharp V.
+    controlB: { x: 84, y: 76.3333 },
+    end: { x: 84, y: 84 },
   },
 ];
 
@@ -69,8 +71,8 @@ export const mobileVineSegments: GardenCubicSegment[] = [
 export function getVineContinuationSegments(
   start: { x: number; y: number },
   end: { x: number; y: number },
-  width: number,
-  height: number,
+  _width: number,
+  _height: number,
   isMobile: boolean,
 ): GardenCubicSegment[] {
   if (isMobile) {
@@ -86,15 +88,15 @@ export function getVineContinuationSegments(
     ];
   }
 
+  const deltaX = end.x - start.x;
   const deltaY = end.y - start.y;
-  const distance = Math.hypot(end.x - start.x, deltaY);
-  const handleX = Math.min(width * 0.045, Math.max(20, distance * 0.5));
-  const handleY = Math.min(height * 0.06, Math.max(14, distance * 0.38));
   return [
     {
       start,
-      controlA: { x: start.x - handleX, y: Math.min(height * 0.96, start.y + handleY) },
-      controlB: { x: end.x - handleX * 0.65, y: end.y - deltaY * 0.18 },
+      // Keep the landing stem between its two anchors. The former lateral
+      // handles overshot the rose and produced a visible hook at the meadow.
+      controlA: { x: start.x + deltaX * 0.34, y: start.y + deltaY * 0.34 },
+      controlB: { x: start.x + deltaX * 0.72, y: start.y + deltaY * 0.72 },
       end,
     },
   ];
@@ -121,6 +123,21 @@ export function clampProgress(value: number) {
 export function mapChapterProgress(value: number, start: number, end: number) {
   if (end <= start) return value >= end ? 1 : 0;
   return clampProgress((value - start) / (end - start));
+}
+
+export function mapMeadowVisualProgress(value: number, reducedMotion = false) {
+  return reducedMotion ? 1 : mapChapterProgress(value, 0, 0.82);
+}
+
+export function mapMeadowSceneProgress(
+  localProgress: number,
+  journeyProgress: number,
+  reducedMotion = false,
+) {
+  if (reducedMotion) return 1;
+  const localReveal = mapMeadowVisualProgress(localProgress);
+  const cameraPrelude = mapChapterProgress(journeyProgress, 0.78, 0.84) * 0.76;
+  return Math.max(localReveal, cameraPrelude);
 }
 
 export function getVineSegments(isMobile: boolean) {
