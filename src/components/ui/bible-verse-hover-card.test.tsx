@@ -31,8 +31,8 @@ test('renders only the Romans passage inside a compact preview panel', () => {
   assert.doesNotMatch(markup, /Romans 12:16-21/);
   assert.doesNotMatch(markup, /KJV/);
   assert.doesNotMatch(markup, /A call to humility/);
-  assert.doesNotMatch(markup, /max-h-/);
-  assert.doesNotMatch(markup, /overflow-y-auto/);
+  assert.match(markup, /max-h-\[var\(--radix-hover-card-content-available-height\)\]/);
+  assert.match(markup, /overflow-y-auto/);
   assert.doesNotMatch(markup, /grid-cols/);
   assert.doesNotMatch(markup, /rounded-lg bg-bg\/35/);
   assert.match(markup, /Be of the same mind one toward another/);

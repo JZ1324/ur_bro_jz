@@ -18,7 +18,7 @@ export function BibleVersePreviewPanel({ verse }: BibleVersePreviewPanelProps) {
   return (
     <div
       data-verse-preview-panel="true"
-      className="w-[min(14.75rem,calc(100vw-1rem))] rounded-[0.72rem] border border-border/45 bg-surface/96 px-[0.65rem] py-[0.58rem] text-left shadow-lg shadow-black/25 backdrop-blur-md"
+      className="w-[min(14.75rem,calc(100vw-1rem))] max-h-[var(--radix-hover-card-content-available-height)] overflow-y-auto overscroll-contain rounded-[0.72rem] border border-border/45 bg-surface/96 px-[0.65rem] py-[0.58rem] text-left shadow-lg shadow-black/25 backdrop-blur-md"
     >
       <p data-verse-preview-text="true" className="break-words text-[8.65px] leading-[1.34] text-text/95">
         {verse.verses.map((item) => (
@@ -63,7 +63,7 @@ export function BibleVerseHoverCard({ children, verse, className }: BibleVerseHo
           <AnimatePresence>
             {isOpen && (
               <motion.div
-                initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                initial={{ opacity: 0, y: 4, scale: 0.96 }}
                 animate={{
                   opacity: 1,
                   y: 0,
@@ -73,7 +73,7 @@ export function BibleVerseHoverCard({ children, verse, className }: BibleVerseHo
                     ease: [0.23, 1, 0.32, 1],
                   },
                 }}
-                exit={{ opacity: 0, y: 4, scale: 0.98, transition: { duration: 0.06 } }}
+                exit={{ opacity: 0, y: 2, scale: 0.98, transition: { duration: 0.06 } }}
               >
                 <BibleVersePreviewPanel verse={verse} />
               </motion.div>
