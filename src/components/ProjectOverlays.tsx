@@ -15,6 +15,112 @@ type ProjectOverlaysProps = {
   onCloseProject: () => void;
 };
 
+type ProjectCardVariant = 'lead' | 'compact' | 'standard';
+
+type ProjectCardProps = {
+  project: Project;
+  variant?: ProjectCardVariant;
+  onClick: () => void;
+};
+
+const getProjectCategory = (project: Project) =>
+  project.tags.find((tag) => tag.toLowerCase() !== 'live') ?? project.tags[0] ?? 'Build';
+
+const getProjectFileId = (project: Project) => project.id.replaceAll('-', ' ').toUpperCase();
+
+function ProjectCard({ project, variant = 'standard', onClick }: ProjectCardProps) {
+  const isLead = variant === 'lead';
+  const isCompact = variant === 'compact';
+  const shellClass = isLead
+    ? 'min-h-[29rem]'
+    : isCompact
+      ? 'min-h-[15rem]'
+      : 'min-h-[330px]';
+  const imageClass = isLead
+    ? 'aspect-[16/8.4] min-h-[220px]'
+    : isCompact
+      ? 'aspect-[16/6.5] min-h-[108px]'
+      : 'aspect-[16/9]';
+  const titleClass = isLead ? 'text-3xl sm:text-4xl' : isCompact ? 'text-xl' : 'text-2xl';
+  const contentClass = isLead ? 'p-5 sm:p-6' : isCompact ? 'p-4' : 'p-4.5 sm:p-5';
+  const fileId = getProjectFileId(project);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Open project file for ${project.title}`}
+      className={`archive-project-card group flex ${shellClass} flex-col overflow-hidden rounded-2xl border border-border/55 bg-surface text-left shadow-xl shadow-black/20 transition-[transform,border-color,box-shadow,background-color] duration-200 ease-out hover:-translate-y-1 hover:border-accent/40 hover:bg-surface/95 hover:shadow-2xl hover:shadow-warm-accent/10 active:scale-[0.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent`}
+    >
+      <div className={`project-screenshot-frame relative ${imageClass} w-full overflow-hidden bg-[#0E130D]`}>
+        <div className="project-fallback absolute inset-0 flex items-center justify-center p-6 text-center">
+          <div className="relative z-10">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">Project file</p>
+            <p className={`mt-2 font-bold text-[#F3F4EA] ${isLead ? 'text-3xl' : 'text-xl'}`}>{project.title}</p>
+            <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-[#B7BBA8]">{project.description}</p>
+          </div>
+        </div>
+        {project.image && (
+          <img
+            src={project.image}
+            alt={`${project.title} project preview`}
+            width={isLead ? 1280 : 960}
+            height={isLead ? 672 : 540}
+            loading={isLead ? 'eager' : 'lazy'}
+            decoding="async"
+            referrerPolicy="no-referrer"
+            onLoad={(event) => {
+              const fallback = event.currentTarget.previousElementSibling;
+              if (fallback instanceof HTMLElement) {
+                fallback.style.display = 'none';
+              }
+            }}
+            onError={(event) => {
+              event.currentTarget.style.display = 'none';
+            }}
+            className="relative z-[1] h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.015]"
+          />
+        )}
+        <div className="absolute inset-0 z-[2] bg-linear-to-b from-bg/5 via-bg/8 to-bg/52" />
+        <span
+          className={`absolute right-3 top-3 z-[3] rounded-md border bg-bg/75 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] backdrop-blur-sm ${
+            project.link
+              ? 'border-accent/35 text-accent'
+              : 'border-warm-accent/30 text-warm-accent'
+          }`}
+        >
+          {project.link ? 'Live' : 'Local build'}
+        </span>
+        <div className="absolute left-3 top-3 z-[3] flex max-w-[calc(100%-5.5rem)] items-center gap-2">
+          <span className="truncate rounded-md bg-bg/75 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-accent backdrop-blur-sm sm:text-[10px]">
+            File / {fileId}
+          </span>
+          {!isCompact && (
+            <span className="hidden rounded-md bg-bg/75 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-accent backdrop-blur-sm sm:inline-flex">
+              {getProjectCategory(project)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className={`flex flex-1 flex-col gap-4 ${contentClass}`}>
+        <div className="flex flex-col gap-2">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-warm-accent">{project.status}</p>
+          <h3 className={`${titleClass} font-bold leading-tight text-text`}>{project.title}</h3>
+          <p className={`${isLead ? 'line-clamp-3 text-[15px]' : 'line-clamp-2 text-sm'} leading-relaxed text-muted`}>{project.description}</p>
+        </div>
+        <div className="mt-auto flex flex-wrap gap-2">
+          {project.tech.slice(0, isLead ? 4 : 3).map((tech) => (
+            <span key={tech} className="rounded-lg border border-border/35 bg-bg/55 px-2.5 py-1 text-[11px] font-semibold text-text">
+              {tech}
+            </span>
+          ))}
+        </div>
+      </div>
+    </button>
+  );
+}
+
 export function ProjectOverlays({
   projects,
   toolItems,
@@ -29,12 +135,8 @@ export function ProjectOverlays({
   const selectedProject = projects.find((project) => project.id === expandedProjectId);
   useBodyScrollLock(showBento || Boolean(selectedProject));
 
-  const filters = ['All', 'Live', 'Web', 'macOS', 'AI-built'];
-  const getCaseNumber = (project: Project) =>
-    String(projects.findIndex((item) => item.id === project.id) + 1).padStart(2, '0');
-  const getProjectCategory = (project: Project) =>
-    project.tags.find((tag) => tag.toLowerCase() !== 'live') ?? project.tags[0] ?? 'Build';
-  const selectedProjectNumber = selectedProject ? getCaseNumber(selectedProject) : null;
+  const filters = ['All', 'Featured', 'Live', 'Web', 'macOS', 'AI-built'];
+  const selectedProjectFileId = selectedProject ? getProjectFileId(selectedProject) : null;
 
   const filteredProjects = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -54,6 +156,7 @@ export function ProjectOverlays({
 
       const matchesSearch = !normalizedSearch || text.includes(normalizedSearch);
       const matchesFilter = activeFilter === 'All'
+        || (activeFilter === 'Featured' && project.featured)
         || (activeFilter === 'Live' && project.tags.some((tag) => tag.toLowerCase() === 'live'))
         || (activeFilter === 'Web' && text.includes('web'))
         || (activeFilter === 'macOS' && text.includes('macos'))
@@ -62,6 +165,14 @@ export function ProjectOverlays({
       return matchesSearch && matchesFilter;
     });
   }, [activeFilter, projects, searchQuery]);
+
+  const showCurrentShelf = activeFilter === 'All' && searchQuery.trim().length === 0;
+  const featuredProjects = showCurrentShelf
+    ? filteredProjects.filter((project) => project.featured).slice(0, 3)
+    : [];
+  const archiveProjects = showCurrentShelf
+    ? filteredProjects.filter((project) => !project.featured)
+    : filteredProjects;
 
   return (
     <>
@@ -81,7 +192,7 @@ export function ProjectOverlays({
                   <p className="text-xs font-bold uppercase tracking-[0.24em] text-warm-accent">Project Archive</p>
                   <h2 className="text-4xl font-bold tracking-tight text-text sm:text-5xl">Projects</h2>
                   <p className="max-w-xl text-base font-medium leading-relaxed text-muted sm:text-lg">
-                    Small builds, live pages, and the case notes behind each one.
+                    Current work first, then the experiments and earlier builds that shaped it.
                   </p>
                   <span className="w-fit rounded-full border border-border/50 bg-surface px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-accent">
                     {filteredProjects.length} / {projects.length} entries
@@ -99,8 +210,8 @@ export function ProjectOverlays({
               <section className="archive-corner-panel rounded-2xl border border-border/40 bg-surface/55 p-3 shadow-lg shadow-black/10">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#8E927F]">Tool shelf / stack</p>
-                    <p className="mt-1 text-xs font-semibold text-muted">The usual stack behind these case files.</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-subtle">Tool shelf / stack</p>
+                    <p className="mt-1 text-xs font-semibold text-muted">The usual stack behind these project files.</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {toolItems.map((tool) => (
@@ -152,71 +263,64 @@ export function ProjectOverlays({
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredProjects.map((project) => (
-                  <button
-                    key={project.id}
-                    type="button"
-                    onClick={() => onCardClick(project.id)}
-                    aria-label={`Open case file for ${project.title}`}
-                    className="archive-project-card group flex min-h-[330px] flex-col overflow-hidden rounded-2xl border border-border/55 bg-surface text-left shadow-xl shadow-black/20 transition-[transform,border-color,box-shadow,background-color] duration-200 ease-out hover:-translate-y-1 hover:border-accent/40 hover:bg-surface/95 hover:shadow-2xl hover:shadow-warm-accent/10 active:scale-[0.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                  >
-                    <div className="project-screenshot-frame relative aspect-[16/9] w-full overflow-hidden bg-[#0E130D]">
-                      <div className="project-fallback absolute inset-0 flex items-center justify-center p-6 text-center">
-                        <div className="relative z-10">
-                          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">Case {getCaseNumber(project)}</p>
-                          <p className="mt-2 text-xl font-bold text-[#F3F4EA]">{project.title}</p>
-                          <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-[#B7BBA8]">{project.description}</p>
-                        </div>
-                      </div>
-                      <img
-                        src={project.image}
-                        alt={project.title}
-                        width={960}
-                        height={540}
-                        referrerPolicy="no-referrer"
-                        onLoad={(event) => {
-                          const fallback = event.currentTarget.previousElementSibling;
-                          if (fallback instanceof HTMLElement) {
-                            fallback.style.display = 'none';
-                          }
-                        }}
-                        onError={(event) => {
-                          event.currentTarget.style.display = 'none';
-                        }}
-                        className="relative z-[1] h-full w-full object-cover object-top transition-transform duration-300 ease-out group-hover:scale-[1.01]"
-                      />
-                      <div className="absolute inset-0 z-[2] bg-linear-to-b from-bg/5 via-bg/8 to-bg/46" />
-                      <span className="absolute right-3 top-3 z-[3] rounded-md border border-accent/35 bg-bg/75 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-accent backdrop-blur-sm">
-                        Live
-                      </span>
-                      <div className="absolute left-3 top-3 z-[3] flex items-center gap-2">
-                        <span className="rounded-md bg-bg/75 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-accent backdrop-blur-sm">
-                          Case {getCaseNumber(project)}
-                        </span>
-                        <span className="rounded-md bg-bg/75 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-accent backdrop-blur-sm">
-                          {getProjectCategory(project)}
-                        </span>
-                      </div>
+              {showCurrentShelf && featuredProjects.length > 0 && (
+                <section className="featured-build-panel archive-corner-panel rounded-3xl border border-border/50 p-3 shadow-2xl shadow-black/15 sm:p-4">
+                  <div className="flex flex-col gap-2 px-2 pb-4 pt-1 sm:flex-row sm:items-end sm:justify-between sm:px-3">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-warm-accent">Current work</p>
+                      <h3 className="mt-1 text-2xl font-bold tracking-tight text-text sm:text-3xl">What I’m building now</h3>
                     </div>
+                    <p className="max-w-md text-sm font-medium leading-relaxed text-muted sm:text-right">
+                      The three projects getting the most attention, testing, and iteration right now.
+                    </p>
+                  </div>
 
-                    <div className="flex flex-1 flex-col gap-4 p-4.5 sm:p-5">
-                      <div className="flex flex-col gap-2">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-warm-accent">{project.status}</p>
-                        <h3 className="text-2xl font-bold leading-tight text-text">{project.title}</h3>
-                        <p className="line-clamp-2 text-sm leading-relaxed text-muted">{project.description}</p>
-                      </div>
-                      <div className="mt-auto flex flex-wrap gap-2">
-                        {project.tech.slice(0, 3).map((tech) => (
-                          <span key={tech} className="rounded-lg border border-border/35 bg-bg/55 px-2.5 py-1 text-[11px] font-semibold text-text">
-                            {tech}
-                          </span>
+                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(19rem,0.85fr)]">
+                    <ProjectCard
+                      project={featuredProjects[0]}
+                      variant="lead"
+                      onClick={() => onCardClick(featuredProjects[0].id)}
+                    />
+                    {featuredProjects.length > 1 && (
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                        {featuredProjects.slice(1).map((project) => (
+                          <ProjectCard
+                            key={project.id}
+                            project={project}
+                            variant="compact"
+                            onClick={() => onCardClick(project.id)}
+                          />
                         ))}
                       </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {archiveProjects.length > 0 && (
+                <section className="flex flex-col gap-4">
+                  {showCurrentShelf && (
+                    <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border/35 pb-3">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-subtle">Project archive</p>
+                        <h3 className="mt-1 text-2xl font-bold tracking-tight text-text">Earlier builds and experiments</h3>
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-[0.16em] text-muted">
+                        {archiveProjects.length} files
+                      </span>
                     </div>
-                  </button>
-                ))}
-              </div>
+                  )}
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {archiveProjects.map((project) => (
+                      <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onClick={() => onCardClick(project.id)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {filteredProjects.length === 0 && (
                 <div className="archive-corner-panel rounded-3xl border border-border/45 bg-surface p-8 text-center">
@@ -250,35 +354,47 @@ export function ProjectOverlays({
               <div className="relative aspect-[16/8] min-h-[240px] overflow-hidden bg-[#0E130D] sm:min-h-[340px]">
                 <div className="project-fallback absolute inset-0 flex items-center justify-center p-6 text-center">
                   <div className="relative z-10 max-w-lg">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">Case file / {selectedProjectNumber}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warm-accent">Project file / {selectedProjectFileId}</p>
                     <p className="mt-2 text-3xl font-bold text-[#F3F4EA]">{selectedProject.title}</p>
                     <p className="mt-3 text-sm font-semibold leading-6 text-[#B7BBA8]">{selectedProject.description}</p>
                   </div>
                 </div>
-                <img
-                  src={selectedProject.image}
-                  alt={selectedProject.title}
-                  width={1280}
-                  height={640}
-                  referrerPolicy="no-referrer"
-                  onLoad={(event) => {
-                    const fallback = event.currentTarget.previousElementSibling;
-                    if (fallback instanceof HTMLElement) {
-                      fallback.style.display = 'none';
-                    }
-                  }}
-                  onError={(event) => {
-                    event.currentTarget.style.display = 'none';
-                  }}
-                  className="relative z-[1] h-full w-full object-cover object-top"
-                />
+                {selectedProject.image && (
+                  <img
+                    src={selectedProject.image}
+                    alt={`${selectedProject.title} project preview`}
+                    width={1280}
+                    height={640}
+                    decoding="async"
+                    referrerPolicy="no-referrer"
+                    onLoad={(event) => {
+                      const fallback = event.currentTarget.previousElementSibling;
+                      if (fallback instanceof HTMLElement) {
+                        fallback.style.display = 'none';
+                      }
+                    }}
+                    onError={(event) => {
+                      event.currentTarget.style.display = 'none';
+                    }}
+                    className="relative z-[1] h-full w-full object-cover object-top"
+                  />
+                )}
                 <div className="absolute inset-0 z-[2] bg-linear-to-b from-bg/8 via-transparent to-surface/70" />
                 <div className="absolute bottom-4 left-4 z-[3] flex flex-wrap items-center gap-2">
                   <span className="rounded-md border border-accent/35 bg-bg/75 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-accent backdrop-blur-sm">
-                    Case file / {selectedProjectNumber}
+                    Project file / {selectedProjectFileId}
                   </span>
                   <span className="rounded-md border border-warm-accent/30 bg-bg/75 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-warm-accent backdrop-blur-sm">
                     {getProjectCategory(selectedProject)}
+                  </span>
+                  <span
+                    className={`rounded-md border bg-bg/75 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] backdrop-blur-sm ${
+                      selectedProject.link
+                        ? 'border-accent/35 text-accent'
+                        : 'border-warm-accent/30 text-warm-accent'
+                    }`}
+                  >
+                    {selectedProject.link ? 'Live' : 'No public site'}
                   </span>
                 </div>
                 <button
@@ -293,7 +409,7 @@ export function ProjectOverlays({
                 <div className="flex flex-col gap-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full border border-border/45 bg-bg/45 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
-                      CASE FILE / {selectedProjectNumber}
+                      PROJECT FILE / {selectedProjectFileId}
                     </span>
                     {selectedProject.tags.map((tag) => (
                       <span key={tag} className="rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-accent">
@@ -318,23 +434,30 @@ export function ProjectOverlays({
                       <p className="mt-2 text-sm leading-relaxed text-text">{body}</p>
                     </div>
                   ))}
-                  <a
-                    href={selectedProject.link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group rounded-2xl border border-border/45 bg-bg/70 p-4 transition-[transform,border-color,background-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-accent/45 hover:bg-bg/80 active:scale-[0.99] sm:col-span-2"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h4 className="text-[10px] font-bold uppercase tracking-[0.18em] text-warm-accent">Live link</h4>
-                        <p className="mt-2 text-sm leading-relaxed text-text">Open the deployed build in a new tab.</p>
+                  {selectedProject.link ? (
+                    <a
+                      href={selectedProject.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group rounded-2xl border border-border/45 bg-bg/70 p-4 transition-[transform,border-color,background-color] duration-150 ease-out hover:-translate-y-0.5 hover:border-accent/45 hover:bg-bg/80 active:scale-[0.99] sm:col-span-2"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h4 className="text-[10px] font-bold uppercase tracking-[0.18em] text-warm-accent">Live link</h4>
+                          <p className="mt-2 text-sm leading-relaxed text-text">Open the deployed build in a new tab.</p>
+                        </div>
+                        <ExternalLink
+                          size={18}
+                          className="mt-1 shrink-0 text-accent transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        />
                       </div>
-                      <ExternalLink
-                        size={18}
-                        className="mt-1 shrink-0 text-accent transition-transform duration-150 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                      />
+                    </a>
+                  ) : (
+                    <div className="rounded-2xl border border-warm-accent/25 bg-warm-accent/10 p-4 sm:col-span-2">
+                      <h4 className="text-[10px] font-bold uppercase tracking-[0.18em] text-warm-accent">No public site yet</h4>
+                      <p className="mt-2 text-sm leading-relaxed text-text">This project is still a local build, so there is no public link to open.</p>
                     </div>
-                  </a>
+                  )}
                 </div>
 
                 <div className="rounded-2xl border border-warm-accent/25 bg-warm-accent/10 p-4">
@@ -346,14 +469,16 @@ export function ProjectOverlays({
                   </p>
                 </div>
 
-                <LinkPreview
-                  url={selectedProject.link}
-                  imageSrc={selectedProject.image}
-                  isStatic
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-accent py-4 text-center font-bold text-bg shadow-lg shadow-accent/15 transition-[transform,background-color,box-shadow] duration-150 ease-out hover:bg-accent-dark active:scale-[0.98]"
-                >
-                  View Live Project <ExternalLink size={18} />
-                </LinkPreview>
+                {selectedProject.link && (
+                  <LinkPreview
+                    url={selectedProject.link}
+                    imageSrc={selectedProject.image ?? ''}
+                    isStatic
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-accent py-4 text-center font-bold text-bg shadow-lg shadow-accent/15 transition-[transform,background-color,box-shadow] duration-150 ease-out hover:bg-accent-dark active:scale-[0.98]"
+                  >
+                    View Live Project <ExternalLink size={18} />
+                  </LinkPreview>
+                )}
               </div>
             </motion.div>
           </motion.div>

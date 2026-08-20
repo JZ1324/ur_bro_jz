@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A menu-bar macOS audio monitor for loudness, room sound, and listening exposure." />
+    <title>Decibal — know what your ears are hearing</title>
+    <link rel="stylesheet" href="../project-sites.css" />
+    <script src="../project-sites.js" defer></script>
+  </head>
+  <body data-project="decibal" data-theme="decibal">
+    <div id="project-site">
+      <div class="db-page">
+        <header class="db-nav page-width"><a class="db-mark" href="../../" aria-label="Back to the project archive"><span class="db-mark-bars"><i></i><i></i><i></i><i></i></span><b>DECIBAL</b></a><nav><a href="#instrument">instrument</a><a href="#guidance">guidance</a><a href="#build">build</a></nav><a class="archive-link" href="../../">exit <span class="arrow-text">↗</span></a></header>
+        <div class="site-hero-image site-hero-image-decibal" data-atmosphere-speed="-0.03" aria-hidden="true"></div>
+        <main>
+          <section class="db-hero page-width" id="instrument"><div class="db-hero-copy"><p class="db-label">menu-bar audio monitor / 01</p><h1>Sound is a physical thing.</h1><p>Decibal puts the loudness of your output, your room, and your listening day in one calm instrument.</p><a class="db-button" href="#guidance">Read the signal <span>→</span></a></div><div class="db-instrument"><div class="db-instrument-top"><span>OUTPUT / BUILT-IN</span><span class="db-live"><i></i> LIVE</span></div><div class="db-meter-wrap"><div class="db-meter-copy"><span>Current level</span><strong><span data-db-value>68</span><small>dBFS</small></strong><em data-db-status>comfortable</em></div><div class="db-meter" style="--meter: 68%"><div class="db-meter-track"><i></i></div><div class="db-meter-ticks"><span>−60</span><span>−40</span><span>−20</span><span>0</span></div></div></div><div class="db-chart-head"><span>last 60 seconds</span><span>peak −8 / avg −26</span></div><div class="db-chart" aria-label="Output loudness chart"><i style="--h:28%"></i><i style="--h:38%"></i><i style="--h:45%"></i><i style="--h:32%"></i><i style="--h:62%"></i><i style="--h:48%"></i><i style="--h:72%"></i><i style="--h:54%"></i><i style="--h:80%"></i><i style="--h:66%"></i><i style="--h:42%"></i><i style="--h:57%"></i><i style="--h:34%"></i><i style="--h:51%"></i><i style="--h:68%"></i><i style="--h:43%"></i><i style="--h:31%"></i><i style="--h:50%"></i><i style="--h:76%"></i><i style="--h:60%"></i><i style="--h:46%"></i><i style="--h:65%"></i><i style="--h:39%"></i><i style="--h:57%"></i></div><div class="db-instrument-bottom"><span>MacBook Pro Speakers</span><span>calibrated 70 dB SPL</span></div></div></section>
+          <section class="db-readout page-width" id="guidance"><div class="db-readout-copy"><p class="db-label">02 / context</p><h2>A number becomes useful when it knows where it came from.</h2><p>Decibal keeps output loudness, room sound, and listening exposure beside each other so the next adjustment is based on context instead of guesswork.</p></div><div class="db-context-card"><div class="db-context-row"><span>OUTPUT</span><strong>−26 dBFS</strong><em>normal</em></div><div class="db-context-row"><span>ROOM</span><strong>42 dB SPL</strong><em>quiet</em></div><div class="db-context-row"><span>EXPOSURE</span><strong>2h 18m</strong><em class="db-warn">check in</em></div><div class="db-context-foot"><span>headphone profile / Sony WH-1000XM5</span><button type="button">View guidance <span>→</span></button></div></div></section>
+          <section class="db-control page-width"><div class="db-control-head"><p class="db-label">03 / tune the threshold</p><p>Drag the value. The instrument responds.</p></div><label class="db-slider"><span class="sr-only">Output level</span><input type="range" min="42" max="94" value="68" data-db-range><span class="db-slider-track"><i></i></span></label><div class="db-control-values"><span>quiet</span><output data-db-output>68 dBFS / comfortable</output><span>too loud</span></div></section>
+          <section class="db-build page-width" id="build"><div><p class="db-label">04 / the build</p><h2>A menu-bar monitor that treats hearing like a first-class signal.</h2></div><div class="db-build-grid"><span><b>Core Audio</b> output and environment capture</span><span><b>Charts</b> segmented listening history</span><span><b>Guidance</b> thresholds that explain themselves</span></div></section>
+        </main>
+        <footer class="product-footer"><span>decibal / measure before you adjust</span><a class="archive-link" href="../../">Back to archive <span class="arrow-text">↗</span></a></footer>
+      </div>
+    </div>
+  </body>
+</html>

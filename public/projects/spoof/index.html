@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A compact macOS network interface inspector for addresses, link state, and raw ifconfig output." />
+    <title>Spoof — see the network that is actually there</title>
+    <link rel="stylesheet" href="../project-sites.css" />
+    <script src="../project-sites.js" defer></script>
+  </head>
+  <body data-project="spoof" data-theme="spoof">
+    <div id="project-site">
+      <div class="sp-page">
+        <header class="sp-nav page-width"><a class="sp-prompt" href="../../" aria-label="Back to the project archive"><span>jz@mac</span>:<b>~</b>$ spoof</a><span class="sp-nav-label">network interface inspector / v0.1</span><a class="archive-link" href="../../">exit <span class="arrow-text">↗</span></a></header>
+        <div class="site-hero-image site-hero-image-spoof" data-atmosphere-speed="-0.025" aria-hidden="true"></div>
+        <main>
+          <section class="sp-hero page-width"><div class="sp-hero-copy"><p class="sp-command">./spoof --inspect</p><h1>See the network that is actually there.</h1><p>A compact macOS inspector for interfaces, link state, hardware addresses, private Wi-Fi addressing, and raw <code>ifconfig</code> output.</p><div class="sp-hero-output"><span>4 interfaces found</span><span>last refresh 09:42:18</span></div></div><div class="sp-inspector" id="inspector"><div class="sp-inspector-bar"><span><i></i><i></i><i></i></span><b>spoof / interfaces</b><span class="sp-ok">● connected</span></div><div class="sp-inspector-grid"><aside class="sp-interface-list"><span class="sp-pane-label">INTERFACES</span><button class="active" type="button" data-interface="en0"><b>en0</b><small>Wi-Fi · UP</small></button><button type="button" data-interface="bridge0"><b>bridge0</b><small>bridge · UP</small></button><button type="button" data-interface="en1"><b>en1</b><small>USB-C · DOWN</small></button><button type="button" data-interface="lo0"><b>lo0</b><small>loopback · UP</small></button></aside><section class="sp-interface-detail"><div class="sp-detail-head"><div><span class="sp-pane-label">SELECTED INTERFACE</span><h2 data-interface-name>Wi-Fi / en0</h2></div><button type="button" class="sp-refresh" data-refresh">↻ refresh</button></div><div class="sp-address-grid"><div><span>LIVE ADDRESS</span><strong data-live-address>192.168.1.34</strong></div><div><span>HARDWARE ADDRESS</span><strong data-hardware-address>8c:85:90:••:••:••</strong></div><div><span>LINK</span><strong data-link>UP  ●</strong></div><div><span>ADDRESSING</span><strong data-addressing>PRIVATE</strong></div></div><div class="sp-raw-head"><span>ifconfig / raw output</span><button type="button" data-copy>□  copy</button></div><pre data-raw-output>en0: flags=8863&lt;UP,BROADCAST,SMART,RUNNING&gt;
+        options=400&lt;CHANNEL_IO&gt;
+        ether 8c:85:90:••:••:••
+        inet 192.168.1.34 netmask 0xffffff00
+        status: active</pre><p class="sp-status" data-inspector-status><i></i> Wi-Fi addressing is managed by macOS.</p></section></div></div></section>
+          <section class="sp-explain page-width"><div><p class="sp-command">what it answers</p><h2>Small diagnostic tools should answer the first question before showing the whole machine.</h2></div><div class="sp-answer-list"><div><b>01</b><span>Which interface is active?</span><em>state / kind / device</em></div><div><b>02</b><span>Which address is in use?</span><em>live / hardware</em></div><div><b>03</b><span>What does macOS report?</span><em>raw ifconfig</em></div></div></section>
+          <section class="sp-build page-width"><div><p class="sp-command">build notes</p><h2>Native SwiftUI on top of the system detail that already exists.</h2></div><div class="sp-build-tags"><span>async inspector</span><span>copyable output</span><span>status hierarchy</span><span>macOS network APIs</span></div></section>
+        </main>
+        <footer class="product-footer"><span>Spoof / inspect, compare, copy</span><a class="archive-link" href="../../">Back to archive <span class="arrow-text">↗</span></a></footer>
+      </div>
+    </div>
+  </body>
+</html>

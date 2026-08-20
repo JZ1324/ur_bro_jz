@@ -14,10 +14,40 @@ type PhotoSlot = {
   angle: number;
   tilt: number;
   depth: number;
+  entry: PhotoEntryPoint;
   stamps: string[];
   stampTilt: number;
   note: string;
 };
+
+export type PhotoEntryPoint = {
+  x: number;
+  y: number;
+};
+
+export const photoEntryPoints: readonly PhotoEntryPoint[] = [
+  { x: -1.15, y: 0.35 },
+  { x: -0.78, y: -0.78 },
+  { x: 0, y: -1.15 },
+  { x: 0.78, y: -0.78 },
+  { x: 1.15, y: 0.35 },
+];
+
+export const photoHoverSpring = {
+  type: 'spring',
+  stiffness: 360,
+  damping: 24,
+} as const;
+
+export const photoOrbitVisualEnvelope = {
+  hoverScale: 1.08,
+  maxParentScale: 1.02,
+  maxParentRotate: 11.5,
+} as const;
+
+export function resolvePhotoHoverScale(hovered: boolean) {
+  return hovered ? photoOrbitVisualEnvelope.hoverScale : 1;
+}
 
 const photoSlots: PhotoSlot[] = [
   {
@@ -27,6 +57,7 @@ const photoSlots: PhotoSlot[] = [
     angle: -158,
     tilt: -8,
     depth: 0.55,
+    entry: photoEntryPoints[0],
     stamps: ['/photo-gallery/stamps/stamp-01.png'],
     stampTilt: -4,
     note: 'bike ride to the beach',
@@ -38,6 +69,7 @@ const photoSlots: PhotoSlot[] = [
     angle: -88,
     tilt: 7,
     depth: 0.82,
+    entry: photoEntryPoints[1],
     stamps: ['/photo-gallery/stamps/stamp-02.png'],
     stampTilt: 3,
     note: 'camp photo',
@@ -49,6 +81,7 @@ const photoSlots: PhotoSlot[] = [
     angle: -18,
     tilt: -4,
     depth: 1,
+    entry: photoEntryPoints[2],
     stamps: ['/photo-gallery/stamps/stamp-03.png', '/photo-gallery/stamps/stamp-06.png'],
     stampTilt: -3,
     note: 'camp photo',
@@ -60,6 +93,7 @@ const photoSlots: PhotoSlot[] = [
     angle: 54,
     tilt: 9,
     depth: 0.72,
+    entry: photoEntryPoints[3],
     stamps: ['/photo-gallery/stamps/stamp-04.png'],
     stampTilt: 4,
     note: 'photo shoot',
@@ -71,6 +105,7 @@ const photoSlots: PhotoSlot[] = [
     angle: 126,
     tilt: -6,
     depth: 0.64,
+    entry: photoEntryPoints[4],
     stamps: ['/photo-gallery/stamps/stamp-05.png'],
     stampTilt: -2,
     note: 'bike ride',
@@ -81,25 +116,62 @@ function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
 }
 
-function orbitPoint(angle: number, progress: number, depth: number, index: number) {
-  const arrival = mapChapterProgress(progress, 0.02, 0.3);
-  const orbitProgress = mapChapterProgress(progress, 0.22, 0.82);
-  const scrollRotation = (orbitProgress - 0.5) * 92;
+export type PhotoOrbitPoint = {
+  entry: PhotoEntryPoint;
+  arrival: number;
+  orbitXFactor: number;
+  orbitYFactor: number;
+  scale: number;
+  opacity: number;
+  rotate: number;
+};
+
+export function resolvePhotoOrbitPoint(angle: number, progress: number, depth: number, index: number): PhotoOrbitPoint {
+  const entry = photoEntryPoints[index] ?? photoEntryPoints[0];
+  const rawArrival = mapChapterProgress(progress, 0, 0.28);
+  const arrival = rawArrival ** 2.2;
+  const orbitProgress = mapChapterProgress(progress, 0.28, 0.8);
+  const scrollRotation = (orbitProgress - 0.5) * 160;
   const radians = ((angle + scrollRotation) * Math.PI) / 180;
   const exitSpread = mapChapterProgress(progress, 0.78, 1);
   const entrySide = index % 2 === 0 ? -1 : 1;
-  const entryLift = index === 2 ? -0.38 : index < 2 ? -0.22 : 0.22;
+  const entryScale = 0.82;
+  const orbitScale = 0.94;
+  const exitScale = 0.86;
 
   return {
-    xFactor: Math.cos(radians) * (0.64 + exitSpread * 0.42)
-      + entrySide * (1 - arrival) * (0.28 + depth * 0.18),
-    yFactor: Math.sin(radians) * (0.58 + exitSpread * 0.35)
-      + entryLift * (1 - arrival)
-      + exitSpread * (index % 2 === 0 ? -0.55 : 0.7),
-    scale: 1.4 - arrival * (0.38 - depth * 0.07) - exitSpread * 0.15,
-    opacity: Math.min(1, arrival * 1.45) * (0.68 + depth * 0.32) * (1 - exitSpread * 0.92),
-    rotate: entrySide * (1 - arrival) * 18 + angle * 0.035 + scrollRotation * 0.08 + exitSpread * entrySide * 14,
-    blur: (1 - arrival) * (10 + depth * 4) + exitSpread * 7,
+    entry,
+    arrival,
+    orbitXFactor: Math.cos(radians) * (0.82 + exitSpread * 0.42),
+    orbitYFactor: Math.sin(radians) * (0.72 + exitSpread * 0.36)
+      + exitSpread * (index % 2 === 0 ? -0.62 : 0.78),
+    scale: entryScale + (orbitScale - entryScale) * arrival + (exitScale - orbitScale) * exitSpread,
+    opacity: (0.72 + depth * 0.28 + arrival * 0.08) * (1 - exitSpread * 0.94),
+    rotate: entrySide * (1 - arrival) * 16 + angle * 0.035 + scrollRotation * 0.1 + exitSpread * entrySide * 16,
+  };
+}
+
+export function resolvePhotoOrbitOffset(
+  point: PhotoOrbitPoint,
+  width: number,
+  height: number,
+) {
+  const entryRadiusX = Math.max(0, width / 2 - clamp(width * 0.06, 22, 48));
+  const entryRadiusY = Math.max(0, height / 2 - clamp(height * 0.08, 28, 54));
+  const orbitRadiusX = Math.max(0, width / 2 - clamp(width * 0.2, 94, 126));
+  const orbitRadiusY = Math.max(0, height / 2 - clamp(height * 0.22, 98, 132));
+  const inverseArrival = 1 - point.arrival;
+  // Leave room for the card's own rotation plus its hover spring and the
+  // rotating/scaling orbit parent. Keeping only the resting card inside these
+  // bounds still lets a hovered corner reach a clipping ancestor.
+  const safeInsetX = clamp(width * 0.28, 102.5, 140);
+  const safeInsetY = clamp(height * 0.23, 112, 142);
+  const rawX = point.entry.x * entryRadiusX * inverseArrival + point.orbitXFactor * orbitRadiusX * point.arrival;
+  const rawY = point.entry.y * entryRadiusY * inverseArrival + point.orbitYFactor * orbitRadiusY * point.arrival;
+
+  return {
+    x: clamp(rawX, -width / 2 + safeInsetX, width / 2 - safeInsetX),
+    y: clamp(rawY, -height / 2 + safeInsetY, height / 2 - safeInsetY),
   };
 }
 
@@ -123,7 +195,7 @@ function BlankPhotoFace({ slot }: { slot: PhotoSlot }) {
           <span className="absolute bottom-[10%] left-[10%] h-1.5 w-1.5 rotate-45 border border-accent/35" />
         </div>
       )}
-      <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-border/35 dark:ring-[#8B9B79]/25" />
+      <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-border/35 dark:ring-border/40" />
     </div>
   );
 }
@@ -133,7 +205,7 @@ function PhotoBack({ slot }: { slot: PhotoSlot }) {
 
   return (
     <div
-      className="absolute inset-0 overflow-hidden rounded-[0.18rem] bg-[#E9E1D2] text-[#675E50] transition-colors duration-300 [backface-visibility:hidden] dark:bg-[#20271D] dark:text-[#ADB79C]"
+      className="absolute inset-0 overflow-hidden rounded-[0.18rem] bg-[#E9E1D2] text-[#675E50] transition-colors duration-300 [backface-visibility:hidden] dark:bg-surface-raised dark:text-muted"
       style={{ transform: 'rotateY(180deg)' }}
       data-photo-back
     >
@@ -180,7 +252,7 @@ function PhotoBack({ slot }: { slot: PhotoSlot }) {
           />
         ))}
       </span>
-      <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-[#B9AA93]/32 dark:ring-[#8B9B79]/28" />
+      <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-[#B9AA93]/32 dark:ring-border/45" />
     </div>
   );
 }
@@ -193,6 +265,8 @@ function OrbitPhoto({
   orbitWidth,
   orbitHeight,
   reducedMotion,
+  performanceReduced,
+  supportsFineHover,
   index,
 }: {
   slot: PhotoSlot;
@@ -202,49 +276,65 @@ function OrbitPhoto({
   orbitWidth: MotionValue<number>;
   orbitHeight: MotionValue<number>;
   reducedMotion: boolean;
+  performanceReduced: boolean;
+  supportsFineHover: boolean;
   index: number;
 }) {
   const [flipped, setFlipped] = useState(false);
-  const x = useTransform([progress, pointerX, orbitWidth], ([rawProgress, rawPointerX, rawWidth]) => {
-    const point = orbitPoint(slot.angle, reducedMotion ? 0.55 : Number(rawProgress), slot.depth, index);
+  const x = useTransform([progress, pointerX, orbitWidth, orbitHeight], ([rawProgress, rawPointerX, rawWidth, rawHeight]) => {
+    const point = resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : Number(rawProgress), slot.depth, index);
     const width = Number(rawWidth);
-    const cornerSafety = clamp(width * 0.2, 94, 126);
-    const safeRadius = Math.max(0, width / 2 - cornerSafety);
-    return point.xFactor * safeRadius + Number(rawPointerX) * slot.depth * Math.min(36, width * 0.055);
-  });
-  const y = useTransform([progress, pointerY, orbitHeight], ([rawProgress, rawPointerY, rawHeight]) => {
-    const point = orbitPoint(slot.angle, reducedMotion ? 0.55 : Number(rawProgress), slot.depth, index);
     const height = Number(rawHeight);
-    const cornerSafety = clamp(height * 0.22, 98, 132);
-    const safeRadius = Math.max(0, height / 2 - cornerSafety);
-    return point.yFactor * safeRadius + Number(rawPointerY) * slot.depth * Math.min(30, height * 0.05);
+    const offset = resolvePhotoOrbitOffset(point, width, height);
+    const pointerOffset = performanceReduced ? 0 : Number(rawPointerX);
+    const pointerShift = pointerOffset * slot.depth * Math.min(36, width * 0.055);
+    const safeInset = clamp(width * 0.28, 102.5, 140);
+    return clamp(offset.x + pointerShift, -width / 2 + safeInset, width / 2 - safeInset);
   });
-  const scale = useTransform(progress, (value) => orbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).scale);
-  const opacity = useTransform(progress, (value) => orbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).opacity);
-  const rotate = useTransform(progress, (value) => slot.tilt + orbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).rotate);
-  const filter = useTransform(progress, (value) => `blur(${orbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).blur}px)`);
-
+  const y = useTransform([progress, pointerY, orbitWidth, orbitHeight], ([rawProgress, rawPointerY, rawWidth, rawHeight]) => {
+    const point = resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : Number(rawProgress), slot.depth, index);
+    const height = Number(rawHeight);
+    const width = Number(rawWidth);
+    const offset = resolvePhotoOrbitOffset(point, width, height);
+    const pointerOffset = performanceReduced ? 0 : Number(rawPointerY);
+    const pointerShift = pointerOffset * slot.depth * Math.min(30, height * 0.05);
+    const safeInset = clamp(height * 0.23, 112, 142);
+    return clamp(offset.y + pointerShift, -height / 2 + safeInset, height / 2 - safeInset);
+  });
+  const scale = useTransform(progress, (value) => resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).scale);
+  const opacity = useTransform(progress, (value) => resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).opacity);
+  const rotate = useTransform(progress, (value) => slot.tilt + resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).rotate);
   return (
-    <motion.button
-      type="button"
-      onClick={() => setFlipped((current) => !current)}
-      className="absolute left-1/2 top-1/2 aspect-[4/5] w-[clamp(5rem,22vw,5.75rem)] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-[0.22rem] bg-[#D9D1C1] p-[clamp(0.34rem,0.7vw,0.5rem)] pb-[clamp(0.7rem,1.4vw,1rem)] shadow-xl shadow-black/20 ring-1 ring-[#BEB39F]/25 outline-none transition-[background-color,box-shadow,ring-color] duration-300 focus-visible:ring-2 focus-visible:ring-accent sm:w-[clamp(6.2rem,11vw,8.5rem)] dark:bg-[#252C22] dark:shadow-black/45 dark:ring-[#667359]/35"
-      style={{ x, y, scale, rotate, opacity, filter, zIndex: Math.round(slot.depth * 10) }}
-      whileHover={reducedMotion ? undefined : { scale: 1.04 }}
-      whileTap={reducedMotion ? undefined : { scale: 0.98 }}
-      aria-label={`${flipped ? 'Show front of' : 'Flip'} ${slot.alt}`}
-      aria-pressed={flipped}
-      data-photo-orbit-slot={slot.id}
+    <motion.div
+      className="pointer-events-none absolute left-1/2 top-1/2 aspect-[4/5] w-[clamp(4.5rem,19vw,5.1rem)] -translate-x-1/2 -translate-y-1/2 overflow-visible sm:w-[clamp(5.25rem,8.5vw,7rem)]"
+      style={{ x, y, scale, rotate, opacity, zIndex: Math.round(slot.depth * 10) }}
+      data-photo-orbit-motion-layer={slot.id}
     >
-      <motion.span
-        className="relative block h-full w-full [transform-style:preserve-3d]"
-        animate={{ rotateY: flipped ? 180 : 0 }}
-        transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 24 }}
+      <motion.button
+        type="button"
+        onClick={() => setFlipped((current) => !current)}
+        className="pointer-events-auto relative block h-full w-full cursor-pointer rounded-[0.22rem] bg-[#D9D1C1] p-[clamp(0.34rem,0.7vw,0.5rem)] pb-[clamp(0.7rem,1.4vw,1rem)] shadow-xl shadow-black/20 ring-1 ring-[#BEB39F]/25 outline-none transition-[background-color,box-shadow,ring-color] duration-300 focus-visible:ring-2 focus-visible:ring-accent dark:bg-surface-raised dark:shadow-black/50 dark:ring-border/50"
+        initial={false}
+        animate={{ scale: resolvePhotoHoverScale(false) }}
+        whileHover={supportsFineHover && !reducedMotion ? { scale: resolvePhotoHoverScale(true) } : undefined}
+        whileTap={reducedMotion ? undefined : { scale: 0.98 }}
+        transition={reducedMotion ? { duration: 0 } : photoHoverSpring}
+        aria-label={`${flipped ? 'Show front of' : 'Flip'} ${slot.alt}`}
+        aria-pressed={flipped}
+        data-photo-orbit-slot={slot.id}
+        data-photo-orbit-interaction-layer
       >
-        <BlankPhotoFace slot={slot} />
-        <PhotoBack slot={slot} />
-      </motion.span>
-    </motion.button>
+        <motion.span
+          className="relative block h-full w-full [transform-style:preserve-3d]"
+          animate={{ rotateY: flipped ? 180 : 0 }}
+          transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 24 }}
+          data-photo-orbit-flip-layer
+        >
+          <BlankPhotoFace slot={slot} />
+          <PhotoBack slot={slot} />
+        </motion.span>
+      </motion.button>
+    </motion.div>
   );
 }
 
@@ -253,6 +343,7 @@ type PhotoOrbitTransitionProps = {
   pointerX?: MotionValue<number>;
   pointerY?: MotionValue<number>;
   reducedMotion?: boolean;
+  performanceReduced?: boolean;
   theme?: 'day' | 'evening';
 };
 
@@ -304,9 +395,11 @@ export function PhotoOrbitTransition({
   pointerX: pointerXProp,
   pointerY: pointerYProp,
   reducedMotion = false,
+  performanceReduced = false,
   theme = 'day',
 }: PhotoOrbitTransitionProps = {}) {
   const orbitRef = useRef<HTMLDivElement>(null);
+  const [supportsFineHover, setSupportsFineHover] = useState(false);
   const fallbackProgress = useMotionValue(0.55);
   const fallbackPointerX = useMotionValue(0);
   const fallbackPointerY = useMotionValue(0);
@@ -318,9 +411,17 @@ export function PhotoOrbitTransition({
   const orbitWidth = useMotionValue(initialOrbitWidth);
   const orbitHeight = useMotionValue(initialOrbitHeight);
   const orbitRotate = useTransform([progress, pointerX], ([rawProgress, rawPointerX]) => (
-    reducedMotion ? 0 : -7 + Number(rawProgress) * 14 + Number(rawPointerX) * 9
+    reducedMotion ? 0 : -7 + Number(rawProgress) * 14 + (performanceReduced ? 0 : Number(rawPointerX) * 9)
   ));
-  const orbitScale = useTransform(progress, [0, 0.5, 1], reducedMotion ? [1, 1, 1] : [0.96, 1.02, 0.92]);
+  const orbitScale = useTransform(progress, [0, 0.5, 1], reducedMotion ? [1, 1, 1] : [0.96, 1.02, 0.94]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const updateHoverSupport = () => setSupportsFineHover(mediaQuery.matches);
+    updateHoverSupport();
+    mediaQuery.addEventListener('change', updateHoverSupport);
+    return () => mediaQuery.removeEventListener('change', updateHoverSupport);
+  }, []);
 
   useEffect(() => {
     const orbit = orbitRef.current;
@@ -339,16 +440,18 @@ export function PhotoOrbitTransition({
 
   return (
     <div
-      className="relative h-full min-h-[31rem] w-full overflow-hidden"
-      style={{
-        maskImage: 'radial-gradient(ellipse 94% 90% at center, black 68%, transparent 100%)',
-        WebkitMaskImage: 'radial-gradient(ellipse 94% 90% at center, black 68%, transparent 100%)',
-      }}
+      className="relative h-full min-h-[31rem] w-full overflow-visible"
       aria-label="Interactive personal photo carousel"
       data-photo-orbit
     >
       {scatterPetals.map((petal) => (
-        <ScatterPetal key={petal.id} petal={petal} progress={progress} reducedMotion={reducedMotion} theme={theme} />
+        <ScatterPetal
+          key={petal.id}
+          petal={petal}
+          progress={progress}
+          reducedMotion={reducedMotion || performanceReduced}
+          theme={theme}
+        />
       ))}
       <div className="absolute inset-[4%_0_8%] flex justify-center">
         <motion.div
@@ -368,6 +471,8 @@ export function PhotoOrbitTransition({
               orbitWidth={orbitWidth}
               orbitHeight={orbitHeight}
               reducedMotion={reducedMotion}
+              performanceReduced={performanceReduced}
+              supportsFineHover={supportsFineHover}
               index={index}
             />
           ))}

@@ -64,7 +64,7 @@ export function DecodedText({ text, className, intervalMs = 70 }: DecodedTextPro
             animate={{
               opacity: isResolved ? 1 : 0.45,
               y: isResolved ? 0 : 2,
-              color: isResolved ? '#E49A78' : '#8E927F',
+              color: isResolved ? 'var(--color-warm-accent)' : 'var(--color-subtle)',
             }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
             className={cn(character === ' ' && 'w-[0.35em]')}

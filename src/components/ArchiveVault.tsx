@@ -65,7 +65,7 @@ export function ArchiveVault({
                 <div className="mt-3 text-sm font-medium text-muted">
                   <TextScramble text="Locked notes, photos, and private context" />
                 </div>
-                <p className="mt-4 max-w-xl text-sm leading-relaxed text-[#8E927F]">
+                <p className="mt-4 max-w-xl text-sm leading-relaxed text-subtle">
                   Private notes and photos stay locked away. DM @ur_bro_jz if you need access.
                 </p>
               </div>
@@ -105,7 +105,7 @@ export function ArchiveVault({
                   >
                     <Icon size={20} className={isActive ? 'text-accent' : 'text-muted'} />
                     <div className="mt-3 text-base font-bold">{section.title.replace(' Archive', '')}</div>
-                    <div className="mt-2 text-xs leading-relaxed text-[#8E927F]">
+                    <div className="mt-2 text-xs leading-relaxed text-subtle">
                       {section.subtitle}
                     </div>
                   </button>
@@ -147,7 +147,7 @@ export function ArchiveVault({
                   <div>
                     <h3 className="text-xl font-bold text-text">Private archive unavailable</h3>
                     <p className="mt-2 leading-relaxed text-muted">{errorMessage}</p>
-                    <p className="mt-4 text-xs leading-relaxed text-[#8E927F]">
+                    <p className="mt-4 text-xs leading-relaxed text-subtle">
                       This is intentional: the site will not fall back to bundled private data or public image files.
                     </p>
                   </div>
@@ -174,7 +174,7 @@ export function ArchiveVault({
                       key={item}
                       className="rounded-2xl border border-border/45 bg-bg/65 p-4 shadow-lg shadow-black/10"
                     >
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8E927F]">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-subtle">
                         Note {String(index + 1).padStart(2, '0')}
                       </div>
                       <p className="mt-3 text-sm leading-relaxed text-text">{item}</p>
@@ -201,7 +201,7 @@ export function ArchiveVault({
                           />
                           <figcaption className="p-4">
                             <p className="text-sm font-semibold text-text">{photo.caption}</p>
-                            <p className="mt-2 text-[10px] font-bold uppercase tracking-wider text-[#8E927F]">
+                            <p className="mt-2 text-[10px] font-bold uppercase tracking-wider text-subtle">
                               Temporary URL expires {new Date(photo.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </figcaption>

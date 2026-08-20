@@ -25,6 +25,9 @@ type ScrollChapterProps = {
   className?: string;
   stickyClassName?: string;
   ariaLabel?: string;
+  performanceReduced?: boolean;
+  sharedPointerX?: MotionValue<number>;
+  sharedPointerY?: MotionValue<number>;
 };
 
 export function ScrollChapter({
@@ -36,18 +39,34 @@ export function ScrollChapter({
   className = '',
   stickyClassName = '',
   ariaLabel,
+  performanceReduced = false,
+  sharedPointerX,
+  sharedPointerY,
 }: ScrollChapterProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const reducedMotion = Boolean(useReducedMotion());
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);
-  const smoothPointerX = useSpring(pointerX, { stiffness: 90, damping: 28, mass: 0.45 });
-  const smoothPointerY = useSpring(pointerY, { stiffness: 90, damping: 28, mass: 0.45 });
+  const smoothPointerX = useSpring(pointerX, { stiffness: 110, damping: 28, mass: 0.4 });
+  const smoothPointerY = useSpring(pointerY, { stiffness: 110, damping: 28, mass: 0.4 });
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end end'],
   });
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 85, damping: 32, mass: 0.35 });
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 150,
+    damping: 30,
+    mass: 0.3,
+    restDelta: 0.0001,
+  });
+
+  useEffect(() => {
+    if (!performanceReduced) return;
+    pointerX.set(0);
+    pointerY.set(0);
+    sharedPointerX?.set(0);
+    sharedPointerY?.set(0);
+  }, [performanceReduced, pointerX, pointerY, sharedPointerX, sharedPointerY]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -76,15 +95,21 @@ export function ScrollChapter({
   }, [id, onActiveChange, reducedMotion, scrollYProgress]);
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLElement>) => {
-    if (reducedMotion || event.pointerType === 'touch' || !window.matchMedia('(pointer: fine)').matches) return;
+    if (performanceReduced || reducedMotion || event.pointerType === 'touch' || !window.matchMedia('(pointer: fine)').matches) return;
     const bounds = event.currentTarget.getBoundingClientRect();
-    pointerX.set(clampProgress((event.clientX - bounds.left) / bounds.width) - 0.5);
-    pointerY.set(clampProgress((event.clientY - bounds.top) / bounds.height) - 0.5);
+    const nextX = clampProgress((event.clientX - bounds.left) / bounds.width) - 0.5;
+    const nextY = clampProgress((event.clientY - bounds.top) / bounds.height) - 0.5;
+    pointerX.set(nextX);
+    pointerY.set(nextY);
+    sharedPointerX?.set(nextX);
+    sharedPointerY?.set(nextY);
   };
 
   const resetPointer = () => {
     pointerX.set(0);
     pointerY.set(0);
+    sharedPointerX?.set(0);
+    sharedPointerY?.set(0);
   };
 
   return (
@@ -97,6 +122,7 @@ export function ScrollChapter({
       } as CSSProperties}
       data-scroll-chapter={id}
       data-reduced-motion={reducedMotion ? 'true' : 'false'}
+      data-performance-reduced={performanceReduced ? 'true' : 'false'}
       aria-label={ariaLabel}
       onPointerMove={handlePointerMove}
       onPointerLeave={resetPointer}

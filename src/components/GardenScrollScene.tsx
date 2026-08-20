@@ -22,10 +22,14 @@ import {
   type VineAttachment,
 } from './gardenVineAttachments';
 import { desktopVineSegments, getVineContinuationSegments, getVineDrawProgress, getVineLandingProgress, getVineSegments } from './scrollJourney';
+import type { BackgroundPhase } from './archiveBackgroundModel';
 
 type GardenScrollSceneProps = {
   progress: MotionValue<number>;
+  phase: BackgroundPhase;
   theme: GardenTheme;
+  butterfliesVisible: boolean;
+  performanceReduced?: boolean;
 };
 
 type GardenTheme = 'day' | 'evening';
@@ -45,6 +49,73 @@ type BloomSpriteSpec = {
   path?: string;
   themedPaths?: Record<GardenTheme, string>;
 };
+
+type AmbientButterflySpec = {
+  id: string;
+  size: string;
+  duration: number;
+  delay: number;
+  phase: number;
+};
+
+const ambientButterflies: AmbientButterflySpec[] = [
+  {
+    id: 'opening-left',
+    size: 'clamp(1.3rem, 2.35vw, 2.1rem)',
+    duration: 24,
+    delay: -7,
+    phase: -0.18,
+  },
+  {
+    id: 'opening-right',
+    size: 'clamp(1.15rem, 2vw, 1.85rem)',
+    duration: 21,
+    delay: -13,
+    phase: -0.48,
+  },
+  {
+    id: 'opening-high',
+    size: 'clamp(1rem, 1.7vw, 1.5rem)',
+    duration: 18,
+    delay: -3,
+    phase: -0.76,
+  },
+  {
+    id: 'opening-near-left',
+    size: 'clamp(1.4rem, 2.55vw, 2.25rem)',
+    duration: 27,
+    delay: -19,
+    phase: -0.32,
+  },
+  {
+    id: 'opening-center-rise',
+    size: 'clamp(1.25rem, 2.1vw, 1.95rem)',
+    duration: 23,
+    delay: -10,
+    phase: -0.61,
+  },
+  {
+    id: 'opening-far-right',
+    size: 'clamp(1rem, 1.85vw, 1.6rem)',
+    duration: 19,
+    delay: -16,
+    phase: -0.91,
+  },
+  {
+    id: 'archive-left',
+    size: 'clamp(1.1rem, 2vw, 1.75rem)',
+    duration: 22,
+    delay: -5,
+    phase: -0.44,
+  },
+  {
+    id: 'archive-right',
+    size: 'clamp(1rem, 1.7vw, 1.5rem)',
+    duration: 20,
+    delay: -11,
+    phase: -0.73,
+  },
+];
 
 const bloomSprites: BloomSpriteSpec[] = [
   {
@@ -213,8 +284,14 @@ function PixelVineCanvas({
     let fullVinePoints: GardenPoint[] = [];
     let mainVinePoints: GardenPoint[] = [];
     let continuationVinePoints: GardenPoint[] = [];
+    let organicVinePoints: GardenPoint[] = [];
+    let organicMainVinePoints: GardenPoint[] = [];
+    let organicContinuationVinePoints: GardenPoint[] = [];
     let vineEndY = 0;
-    let rebuildEndpointOnNextFrame = false;
+    let pixelScale = 2;
+    const vineCache = document.createElement('canvas');
+    const vineCacheContext = vineCache.getContext('2d');
+    if (!vineCacheContext) return;
     const styles = getComputedStyle(document.documentElement);
     const palette = {
       ink: styles.getPropertyValue('--garden-vine-ink').trim(),
@@ -228,25 +305,44 @@ function PixelVineCanvas({
       width = window.innerWidth;
       height = window.innerHeight;
       ratio = Math.min(window.devicePixelRatio || 1, 1.5);
-      const pixelScale = width < 640 ? 1.5 : 2;
+      pixelScale = width < 640 ? 1.5 : 2;
       canvas.width = Math.round((width * ratio) / pixelScale);
       canvas.height = Math.round((height * ratio) / pixelScale);
+      vineCache.width = canvas.width;
+      vineCache.height = canvas.height;
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
       canvas.style.imageRendering = 'pixelated';
       context.setTransform(ratio / pixelScale, 0, 0, ratio / pixelScale, 0, 0);
+      vineCacheContext.setTransform(ratio / pixelScale, 0, 0, ratio / pixelScale, 0, 0);
       context.imageSmoothingEnabled = false;
+      vineCacheContext.imageSmoothingEnabled = false;
+    };
+
+    const renderVineCache = () => {
+      vineCacheContext.clearRect(0, 0, width, height);
+      drawPixelVine(vineCacheContext, organicVinePoints, palette, {
+        thickness: width < 640 ? 4.25 : 6,
+        detailScale: width < 640 ? 0.82 : 1.15,
+        seed: 2,
+        endDetailClearance: 34,
+      });
     };
 
     const buildFullVinePath = (updateAttachments = true) => {
       const rose = document.querySelector<HTMLElement>('[data-meadow-final-rose-anchor]');
       if (!rose) return;
 
-      const roseRect = rose.getBoundingClientRect();
-      const maxScroll = Math.max(0, document.documentElement.scrollHeight - height);
+      // The anchor's offsets describe its final position inside the pinned
+      // meadow. Unlike getBoundingClientRect(), they do not drift while the
+      // sticky chapter is entering, so the landing stem never aims upward at
+      // a stale pre-meadow position.
       const end = {
-        x: roseRect.left + roseRect.width * 0.5,
-        y: window.scrollY + roseRect.top + roseRect.height * 0.78 - maxScroll,
+        x: rose.offsetLeft,
+        // Finish underneath the bloom itself. A lower connection point leaves
+        // a visible straight tail below the petals once the rose is layered on
+        // top of the vine.
+        y: rose.offsetTop + rose.offsetHeight * 0.58,
       };
       vineEndY = end.y;
       const activeVineSegments = getVineSegments(width < 640);
@@ -262,6 +358,16 @@ function PixelVineCanvas({
         width < 640 ? 3 : 4,
       );
       fullVinePoints = [...mainVinePoints, ...continuationVinePoints.slice(1)];
+      organicVinePoints = fullVinePoints.map((point, index) => {
+        const edgeFade = Math.min(1, index / 8, (fullVinePoints.length - 1 - index) / 8);
+        return {
+          x: point.x,
+          y: point.y + Math.sin(index * 0.87) * 0.55 * edgeFade,
+        };
+      });
+      organicMainVinePoints = organicVinePoints.slice(0, mainVinePoints.length);
+      organicContinuationVinePoints = organicVinePoints.slice(mainVinePoints.length - 1);
+      renderVineCache();
       canvas.dataset.vineTotalPoints = String(fullVinePoints.length);
       canvas.dataset.vineEndX = end.x.toFixed(2);
       canvas.dataset.vineEndY = end.y.toFixed(2);
@@ -284,16 +390,31 @@ function PixelVineCanvas({
       }
     };
 
+    const revealCachedVine = (points: GardenPoint[]) => {
+      if (points.length < 2) return;
+      context.save();
+      context.beginPath();
+      points.forEach((point, index) => {
+        if (index === 0) context.moveTo(point.x, point.y);
+        else context.lineTo(point.x, point.y);
+      });
+      context.strokeStyle = '#fff';
+      context.lineWidth = width < 640 ? 36 : 52;
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
+      context.stroke();
+      context.globalCompositeOperation = 'source-in';
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      context.drawImage(vineCache, 0, 0);
+      context.restore();
+    };
+
     const draw = () => {
       frameRef.current = null;
-      if (rebuildEndpointOnNextFrame) {
-        buildFullVinePath(false);
-        rebuildEndpointOnNextFrame = false;
-      }
       context.clearRect(0, 0, width, height);
 
       const growth = reducedMotion
-        ? 1
+        ? 0.68
         : window.scrollY <= 1
         ? 0
         : Math.max(0, Math.min(
@@ -309,34 +430,17 @@ function PixelVineCanvas({
       const landingProgress = reducedMotion ? 0 : getVineLandingProgress(vineEndY, height);
       const { mainGrowth, continuationGrowth } = getVineDrawProgress(growth, landingProgress);
       canvas.dataset.vineLandingProgress = landingProgress.toFixed(4);
-      const drawnMain = progressivePoints(mainVinePoints, mainGrowth);
+      const drawnMain = progressivePoints(organicMainVinePoints, mainGrowth);
       const drawnContinuation = continuationGrowth > 0
-        ? progressivePoints(continuationVinePoints, continuationGrowth).slice(1)
+        ? progressivePoints(organicContinuationVinePoints, continuationGrowth).slice(1)
         : [];
-      const points = [...drawnMain, ...drawnContinuation].map((point, index) => {
-        const edgeFade = Math.min(1, index / 8, (fullVinePoints.length - 1 - index) / 8);
-        const organicOffset = Math.sin(index * 0.87) * 0.55 * edgeFade;
-        return {
-          x: point.x,
-          y: point.y + organicOffset,
-        };
-      });
+      const points = [...drawnMain, ...drawnContinuation];
       canvas.dataset.vineDrawnPoints = String(points.length);
-      drawPixelVine(context, points, palette, {
-        thickness: width < 640 ? 4.25 : 6,
-        detailScale: width < 640 ? 0.82 : 1.15,
-        seed: 2,
-        endDetailClearance: 34,
-      });
-
+      revealCachedVine(points);
     };
 
     const scheduleDraw = () => {
       if (frameRef.current === null) frameRef.current = requestAnimationFrame(draw);
-    };
-    const scheduleScrollDraw = () => {
-      if (rawProgress.get() >= 0.86) rebuildEndpointOnNextFrame = true;
-      scheduleDraw();
     };
 
     resize();
@@ -354,13 +458,11 @@ function PixelVineCanvas({
     layoutObserver.observe(document.documentElement);
     document.querySelectorAll<HTMLElement>('[data-vine-anchor]').forEach((anchor) => layoutObserver.observe(anchor));
     buildFullVinePath();
-    window.addEventListener('scroll', scheduleScrollDraw, { passive: true });
     window.addEventListener('resize', handleResize);
     window.addEventListener('load', handleLoad);
     draw();
     return () => {
       unsubscribe();
-      window.removeEventListener('scroll', scheduleScrollDraw);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('load', handleLoad);
       layoutObserver.disconnect();
@@ -487,6 +589,38 @@ function PixelLeaf({
   );
 }
 
+function AmbientButterfly({
+  spec,
+  visible,
+  reducedMotion,
+}: {
+  spec: AmbientButterflySpec;
+  visible: boolean;
+  reducedMotion: boolean;
+}) {
+  if (reducedMotion) return null;
+
+  return (
+    <div
+      className="garden-butterfly absolute left-0 top-0"
+      style={{
+        width: spec.size,
+        aspectRatio: '1 / 1',
+        animationName: `garden-butterfly-${spec.id}`,
+        animationDuration: `${spec.duration}s`,
+        animationDelay: `${spec.delay}s`,
+      }}
+      data-visible={visible ? 'true' : 'false'}
+      data-garden-butterfly={spec.id}
+    >
+      <span
+        className="garden-butterfly-sprite pixel-garden-sprite block h-full w-full"
+        style={{ animationDelay: `${spec.phase}s` }}
+      />
+    </div>
+  );
+}
+
 type FallingPetal = {
   x: number;
   y: number;
@@ -558,7 +692,7 @@ function FallingPetalCanvas({
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+      pixelRatio = 1;
       canvas.width = Math.max(1, Math.round(width * pixelRatio));
       canvas.height = Math.max(1, Math.round(height * pixelRatio));
       canvas.style.width = `${width}px`;
@@ -629,6 +763,7 @@ function FallingPetalCanvas({
     sprite.addEventListener('load', handleSpriteLoad);
     sprite.src = spritePath;
     canvas.dataset.fallingPetalSprite = spritePath;
+    canvas.dataset.fallingPetalsPaused = 'false';
     resize();
     frame = requestAnimationFrame(draw);
     window.addEventListener('resize', resize);
@@ -652,10 +787,20 @@ function FallingPetalCanvas({
   );
 }
 
-export function GardenScrollScene({ progress, theme }: GardenScrollSceneProps) {
+export function GardenScrollScene({
+  progress,
+  phase,
+  theme,
+  butterfliesVisible,
+  performanceReduced = false,
+}: GardenScrollSceneProps) {
   const reducedMotion = Boolean(useReducedMotion());
-  const gardenProgress = useTransform(progress, (value) => (reducedMotion ? 1 : value));
-  const atmosphereOpacity = useTransform(progress, [0, 0.4, 1], reducedMotion ? [0, 0, 0] : [0, 0.12, 0.34]);
+  const gardenProgress = useTransform(progress, (value) => (reducedMotion ? 0.68 : value));
+  const atmosphereOpacity = useTransform(
+    progress,
+    [0, 0.38, 0.72, 0.82, 1],
+    reducedMotion ? [0, 0, 0, 0, 0] : [0, 0.12, 0.26, 0, 0],
+  );
   const breezeX = useMotionValue(0);
   const [attachments, setAttachments] = useState<Record<string, VineAttachment>>({});
   const handleAttachmentsChange = useCallback((next: Record<string, VineAttachment>) => {
@@ -672,7 +817,10 @@ export function GardenScrollScene({ progress, theme }: GardenScrollSceneProps) {
   }, []);
 
   useEffect(() => {
-    if (reducedMotion || !window.matchMedia('(pointer: fine)').matches) return;
+    if (phase === 'meadow' || performanceReduced || reducedMotion || !window.matchMedia('(pointer: fine)').matches) {
+      breezeX.set(0);
+      return;
+    }
     const handlePointer = (event: PointerEvent) => {
       breezeX.set(((event.clientX / window.innerWidth) * 2 - 1) * 4);
     };
@@ -685,7 +833,7 @@ export function GardenScrollScene({ progress, theme }: GardenScrollSceneProps) {
       window.removeEventListener('pointermove', handlePointer);
       document.documentElement.removeEventListener('mouseleave', settle);
     };
-  }, [breezeX, reducedMotion]);
+  }, [breezeX, performanceReduced, phase, reducedMotion]);
 
   return (
     <>
@@ -700,29 +848,44 @@ export function GardenScrollScene({ progress, theme }: GardenScrollSceneProps) {
           }}
           data-scroll-atmosphere={theme}
         />
-        <PixelVineCanvas
-          rawProgress={progress}
-          reducedMotion={reducedMotion}
-          theme={theme}
-          onAttachmentsChange={handleAttachmentsChange}
-        />
-
-        {leafSprites.map((leaf) => (
-          <PixelLeaf key={leaf.id} leaf={leaf} progress={gardenProgress} breezeX={breezeX} />
-        ))}
-
-        {bloomSprites.map((sprite) => (
-          <PixelBloomSprite
-            key={sprite.id}
-            spec={sprite}
-            attachment={attachments[sprite.id]}
-            progress={gardenProgress}
-            breezeX={breezeX}
+        <div className="absolute inset-0" data-garden-vine-layer>
+          <PixelVineCanvas
+            rawProgress={progress}
+            reducedMotion={reducedMotion}
             theme={theme}
+            onAttachmentsChange={handleAttachmentsChange}
+          />
+
+          {leafSprites.map((leaf) => (
+            <PixelLeaf key={leaf.id} leaf={leaf} progress={gardenProgress} breezeX={breezeX} />
+          ))}
+
+          {bloomSprites.map((sprite) => (
+            <PixelBloomSprite
+              key={sprite.id}
+              spec={sprite}
+              attachment={attachments[sprite.id]}
+              progress={gardenProgress}
+              breezeX={breezeX}
+              theme={theme}
+            />
+          ))}
+        </div>
+
+        {phase !== 'meadow' && (
+          <FallingPetalCanvas reducedMotion={reducedMotion || performanceReduced} theme={theme} />
+        )}
+      </div>
+
+      <div className="pointer-events-none fixed inset-0 z-[18] overflow-hidden" aria-hidden="true" data-garden-butterfly-layer>
+        {(performanceReduced ? ambientButterflies.slice(0, 3) : ambientButterflies).map((butterfly) => (
+          <AmbientButterfly
+            key={butterfly.id}
+            spec={butterfly}
+            visible={butterfliesVisible && phase !== 'meadow'}
+            reducedMotion={reducedMotion}
           />
         ))}
-
-        <FallingPetalCanvas reducedMotion={reducedMotion} theme={theme} />
       </div>
     </>
   );

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A local encrypted macOS vault for notes, files, and personal items." />
+    <title>HideVault — a quiet room for private things</title>
+    <link rel="stylesheet" href="../project-sites.css" />
+    <script src="../project-sites.js" defer></script>
+  </head>
+  <body data-project="hidevault" data-theme="hidevault">
+    <div id="project-site">
+      <div class="hv-page">
+        <header class="hv-nav page-width"><a class="hv-wordmark" href="../../" aria-label="Back to the project archive"><span class="hv-lock">⌑</span>HideVault</a><span class="hv-nav-note">local encrypted storage / skeleton</span><a class="archive-link" href="../../">archive <span class="arrow-text">↗</span></a></header>
+        <div class="site-hero-image site-hero-image-hidevault" data-atmosphere-speed="-0.03" aria-hidden="true"></div>
+        <main>
+          <section class="hv-hero page-width"><div class="hv-hero-copy"><p class="hv-eyebrow">private storage / 01</p><h1>Private things deserve a room.</h1><p>HideVault is a local macOS vault for notes, files, and personal items that should not be scattered across the open filesystem.</p><button class="hv-button" type="button" data-vault-toggle aria-pressed="false">⌑  Unlock the demo vault</button><p class="hv-disclaimer">A product prototype. This page does not store anything.</p></div><div class="hv-vault-scene" data-vault-state="locked"><div class="hv-vault-header"><span><i class="hv-state-dot"></i><b data-vault-status>vault locked</b></span><span>default.vault</span></div><div class="hv-vault-body"><aside class="hv-sidebar"><span>GROUPS</span><button class="active" type="button">Personal <b>04</b></button><button type="button">Archive <b>12</b></button><button type="button">Work <b>08</b></button><span class="hv-sidebar-add">+ new group</span></aside><div class="hv-items"><div class="hv-items-head"><div><span>PERSONAL</span><h2>Private items</h2></div><button type="button" aria-label="Add item">＋</button></div><div class="hv-item-list"><article><span class="hv-item-icon">N</span><div><b>Recovery notes</b><small>edited today</small></div><em>NOTE</em></article><article><span class="hv-item-icon">F</span><div><b>Identity scan</b><small>added 4 days ago</small></div><em>FILE</em></article><article><span class="hv-item-icon">N</span><div><b>Important dates</b><small>edited last week</small></div><em>NOTE</em></article><article><span class="hv-item-icon">F</span><div><b>Backup codes</b><small>added last week</small></div><em>FILE</em></article></div></div></div><div class="hv-vault-foot"><span data-vault-foot>locked / AES-GCM boundary active</span><span>local only</span></div></div></section>
+          <section class="hv-thesis page-width"><p class="hv-eyebrow">02 / the material</p><div><h2>No cloud-shaped promises. Just a room you can lock.</h2><p>HideVault explores the everyday surface of security: create a vault, add something, find it later, and close the door without changing how a normal workspace feels.</p></div></section>
+          <section class="hv-structure page-width"><div class="hv-structure-card"><span class="hv-card-number">01</span><h3>Create a boundary</h3><p>Password-derived parameters and a vault lifecycle give the container a clear beginning and end.</p><span class="hv-card-tag">CryptoKit / AES-GCM</span></div><div class="hv-structure-card hv-structure-card-dark"><span class="hv-card-number">02</span><h3>Keep the ordinary actions</h3><p>Groups, search, hide, show, drag-and-drop, and item detail belong on the same surface as the security model.</p><span class="hv-card-tag">notes / files / items</span></div><div class="hv-structure-card"><span class="hv-card-number">03</span><h3>Lock without drama</h3><p>The vault should leave the foreground as cleanly as a drawer closing, not make privacy feel like a ceremony.</p><span class="hv-card-tag">local filesystem</span></div></section>
+          <section class="hv-build page-width"><p class="hv-eyebrow">03 / under the lid</p><h2>SwiftUI and AppKit on the surface. CryptoKit, metadata, and a filesystem abstraction underneath.</h2></section>
+        </main>
+        <footer class="product-footer"><span>HideVault / a quiet room for private things</span><a class="archive-link" href="../../">Back to archive <span class="arrow-text">↗</span></a></footer>
+      </div>
+    </div>
+  </body>
+</html>

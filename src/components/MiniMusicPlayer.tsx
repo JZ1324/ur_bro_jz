@@ -1,4 +1,4 @@
-import { Music2, Pause, Play, X } from 'lucide-react';
+import { ExternalLink, Music2, Pause, Play, RefreshCw, X } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -6,6 +6,7 @@ import type { ProfileTrack, ProfileTrackSource } from '../data/site';
 
 type MiniMusicPlayerProps = {
   track: ProfileTrack;
+  variant?: 'card' | 'strip';
 };
 
 type NetworkInformation = {
@@ -218,7 +219,7 @@ function getActiveTokenIndex(line: LyricLine, time: number) {
   return lastStartedIndex;
 }
 
-export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
+export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const shouldReduceMotion = useReducedMotion();
   const selectedSource = useMemo(() => chooseSource(track.sources), [track.sources]);
@@ -507,7 +508,6 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
 
   const displayTime = isSeeking ? seekValue : currentTime;
   const progress = duration > 0 ? Math.min(100, (displayTime / duration) * 100) : 0;
-  
 
   const togglePlayback = async () => {
     const audio = audioRef.current;
@@ -526,6 +526,17 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
     }
 
     audio.pause();
+  };
+
+  const retryAudio = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    setHasAudioError(false);
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    audio.load();
   };
 
   const commitSeek = (value?: number) => {
@@ -587,25 +598,34 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
   return (
     <>
     <div
-      className="relative z-10 mx-auto mt-3 min-h-[6.25rem] w-full max-w-[13rem] cursor-pointer overflow-hidden rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl transition-[transform,border-color,box-shadow] duration-200 ease-out hover:-translate-y-px active:scale-[0.99] md:max-w-[15rem]"
-      role="button"
-      tabIndex={0}
+      className={`relative z-10 mx-auto w-full cursor-pointer overflow-hidden transition-[transform,background-color,border-color] duration-200 ease-out active:scale-[0.995] ${
+        variant === 'strip'
+          ? 'min-h-0 max-w-[46rem] rounded-[1.05rem] border border-border/28 bg-bg/16 px-3 py-2 hover:border-accent/25 hover:bg-bg/22'
+          : 'mt-3 min-h-[6.25rem] max-w-[13rem] rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl hover:-translate-y-px md:max-w-[15rem]'
+      }`}
+      data-mini-music-player={variant}
+      role={hasAudioError ? 'group' : 'button'}
+      tabIndex={hasAudioError ? undefined : 0}
       onClick={(event) => {
-        if (shouldIgnoreOpen(event.target)) return;
+        if (hasAudioError || shouldIgnoreOpen(event.target)) return;
         setShowExpandedPlayer(true);
       }}
       onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
+        if (!hasAudioError && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault();
           setShowExpandedPlayer(true);
         }
       }}
-      aria-label={`Open expanded player for ${track.title}`}
+      aria-label={hasAudioError ? `${track.title} stream controls` : `Open expanded player for ${track.title}`}
     >
       <audio
         ref={audioRef}
         preload="metadata"
-        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        onLoadedMetadata={(event) => {
+          setDuration(event.currentTarget.duration);
+          setHasAudioError(false);
+        }}
+        onCanPlay={() => setHasAudioError(false)}
         onTimeUpdate={(event) => {
           if (!isPlaying && !isSeeking) {
             setCurrentTime(event.currentTarget.currentTime);
@@ -624,11 +644,11 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
 
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(201,211,176,0.16),transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.08),transparent_42%)]" />
 
-      <div className="relative grid grid-cols-[2.45rem_minmax(0,1fr)_2.2rem] items-center gap-2.25">
+      <div className={`relative grid items-center ${variant === 'strip' ? 'grid-cols-[2.1rem_minmax(0,1fr)_2rem] gap-2' : 'grid-cols-[2.45rem_minmax(0,1fr)_2.2rem] gap-2.25'}`}>
         <img
           src={track.artworkSrc}
           alt={`${track.title} cover`}
-          className="h-[2.45rem] w-[2.45rem] rounded-xl border border-white/10 object-cover opacity-90 shadow-lg shadow-black/20"
+          className={`${variant === 'strip' ? 'h-[2.1rem] w-[2.1rem] rounded-[0.7rem]' : 'h-[2.45rem] w-[2.45rem] rounded-xl'} border border-white/10 object-cover opacity-90 shadow-lg shadow-black/20`}
         />
 
         <div className="min-w-0 flex-1">
@@ -652,14 +672,15 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
             void togglePlayback();
           }}
           disabled={hasAudioError}
-          className="flex h-[2.2rem] w-[2.2rem] shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-lg shadow-accent/10 transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-45"
+          className={`${variant === 'strip' ? 'h-8 w-8' : 'h-[2.2rem] w-[2.2rem]'} flex shrink-0 items-center justify-center rounded-full bg-accent text-bg shadow-lg shadow-accent/10 transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-45`}
           aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
         >
           {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="translate-x-px" />}
         </button>
       </div>
 
-      <div className="relative mt-2.5">
+      {!hasAudioError ? (
+        <div className={`relative ${variant === 'strip' ? 'mt-1.5' : 'mt-2.5'}`}>
         <div className="flex items-center gap-2">
           <input
             data-player-control="true"
@@ -720,7 +741,7 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
         </div>
         <style>{`\n          .mini-range {\n            -webkit-appearance: none;\n            appearance: none;\n            height: 20px;\n            border-radius: 9999px;\n            outline: none;\n            background-clip: padding-box;\n            background-position: center;\n            background-repeat: no-repeat;\n            background-size: 100% 5px;\n            cursor: pointer;\n            touch-action: none;\n            transition: filter 160ms ease, opacity 160ms ease;\n          }\n          .mini-range:disabled {\n            cursor: not-allowed;\n            opacity: 0.45;\n          }\n          .mini-range:focus-visible {\n            filter: drop-shadow(0 0 0.4rem rgba(201,211,176,0.34));\n          }\n          .mini-range::-webkit-slider-runnable-track {\n            height: 5px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-webkit-slider-thumb {\n            -webkit-appearance: none;\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: #c9d3b0;\n            border: 2px solid rgba(0,0,0,0.28);\n            margin-top: -4.5px;\n            box-shadow: 0 3px 8px rgba(0,0,0,0.42);\n            transition: transform 150ms ease, box-shadow 150ms ease;\n          }\n          .mini-range:active::-webkit-slider-thumb {\n            transform: scale(1.1);\n            box-shadow: 0 5px 14px rgba(0,0,0,0.48), 0 0 0 4px rgba(201,211,176,0.12);\n          }\n          .mini-range::-moz-range-track {\n            height: 5px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-moz-range-thumb {\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: #c9d3b0;\n            border: 2px solid rgba(0,0,0,0.28);\n            box-shadow: 0 3px 8px rgba(0,0,0,0.42);\n            transition: transform 150ms ease, box-shadow 150ms ease;\n          }\n          .mini-range:active::-moz-range-thumb {\n            transform: scale(1.1);\n            box-shadow: 0 5px 14px rgba(0,0,0,0.48), 0 0 0 4px rgba(201,211,176,0.12);\n          }\n        `}</style>
 
-        <div className="mt-1 grid grid-cols-3 items-center text-[9px] font-semibold text-subtle">
+        <div className={`${variant === 'strip' ? 'mt-0' : 'mt-1'} grid grid-cols-3 items-center text-[9px] font-semibold text-subtle`}>
           <span className="text-left">{formatTime(displayTime)}</span>
           <span className="text-center">{selectedSource.bitrateKbps} kbps</span>
           <span className="text-right">{formatTime(duration)}</span>
@@ -772,12 +793,42 @@ export function MiniMusicPlayer({ track }: MiniMusicPlayerProps) {
             </div>
           </div>
         )}
-      </div>
-
-      {hasAudioError && (
-        <p className="relative mt-2 text-[10px] font-semibold text-warm-accent" role="status" aria-live="polite">
-          Audio stream is unavailable right now. Please try again shortly.
-        </p>
+        </div>
+      ) : (
+        <div
+          className={`relative flex items-center gap-1.5 text-[9px] font-semibold ${variant === 'strip' ? 'mt-1.5' : 'mt-2'}`}
+          role="status"
+          aria-live="polite"
+        >
+          <span className="min-w-0 flex-1 truncate text-warm-accent">Stream offline</span>
+          <button
+            type="button"
+            data-player-control="true"
+            onClick={(event) => {
+              event.stopPropagation();
+              retryAudio();
+            }}
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-accent/20 bg-accent/8 px-2 py-1 text-accent transition-colors hover:bg-accent/15"
+            aria-label={`Retry ${track.title} audio stream`}
+          >
+            <RefreshCw size={9} aria-hidden="true" />
+            Retry
+          </button>
+          {track.externalUrl && (
+            <a
+              href={track.externalUrl}
+              target="_blank"
+              rel="noreferrer"
+              data-player-control="true"
+              onClick={(event) => event.stopPropagation()}
+              className="inline-flex shrink-0 items-center gap-1 rounded-full px-1 py-1 text-muted transition-colors hover:text-text"
+              aria-label={`Open ${track.title} on Apple Music`}
+            >
+              Apple
+              <ExternalLink size={9} aria-hidden="true" />
+            </a>
+          )}
+        </div>
       )}
     </div>
     {typeof document !== 'undefined' ? createPortal((

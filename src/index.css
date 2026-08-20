@@ -10,11 +10,13 @@
   --color-surface: #FFF8EB;
   --color-text: #1A1A1A;
   --color-muted: #5F6254;
+  --color-subtle: #8E927F;
   --color-accent: #2F3B29;
   --color-accent-dark: #48573D;
   --color-accent-soft: #E5DDCF;
   --color-border: #D0C6B6;
   --color-warm-accent: #E49A78;
+  --color-surface-raised: #FFF8EB;
   --garden-vine: #557A48;
   --garden-vine-bright: #82A86D;
   --garden-leaf: #679556;
@@ -22,22 +24,23 @@
   --garden-pixel-glow: rgba(55, 85, 45, 0.28);
   --garden-pixel-shadow: rgba(65, 35, 31, 0.2);
 
-  --dark-color-bg: #11150F;
-  --dark-color-surface: #1B2018;
-  --dark-color-text: #F3F4EA;
-  --dark-color-muted: #B7BBA8;
-  --dark-color-subtle: #8E927F;
-  --dark-color-accent: #C9D3B0;
-  --dark-color-accent-dark: #E0E7CB;
-  --dark-color-accent-soft: #23291F;
-  --dark-color-border: #303728;
-  --dark-color-warm-accent: #E49A78;
-  --dark-garden-vine: #6F915F;
-  --dark-garden-vine-bright: #A8C58A;
-  --dark-garden-leaf: #789B68;
-  --dark-garden-vine-ink: #3D5436;
-  --dark-garden-pixel-glow: rgba(196, 224, 155, 0.24);
-  --dark-garden-pixel-shadow: rgba(0, 0, 0, 0.42);
+  --dark-color-bg: #0B1316;
+  --dark-color-surface: #15211F;
+  --dark-color-surface-raised: #1C2B27;
+  --dark-color-text: #EEEADF;
+  --dark-color-muted: #AAB6AA;
+  --dark-color-subtle: #83968F;
+  --dark-color-accent: #BDD5B2;
+  --dark-color-accent-dark: #D6E4CD;
+  --dark-color-accent-soft: #1C2B27;
+  --dark-color-border: #344842;
+  --dark-color-warm-accent: #D98293;
+  --dark-garden-vine: #769D72;
+  --dark-garden-vine-bright: #B2D19D;
+  --dark-garden-leaf: #7EA477;
+  --dark-garden-vine-ink: #365A4D;
+  --dark-garden-pixel-glow: rgba(164, 211, 178, 0.24);
+  --dark-garden-pixel-shadow: rgba(2, 8, 11, 0.5);
   
   /* Map these for easier use with Tailwind utility classes */
   --color-primary: var(--color-accent);
@@ -116,17 +119,291 @@
   --color-surface: var(--dark-color-surface);
   --color-text: var(--dark-color-text);
   --color-muted: var(--dark-color-muted);
+  --color-subtle: var(--dark-color-subtle);
   --color-accent: var(--dark-color-accent);
   --color-accent-dark: var(--dark-color-accent-dark);
   --color-accent-soft: var(--dark-color-accent-soft);
   --color-border: var(--dark-color-border);
   --color-warm-accent: var(--dark-color-warm-accent);
+  --color-surface-raised: var(--dark-color-surface-raised);
   --garden-vine: var(--dark-garden-vine);
   --garden-vine-bright: var(--dark-garden-vine-bright);
   --garden-leaf: var(--dark-garden-leaf);
   --garden-vine-ink: var(--dark-garden-vine-ink);
   --garden-pixel-glow: var(--dark-garden-pixel-glow);
   --garden-pixel-shadow: var(--dark-garden-pixel-shadow);
+}
+
+.dark body {
+  background:
+    radial-gradient(circle at 50% -8%, color-mix(in srgb, var(--color-accent) 13%, transparent), transparent 33rem),
+    radial-gradient(circle at 88% 16%, color-mix(in srgb, var(--color-warm-accent) 10%, transparent), transparent 27rem),
+    var(--color-bg);
+}
+
+.dark [data-header-glass-shell] {
+  background-color: color-mix(in srgb, var(--color-surface-raised) 82%, transparent) !important;
+  border-color: color-mix(in srgb, var(--color-border) 78%, transparent) !important;
+}
+
+.dark [data-profile-card],
+.dark [aria-label="Current archive updates"] article,
+.dark footer {
+  background-color: var(--color-surface-raised) !important;
+  border-color: color-mix(in srgb, var(--color-border) 82%, transparent) !important;
+  box-shadow: 0 22px 54px rgba(2, 8, 11, 0.46), inset 0 1px 0 color-mix(in srgb, var(--color-text) 6%, transparent) !important;
+}
+
+.dark [data-mini-music-player="strip"] {
+  background-color: color-mix(in srgb, var(--color-surface-raised) 76%, var(--color-bg)) !important;
+  border-color: color-mix(in srgb, var(--color-border) 72%, transparent) !important;
+  box-shadow: 0 14px 32px rgba(2, 8, 11, 0.34), inset 0 1px 0 color-mix(in srgb, var(--color-text) 5%, transparent) !important;
+}
+
+.dark [data-photo-orbit-slot] {
+  box-shadow: 0 22px 48px rgba(2, 8, 11, 0.5) !important;
+}
+
+.dark [data-scroll-atmosphere="evening"] {
+  background: rgba(19, 47, 57, 0.55) !important;
+}
+
+.archive-background-landscape {
+  max-width: none;
+  image-rendering: pixelated;
+  transform-origin: 50% 100%;
+  user-select: none;
+  will-change: transform, opacity;
+}
+
+[data-archive-background] {
+  contain: strict;
+}
+
+.archive-background-middle,
+.archive-background-foreground {
+  transform-origin: 50% 100%;
+}
+
+.archive-background-canopy {
+  will-change: transform, opacity;
+}
+
+.archive-background-canopy-leaf {
+  display: block;
+  background-image: url('/garden-pixel/bud-leaves-detailed-strip.png');
+  background-position: var(--archive-canopy-frame) 0;
+  background-repeat: no-repeat;
+  background-size: 400% 100%;
+  image-rendering: pixelated;
+  opacity: 0.48;
+  animation: archive-canopy-breathe 7.5s steps(4, end) infinite;
+}
+
+.archive-background-light {
+  width: min(48vw, 44rem);
+  aspect-ratio: 1 / 1;
+  translate: -50% -50%;
+  will-change: transform, opacity;
+}
+
+.archive-background-light--mobile {
+  display: none;
+}
+
+.archive-background-light-breathe {
+  animation: archive-background-light-breathe 8.5s ease-in-out infinite;
+}
+
+@keyframes archive-canopy-breathe {
+  0%, 100% { translate: 0 0; }
+  42% { translate: 0 -2px; }
+  72% { translate: 1px 1px; }
+}
+
+@keyframes archive-background-light-breathe {
+  0%, 100% { opacity: 0.72; scale: 0.98; }
+  50% { opacity: 1; scale: 1.025; }
+}
+
+@media (max-width: 767px) {
+  .archive-background-canopy-leaf--left,
+  .archive-background-canopy-leaf-mobile-hidden,
+  .archive-background-light--desktop {
+    display: none;
+  }
+
+  .archive-background-light--mobile {
+    display: block;
+  }
+
+  .archive-background-light {
+    width: min(76vw, 26rem);
+  }
+
+  .archive-background-canopy-leaf {
+    opacity: 0.32;
+  }
+
+  .archive-background-middle {
+    opacity: 0.78;
+  }
+
+}
+
+.meadow-star {
+  image-rendering: pixelated;
+  animation: meadow-star-breathe 4.8s steps(3, end) infinite;
+}
+
+.meadow-firefly {
+  image-rendering: pixelated;
+  animation: meadow-firefly-drift 5.6s steps(6, end) infinite;
+}
+
+.garden-butterfly-sprite {
+  background-image: url('/garden-pixel/scroll-butterfly-detailed-pixellab.png');
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  transform-origin: 50% 52%;
+  will-change: transform;
+  animation: scroll-butterfly-wings 0.82s steps(5, end) infinite;
+}
+
+.garden-butterfly {
+  opacity: 0;
+  contain: layout paint style;
+  will-change: transform;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-play-state: paused;
+  transition: opacity 0.35s ease-out;
+}
+
+.garden-butterfly[data-visible="true"] {
+  opacity: 0.82;
+  animation-play-state: running;
+  transition-duration: 0.7s;
+}
+
+html[data-performance-mode="reduced"] .meadow-star,
+html[data-performance-mode="reduced"] .meadow-firefly,
+html[data-performance-mode="reduced"] .profile-avatar-shine,
+html[data-performance-mode="reduced"] .archive-brand-signal::before,
+html[data-performance-mode="reduced"] .archive-background-canopy-leaf,
+html[data-performance-mode="reduced"] .archive-background-light-breathe {
+  animation: none !important;
+}
+
+[data-archive-background-performance="reduced"] .archive-background-landscape,
+[data-archive-background-performance="reduced"] .archive-background-canopy,
+[data-archive-background-performance="reduced"] .archive-background-light {
+  will-change: auto;
+}
+
+html[data-performance-mode="reduced"] [data-header-glass-shell] {
+  backdrop-filter: none !important;
+}
+
+[data-garden-scene],
+[data-garden-butterfly-layer] {
+  contain: strict;
+}
+
+@keyframes meadow-star-breathe {
+  0%, 100% { opacity: 0.28; transform: scale(1); }
+  48% { opacity: 0.78; transform: scale(1.25); }
+}
+
+@keyframes meadow-firefly-drift {
+  0%, 100% { opacity: 0.18; transform: translate3d(0, 0, 0); }
+  35% { opacity: 0.9; transform: translate3d(5px, -6px, 0); }
+  70% { opacity: 0.4; transform: translate3d(-3px, -11px, 0); }
+}
+
+@keyframes scroll-butterfly-wings {
+  0%, 100% { transform: scale3d(1, 1, 1); }
+  22% { transform: scale3d(0.38, 1.08, 1); }
+  42% { transform: scale3d(0.9, 1.01, 1); }
+  58% { transform: scale3d(0.22, 1.1, 1); }
+  78% { transform: scale3d(0.76, 1.03, 1); }
+}
+
+@keyframes garden-butterfly-opening-left {
+  0% { transform: translate3d(-8vw, 68vh, 0) rotate(45deg); }
+  16.667% { transform: translate3d(12vw, 48vh, 0) rotate(120.07deg); }
+  33.333% { transform: translate3d(31vw, 59vh, 0) rotate(32.01deg); }
+  50% { transform: translate3d(46vw, 35vh, 0) rotate(-45deg); }
+  66.667% { transform: translate3d(30vw, 19vh, 0) rotate(-117.55deg); }
+  83.333% { transform: translate3d(7vw, 31vh, 0) rotate(-157.93deg); }
+  100% { transform: translate3d(-8vw, 68vh, 0) rotate(-315deg); }
+}
+
+@keyframes garden-butterfly-opening-right {
+  0% { transform: translate3d(108vw, 20vh, 0) rotate(229.64deg); }
+  16.667% { transform: translate3d(88vw, 37vh, 0) rotate(309.81deg); }
+  33.333% { transform: translate3d(70vw, 22vh, 0) rotate(213.11deg); }
+  50% { transform: translate3d(55vw, 45vh, 0) rotate(133.6deg); }
+  66.667% { transform: translate3d(76vw, 65vh, 0) rotate(51.34deg); }
+  83.333% { transform: translate3d(96vw, 49vh, 0) rotate(22.48deg); }
+  100% { transform: translate3d(108vw, 20vh, 0) rotate(-130.36deg); }
+}
+
+@keyframes garden-butterfly-opening-high {
+  0% { transform: translate3d(-5vw, 27vh, 0) rotate(64.44deg); }
+  20% { transform: translate3d(18vw, 16vh, 0) rotate(128.29deg); }
+  40% { transform: translate3d(37vw, 31vh, 0) rotate(213.02deg); }
+  60% { transform: translate3d(24vw, 51vh, 0) rotate(290.85deg); }
+  80% { transform: translate3d(3vw, 43vh, 0) rotate(333.43deg); }
+  100% { transform: translate3d(-5vw, 27vh, 0) rotate(424.44deg); }
+}
+
+@keyframes garden-butterfly-opening-near-left {
+  0% { transform: translate3d(5vw, 84vh, 0) rotate(41.42deg); }
+  16.667% { transform: translate3d(20vw, 67vh, 0) rotate(-15.64deg); }
+  33.333% { transform: translate3d(13vw, 42vh, 0) rotate(57.53deg); }
+  50% { transform: translate3d(35vw, 28vh, 0) rotate(150.52deg); }
+  66.667% { transform: translate3d(48vw, 51vh, 0) rotate(221.01deg); }
+  83.333% { transform: translate3d(28vw, 74vh, 0) rotate(246.5deg); }
+  100% { transform: translate3d(5vw, 84vh, 0) rotate(401.42deg); }
+}
+
+@keyframes garden-butterfly-opening-center-rise {
+  0% { transform: translate3d(52vw, 106vh, 0) rotate(18.43deg); }
+  16.667% { transform: translate3d(61vw, 79vh, 0) rotate(-35.84deg); }
+  33.333% { transform: translate3d(48vw, 61vh, 0) rotate(26.57deg); }
+  50% { transform: translate3d(59vw, 39vh, 0) rotate(138.81deg); }
+  66.667% { transform: translate3d(73vw, 55vh, 0) rotate(192.53deg); }
+  83.333% { transform: translate3d(67vw, 82vh, 0) rotate(212.01deg); }
+  100% { transform: translate3d(52vw, 106vh, 0) rotate(378.43deg); }
+}
+
+@keyframes garden-butterfly-opening-far-right {
+  0% { transform: translate3d(106vw, 76vh, 0) rotate(-65.77deg); }
+  20% { transform: translate3d(86vw, 67vh, 0) rotate(-28.81deg); }
+  40% { transform: translate3d(75vw, 47vh, 0) rotate(41.63deg); }
+  60% { transform: translate3d(91vw, 29vh, 0) rotate(125.22deg); }
+  80% { transform: translate3d(108vw, 41vh, 0) rotate(183.27deg); }
+  100% { transform: translate3d(106vw, 76vh, 0) rotate(294.23deg); }
+}
+
+@keyframes garden-butterfly-archive-left {
+  0% { transform: translate3d(-7vw, 58vh, 0) rotate(123.02deg); }
+  20% { transform: translate3d(13vw, 71vh, 0) rotate(40.1deg); }
+  40% { transform: translate3d(29vw, 52vh, 0) rotate(-19.98deg); }
+  60% { transform: translate3d(21vw, 30vh, 0) rotate(-110.22deg); }
+  80% { transform: translate3d(2vw, 37vh, 0) rotate(-156.8deg); }
+  100% { transform: translate3d(-7vw, 58vh, 0) rotate(-236.98deg); }
+}
+
+@keyframes garden-butterfly-archive-right {
+  0% { transform: translate3d(109vw, 34vh, 0) rotate(-52.59deg); }
+  20% { transform: translate3d(92vw, 21vh, 0) rotate(-140.53deg); }
+  40% { transform: translate3d(78vw, 38vh, 0) rotate(-200.85deg); }
+  60% { transform: translate3d(86vw, 59vh, 0) rotate(-242.1deg); }
+  80% { transform: translate3d(103vw, 68vh, 0) rotate(-349.99deg); }
+  100% { transform: translate3d(109vw, 34vh, 0) rotate(-412.59deg); }
 }
 
 @layer components {
@@ -153,9 +430,15 @@
     transform-style: preserve-3d;
   }
 
-  [data-photo-orbit-slot],
+  [data-photo-orbit-motion-layer],
+  [data-photo-orbit-interaction-layer],
   [data-scroll-atmosphere] {
-    will-change: transform, opacity, filter;
+    will-change: transform, opacity;
+  }
+
+  [data-scroll-chapter][data-performance-reduced="true"] [data-photo-orbit-motion-layer],
+  [data-scroll-chapter][data-performance-reduced="true"] [data-photo-orbit-interaction-layer] {
+    will-change: auto;
   }
 
   [data-vine-anchor] {
@@ -185,7 +468,8 @@
       overflow: visible;
     }
 
-    [data-photo-orbit-slot],
+    [data-photo-orbit-motion-layer],
+    [data-photo-orbit-interaction-layer],
     [data-scroll-atmosphere] {
       will-change: auto;
     }
@@ -937,7 +1221,7 @@
         transparent 1px,
         transparent 28px
       ),
-      linear-gradient(145deg, #1B2018, #0E130D);
+      linear-gradient(145deg, var(--color-surface-raised), var(--color-bg));
   }
 
   .project-fallback::before {
@@ -976,8 +1260,14 @@
 @media (prefers-reduced-motion: reduce) {
   .profile-avatar-shine,
   .archive-brand-signal::before,
+  .archive-background-canopy-leaf,
+  .archive-background-light-breathe,
   .pixel-archive-water-shimmer,
   .pixel-archive-fog,
+  .meadow-star,
+  .meadow-firefly,
+  .garden-butterfly,
+  .garden-butterfly-sprite,
   .pixel-archive-routes path,
   .pixel-archive-marker[data-selected="true"] .pixel-archive-marker-beacon::before,
   .animate-shimmer,
