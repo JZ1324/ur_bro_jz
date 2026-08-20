@@ -39,8 +39,14 @@ export const photoHoverSpring = {
   damping: 24,
 } as const;
 
+export const photoOrbitVisualEnvelope = {
+  hoverScale: 1.08,
+  maxParentScale: 1.02,
+  maxParentRotate: 11.5,
+} as const;
+
 export function resolvePhotoHoverScale(hovered: boolean) {
-  return hovered ? 1.08 : 1;
+  return hovered ? photoOrbitVisualEnvelope.hoverScale : 1;
 }
 
 const photoSlots: PhotoSlot[] = [
@@ -155,10 +161,17 @@ export function resolvePhotoOrbitOffset(
   const orbitRadiusX = Math.max(0, width / 2 - clamp(width * 0.2, 94, 126));
   const orbitRadiusY = Math.max(0, height / 2 - clamp(height * 0.22, 98, 132));
   const inverseArrival = 1 - point.arrival;
+  // Leave room for the card's own rotation plus its hover spring and the
+  // rotating/scaling orbit parent. Keeping only the resting card inside these
+  // bounds still lets a hovered corner reach a clipping ancestor.
+  const safeInsetX = clamp(width * 0.28, 102.5, 140);
+  const safeInsetY = clamp(height * 0.23, 112, 142);
+  const rawX = point.entry.x * entryRadiusX * inverseArrival + point.orbitXFactor * orbitRadiusX * point.arrival;
+  const rawY = point.entry.y * entryRadiusY * inverseArrival + point.orbitYFactor * orbitRadiusY * point.arrival;
 
   return {
-    x: point.entry.x * entryRadiusX * inverseArrival + point.orbitXFactor * orbitRadiusX * point.arrival,
-    y: point.entry.y * entryRadiusY * inverseArrival + point.orbitYFactor * orbitRadiusY * point.arrival,
+    x: clamp(rawX, -width / 2 + safeInsetX, width / 2 - safeInsetX),
+    y: clamp(rawY, -height / 2 + safeInsetY, height / 2 - safeInsetY),
   };
 }
 
@@ -271,23 +284,29 @@ function OrbitPhoto({
   const x = useTransform([progress, pointerX, orbitWidth, orbitHeight], ([rawProgress, rawPointerX, rawWidth, rawHeight]) => {
     const point = resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : Number(rawProgress), slot.depth, index);
     const width = Number(rawWidth);
-    const offset = resolvePhotoOrbitOffset(point, width, Number(rawHeight));
+    const height = Number(rawHeight);
+    const offset = resolvePhotoOrbitOffset(point, width, height);
     const pointerOffset = performanceReduced ? 0 : Number(rawPointerX);
-    return offset.x + pointerOffset * slot.depth * Math.min(36, width * 0.055);
+    const pointerShift = pointerOffset * slot.depth * Math.min(36, width * 0.055);
+    const safeInset = clamp(width * 0.28, 102.5, 140);
+    return clamp(offset.x + pointerShift, -width / 2 + safeInset, width / 2 - safeInset);
   });
   const y = useTransform([progress, pointerY, orbitWidth, orbitHeight], ([rawProgress, rawPointerY, rawWidth, rawHeight]) => {
     const point = resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : Number(rawProgress), slot.depth, index);
     const height = Number(rawHeight);
-    const offset = resolvePhotoOrbitOffset(point, Number(rawWidth), height);
+    const width = Number(rawWidth);
+    const offset = resolvePhotoOrbitOffset(point, width, height);
     const pointerOffset = performanceReduced ? 0 : Number(rawPointerY);
-    return offset.y + pointerOffset * slot.depth * Math.min(30, height * 0.05);
+    const pointerShift = pointerOffset * slot.depth * Math.min(30, height * 0.05);
+    const safeInset = clamp(height * 0.23, 112, 142);
+    return clamp(offset.y + pointerShift, -height / 2 + safeInset, height / 2 - safeInset);
   });
   const scale = useTransform(progress, (value) => resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).scale);
   const opacity = useTransform(progress, (value) => resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).opacity);
   const rotate = useTransform(progress, (value) => slot.tilt + resolvePhotoOrbitPoint(slot.angle, reducedMotion ? 0.55 : value, slot.depth, index).rotate);
   return (
     <motion.div
-      className="pointer-events-none absolute left-1/2 top-1/2 aspect-[4/5] w-[clamp(4.5rem,19vw,5.1rem)] -translate-x-1/2 -translate-y-1/2 sm:w-[clamp(5.25rem,8.5vw,7rem)]"
+      className="pointer-events-none absolute left-1/2 top-1/2 aspect-[4/5] w-[clamp(4.5rem,19vw,5.1rem)] -translate-x-1/2 -translate-y-1/2 overflow-visible sm:w-[clamp(5.25rem,8.5vw,7rem)]"
       style={{ x, y, scale, rotate, opacity, zIndex: Math.round(slot.depth * 10) }}
       data-photo-orbit-motion-layer={slot.id}
     >
@@ -421,11 +440,7 @@ export function PhotoOrbitTransition({
 
   return (
     <div
-      className="relative h-full min-h-[31rem] w-full overflow-hidden"
-      style={{
-        maskImage: 'radial-gradient(ellipse 94% 90% at center, black 68%, transparent 100%)',
-        WebkitMaskImage: 'radial-gradient(ellipse 94% 90% at center, black 68%, transparent 100%)',
-      }}
+      className="relative h-full min-h-[31rem] w-full overflow-visible"
       aria-label="Interactive personal photo carousel"
       data-photo-orbit
     >

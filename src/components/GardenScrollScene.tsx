@@ -877,7 +877,7 @@ export function GardenScrollScene({
         )}
       </div>
 
-      <div className="pointer-events-none fixed inset-0 z-[25] overflow-hidden" aria-hidden="true" data-garden-butterfly-layer>
+      <div className="pointer-events-none fixed inset-0 z-[18] overflow-hidden" aria-hidden="true" data-garden-butterfly-layer>
         {(performanceReduced ? ambientButterflies.slice(0, 3) : ambientButterflies).map((butterfly) => (
           <AmbientButterfly
             key={butterfly.id}

@@ -5,6 +5,7 @@ import {
   PhotoOrbitTransition,
   photoEntryPoints,
   photoHoverSpring,
+  photoOrbitVisualEnvelope,
   resolvePhotoHoverScale,
   resolvePhotoOrbitOffset,
   resolvePhotoOrbitPoint,
@@ -78,6 +79,54 @@ test('wide edge fan keeps cards separated during the first fifth of the chapter'
       });
     }
   }
+});
+
+test('keeps every hovered and rotated postcard inside desktop and mobile orbit bounds', () => {
+  const viewports = [
+    { width: 640, height: 570, cardWidth: 112 },
+    { width: 359, height: 620, cardWidth: 82 },
+    { width: 478, height: 406, cardWidth: 82 },
+  ];
+
+  for (const viewport of viewports) {
+    for (const progress of [0, 0.05, 0.1, 0.2, 0.28, 0.5, 0.8, 1]) {
+      orbitGeometry.forEach((slot, index) => {
+        const point = resolvePhotoOrbitPoint(slot.angle, progress, slot.depth, index);
+        const offset = resolvePhotoOrbitOffset(point, viewport.width, viewport.height);
+        const halfDiagonal = Math.hypot(
+          viewport.cardWidth * point.scale,
+          viewport.cardWidth * 1.25 * point.scale,
+        ) / 2 * photoOrbitVisualEnvelope.hoverScale * photoOrbitVisualEnvelope.maxParentScale;
+
+        for (const parentRotate of [-photoOrbitVisualEnvelope.maxParentRotate, photoOrbitVisualEnvelope.maxParentRotate]) {
+          const radians = parentRotate * Math.PI / 180;
+          const centerX = (
+            offset.x * Math.cos(radians) - offset.y * Math.sin(radians)
+          ) * photoOrbitVisualEnvelope.maxParentScale;
+          const centerY = (
+            offset.x * Math.sin(radians) + offset.y * Math.cos(radians)
+          ) * photoOrbitVisualEnvelope.maxParentScale;
+
+          assert.ok(
+            Math.abs(centerX) + halfDiagonal <= viewport.width / 2,
+            `hovered photo ${index + 1} crosses the horizontal edge at progress ${progress} in ${viewport.width}px orbit`,
+          );
+          assert.ok(
+            Math.abs(centerY) + halfDiagonal <= viewport.height / 2,
+            `hovered photo ${index + 1} crosses the vertical edge at progress ${progress} in ${viewport.width}px orbit`,
+          );
+        }
+      });
+    }
+  }
+});
+
+test('photo orbit allows the hover spring to paint beyond its resting layout box', () => {
+  const markup = renderToStaticMarkup(<PhotoOrbitTransition />);
+  const orbitTag = markup.match(/<div[^>]*data-photo-orbit="true"[^>]*>/)?.[0] ?? '';
+
+  assert.match(orbitTag, /overflow-visible/);
+  assert.doesNotMatch(orbitTag, /overflow-hidden/);
 });
 
 test('every photo keeps one shared scroll-driven size through the orbit', () => {

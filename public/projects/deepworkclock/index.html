@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A macOS focus timer built around a drag-to-set clock gesture." />
+    <title>DeepWorkClock — start focus by turning the clock</title>
+    <link rel="stylesheet" href="../project-sites.css" />
+    <script src="../project-sites.js" defer></script>
+  </head>
+  <body data-project="deepworkclock" data-theme="deepworkclock">
+    <div id="project-site">
+      <div class="dwc-page">
+        <header class="dwc-nav page-width"><a class="dwc-wordmark" href="../../" aria-label="Back to the project archive"><span class="dwc-sun"></span>DeepWorkClock</a><span class="dwc-nav-note">quiet software for a noisy day</span><a class="archive-link" href="../../">archive <span class="arrow-text">↗</span></a></header>
+        <div class="site-hero-image site-hero-image-deepworkclock" data-atmosphere-speed="-0.035" aria-hidden="true"></div>
+        <main>
+          <section class="dwc-hero page-width"><div class="dwc-hero-copy"><p class="dwc-eyebrow">focus timer / 01</p><h1>Start focus by turning the clock.</h1><p>DeepWorkClock turns the duration field into a physical gesture: set the hand, release, and let the session begin in the menu bar.</p><div class="dwc-hero-note"><span class="dwc-note-line"></span><span>for the moment before deep work, when another settings screen is already too much</span></div></div><div class="dwc-clock-stage" id="clock-demo"><div class="dwc-orbit-label dwc-orbit-top">drag to set</div><div class="dwc-orbit-label dwc-orbit-right">focus / 01</div><div class="dwc-clock" style="--clock-angle: 228deg; --clock-progress: 37.5%"><div class="dwc-clock-ticks"><i style="--tick:0"></i><i style="--tick:1"></i><i style="--tick:2"></i><i style="--tick:3"></i><i style="--tick:4"></i><i style="--tick:5"></i><i style="--tick:6"></i><i style="--tick:7"></i><i style="--tick:8"></i><i style="--tick:9"></i><i style="--tick:10"></i><i style="--tick:11"></i></div><span class="dwc-clock-hand"></span><span class="dwc-clock-center"></span><strong><span data-clock-value>45</span><small>min</small></strong></div><label class="dwc-clock-range"><span class="sr-only">Focus session minutes</span><input type="range" min="15" max="120" value="45" data-clock-range><span class="dwc-range-track"></span></label><button class="dwc-start" type="button" data-clock-start>▶  Start session</button><span class="dwc-session-state" data-clock-state><i></i> focus ready</span></div></section>
+          <section class="dwc-thesis page-width"><p class="dwc-eyebrow">02 / one gesture</p><div><h2>The session starts before the timer.</h2><p>There is a small psychological cost to choosing a duration, finding the right control, and deciding whether to begin. DeepWorkClock makes that decision tactile and singular.</p></div></section>
+          <section class="dwc-timeline page-width"><div class="dwc-timeline-head"><p class="dwc-eyebrow">03 / the quiet path</p><span>menu bar → focus → done</span></div><div class="dwc-timeline-grid"><article><span class="dwc-time">00:00</span><div class="dwc-timeline-dot"></div><h3>Turn</h3><p>Drag the hand around the face until the session feels right.</p></article><article><span class="dwc-time">00:02</span><div class="dwc-timeline-dot"></div><h3>Begin</h3><p>Release and the menu bar becomes the only timer you need.</p></article><article><span class="dwc-time">45:00</span><div class="dwc-timeline-dot"></div><h3>Return</h3><p>Blocking, quit safeguards, and progress keep the boundary intact.</p></article></div></section>
+          <section class="dwc-build page-width"><div><p class="dwc-eyebrow">04 / the foundation</p><h2>Clock physics on the front. A serious session model underneath.</h2></div><div class="dwc-build-list"><span>drag-to-set hand / multi-rotation</span><span>menu-bar progress / frame ticker</span><span>blocking engine / strict quit checks</span><span>offline sync / Keychain token</span></div></section>
+        </main>
+        <footer class="product-footer"><span>DeepWorkClock / make the start physical</span><a class="archive-link" href="../../">Back to archive <span class="arrow-text">↗</span></a></footer>
+      </div>
+    </div>
+  </body>
+</html>

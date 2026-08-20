@@ -28,6 +28,7 @@ export type ProfileTrack = {
   note: string;
   provider: string;
   artworkSrc: string;
+  externalUrl?: string;
   sources: ProfileTrackSource[];
   lyrics?: string;
   lyricLeadSeconds?: number;
@@ -83,11 +84,12 @@ export type Project = {
   why: string;
   learned?: string;
   status: string;
-  image: string;
+  image?: string;
   tags: string[];
   tech: string[];
-  link: string;
+  link?: string;
   aiAssisted?: boolean;
+  featured?: boolean;
 };
 
 export type FaithHover = {
@@ -196,6 +198,7 @@ export const profileData: ProfileData = {
     note: 'licensed Supabase stream',
     provider: 'Supabase',
     artworkSrc: `${baseUrl}olivia-dean-art-of-loving-cover.jpg`,
+    externalUrl: 'https://music.apple.com/au/album/the-art-of-loving/1817609404',
     sources: [
       {
         src: `${supabaseFunctionsUrl}/get-track-audio?quality=high`,
@@ -353,13 +356,13 @@ export const storyItems: StoryItem[] = [
 export const nowItems: NowItem[] = [
   {
     label: 'Building',
-    title: 'This archive',
-    body: 'A fun little page about me, made with AI help.',
+    title: 'VCE Vault',
+    body: 'A Studyflow-connected practice space for VCE subjects, worked solutions, and focused revision.',
   },
   {
     label: 'Projects',
-    title: 'Pinned builds',
-    body: 'These are some projects I have worked on before.',
+    title: 'GptDoc 4 + Studyflow',
+    body: 'Polishing the document workspace and the planner I actually want to use for school.',
   },
   {
     label: 'Music',
@@ -440,7 +443,7 @@ export const aboutSections: AboutSection[] = [
     level: 4,
     body: [
       'The projects are mostly things I built while learning, testing ideas, or making a cleaner version of something I wanted to use.',
-      'Flaccer is the newest one: a macOS-style audio tool for checking whether lossless files are actually lossless.',
+      'The current shelf is VCE Vault, GptDoc, and Studyflow. They are the clearest examples of turning a real problem into something I keep improving.',
     ],
   },
   {
@@ -464,7 +467,7 @@ export const aboutSections: AboutSection[] = [
     title: 'Now',
     level: 3,
     body: [
-      'Right now I am cleaning the site up: smoother music, clearer projects, less filler.',
+      'Right now I am building out VCE Vault, shipping a stronger GptDoc workspace, and keeping Studyflow useful instead of overloaded.',
       'Private notes and photos stay out of the public code. If someone needs access, they can ask me.',
     ],
   },
@@ -484,7 +487,7 @@ export const profileFacts = [
   { title: 'Public name', value: 'JZ' },
   { title: 'Handle', value: '@ur_bro_jz' },
   { title: 'Profile state', value: 'Locked down' },
-  { title: 'Current bio', value: 'Projects, music, and private notes' },
+  { title: 'Current bio', value: 'Romans 12:16-21' },
 ];
 
 export const archiveStyleItems = [
@@ -520,10 +523,11 @@ export const journalEntries: JournalEntry[] = [
 export const toolItems: ToolItem[] = [
   { label: 'React', note: 'interfaces' },
   { label: 'TypeScript', note: 'structure' },
-  { label: 'Vite', note: 'fast builds' },
+  { label: 'Next.js', note: 'full-stack web apps' },
   { label: 'Supabase', note: 'private access' },
   { label: 'Vercel', note: 'deploys' },
-  { label: 'Swift', note: 'macOS ideas' },
+  { label: 'Swift', note: 'native macOS tools' },
+  { label: 'Chrome', note: 'browser extensions' },
   { label: 'AI tools', note: 'draft + iterate' },
 ];
 
@@ -543,7 +547,181 @@ const liveScreenshot = (url: string) => {
   return `https://api.microlink.io/?${params.toString()}`;
 };
 
+const projectSiteUrl = (slug: string) => `https://ur-bro-jz.vercel.app/projects/${slug}/`;
+
 export const projects: Project[] = [
+  {
+    id: 'vce-vault',
+    title: 'VCE Vault',
+    description: 'A Studyflow-connected VCE practice library with question banks, worked solutions, tests, and review.',
+    longDescription: 'A private VCE study platform organised by subject, unit, Area of Study, and topic. It combines original practice banks, clearly attributed VCAA past-paper material, worked solutions, test building, review history, and a secure Studyflow account handoff.',
+    what: 'A focused revision web app for finding the right VCE questions, building a test, and learning from complete worked answers.',
+    why: 'Revision resources get scattered across PDFs, folders, and generic question sites. I wanted one place shaped around the subjects and course structure I actually use.',
+    learned: 'Large learning libraries only feel useful when the taxonomy, source labels, answers, progress, and sign-in flow all stay clear together.',
+    status: 'Active on Vercel with access managed through Studyflow.',
+    image: liveScreenshot('https://vce-vault.vercel.app/'),
+    tags: ['Live', 'Web App', 'Education'],
+    tech: ['React', 'Vite', 'Supabase', 'Vercel'],
+    link: 'https://vce-vault.vercel.app/',
+    aiAssisted: true,
+    featured: true,
+  },
+  {
+    id: 'gptdoc',
+    title: 'GptDoc',
+    description: 'A Chrome extension that turns ChatGPT and Claude into focused document workspaces.',
+    longDescription: 'A Chrome extension and public download site that reshape ChatGPT and Claude into calmer document workspaces. GptDoc 4 adds account-based access, Docs, Word and Notion-inspired modes, local version history, richer exports, attachment support, and a more deliberate reading and writing flow.',
+    what: 'A browser extension for working through AI conversations like documents while keeping conversation content and local pages organised.',
+    why: 'I wanted long AI conversations to feel like real working documents instead of an endless chat feed.',
+    learned: 'The hardest part is preserving each provider’s live behaviour while making the document layer feel stable, fast, and trustworthy.',
+    status: 'Live on Vercel with GptDoc 4 extension builds.',
+    image: liveScreenshot('https://gptdoc.vercel.app/'),
+    tags: ['Live', 'Chrome Extension', 'Web App'],
+    tech: ['React', 'Vite', 'Chrome Extension', 'Supabase'],
+    link: 'https://gptdoc.vercel.app/',
+    featured: true,
+  },
+  {
+    id: 'studyflow',
+    title: 'Studyflow',
+    description: 'A dark student planner combining timetables, tasks, Kanban, courses, and calendar sync.',
+    longDescription: 'A private-beta student planner for keeping a timetable, daily checklist, Kanban board, courses, and calendar connections in one focused workspace.',
+    what: 'A web planner with timetable views, tasks, course sessions, and iCloud, Google Calendar, and Microsoft Outlook sync.',
+    why: 'School planning gets scattered quickly, so I wanted one place that could handle both the week and the next small task.',
+    learned: 'The useful part was making dense planning information feel calm without hiding the controls people need every day.',
+    status: 'Live on Vercel as a private beta.',
+    image: liveScreenshot('https://studyflow-dusky-beta.vercel.app/'),
+    tags: ['Live', 'Study Tool', 'Web App'],
+    tech: ['Next.js', 'Supabase', 'SwiftUI', 'Vercel'],
+    link: 'https://studyflow-dusky-beta.vercel.app/',
+    featured: true,
+  },
+  {
+    id: 'dripwriter',
+    title: 'Dripwriter',
+    description: 'A macOS utility for typing snippets and workflows into an armed browser tab.',
+    longDescription: 'A personal macOS utility that sends snippets and finite workflows into one armed Arc, Chrome, Edge, or Brave tab while that tab stays in the background.',
+    what: 'A local writing automation tool with encrypted snippets, browser pairing, global hotkeys, and a companion extension.',
+    why: 'I wanted repetitive browser writing to be quicker without scraping pages, clicking around, or hiding what the automation was doing.',
+    learned: 'Pairing, encryption, and bounded workflows made the automation feel more useful and more trustworthy.',
+    status: 'Dedicated project site on the personal archive.',
+    image: liveScreenshot(projectSiteUrl('dripwriter')),
+    tags: ['Live', 'macOS', 'Writing Tool'],
+    tech: ['Swift', 'AppKit', 'Chromium Extension', 'Keychain'],
+    link: projectSiteUrl('dripwriter'),
+  },
+  {
+    id: 'meta6',
+    title: 'Meta6',
+    description: 'A fan-made Bloons TD 6 strategy site for current metas, guides, and tower notes.',
+    longDescription: 'A fan-made BTD6 strategy resource with patch-aware meta cards, hero and paragon rankings, reusable strategies, map guides, and tower notes.',
+    what: 'A searchable guidebook for BTD6 metas, CHIMPS, bosses, heroes, paragons, maps, and tower choices.',
+    why: 'BTD6 strategy information is spread across lots of places, so I wanted a faster way to compare the useful parts before starting a run.',
+    learned: 'Large reference-heavy interfaces need strong categories and compact cards so the content stays usable instead of turning into a wall of notes.',
+    status: 'Live on Vercel as a fan-made strategy resource.',
+    image: liveScreenshot('https://meta6-btd6-guide.vercel.app/'),
+    tags: ['Live', 'BTD6', 'Strategy Guide'],
+    tech: ['React', 'TypeScript', 'Vite', 'Vercel'],
+    link: 'https://meta6-btd6-guide.vercel.app/',
+  },
+  {
+    id: 'studyflow-capture',
+    title: 'StudyFlow Capture prototype',
+    description: 'A StudyFlow web app and macOS companion for turning school screenshots into editable tasks.',
+    longDescription: 'An earlier StudyFlow build that pairs a responsive React planner with a Firebase capture backend and a macOS ScreenCaptureKit companion.',
+    what: 'A study planner that turns captured school timetable screenshots into editable tasks and daily plans.',
+    why: 'I wanted a school screenshot to become something actionable instead of staying as a static image.',
+    learned: 'The capture flow made pairing, scoped uploads, and a clear review step part of the product instead of afterthoughts.',
+    status: 'Live prototype with a macOS capture companion.',
+    image: liveScreenshot('https://studyflow-jz1324.vercel.app/'),
+    tags: ['Live', 'Study Tool', 'macOS'],
+    tech: ['React', 'Vite', 'Firebase', 'SwiftUI', 'ScreenCaptureKit'],
+    link: 'https://studyflow-jz1324.vercel.app/',
+  },
+  {
+    id: 'stuable',
+    title: 'Stuable',
+    description: 'A dark timetable foundation rebuilt around a simpler day view.',
+    longDescription: 'A cleaned-up timetable and authentication foundation that kept the useful backend pieces and replaced the older interface with a minimal day view.',
+    what: 'A timetable foundation with Firebase auth, Firestore rules, parser services, and a focused daily schedule.',
+    why: 'I wanted to reduce the timetable idea to the part that was easiest to use every day.',
+    learned: 'Removing old screens made the core timetable flow easier to see and easier to keep improving.',
+    status: 'Dedicated project site on the personal archive.',
+    image: liveScreenshot(projectSiteUrl('stuable')),
+    tags: ['Live', 'Timetable', 'Web App'],
+    tech: ['React', 'Firebase', 'Webpack', 'JavaScript'],
+    link: projectSiteUrl('stuable'),
+  },
+  {
+    id: 'decibal',
+    title: 'Decibal',
+    description: 'A menu-bar macOS monitor for system loudness, room sound, and listening exposure.',
+    longDescription: 'A native macOS audio monitor that tracks output loudness and environmental sound, keeps short histories, and surfaces listening exposure guidance from the menu bar.',
+    what: 'A menu-bar audio tool with loudness monitoring, environment calibration, history, and warning thresholds.',
+    why: 'I wanted sound levels to be understandable at a glance instead of something I only thought about when audio already felt too loud.',
+    learned: 'Audio utilities need careful calibration and plain-language feedback so measurements feel useful rather than mysterious.',
+    status: 'Dedicated project site on the personal archive.',
+    image: liveScreenshot(projectSiteUrl('decibal')),
+    tags: ['Live', 'macOS', 'Audio'],
+    tech: ['Swift', 'SwiftUI', 'Core Audio', 'AppKit'],
+    link: projectSiteUrl('decibal'),
+  },
+  {
+    id: 'touchytap',
+    title: 'TouchyTap',
+    description: 'A native macOS auto-clicker with hotkeys, stop conditions, and session stats.',
+    longDescription: 'A native SwiftUI auto-clicker with simple and advanced modes, global hotkeys, fixed-position clicking, safety stop conditions, and local session statistics.',
+    what: 'A macOS click utility with configurable rates, activation modes, position capture, limits, and a compact menu-bar workflow.',
+    why: 'I wanted an auto-clicker that made its controls and safety boundaries clear instead of hiding them behind a tiny settings panel.',
+    learned: 'Fast automation still needs visible state, reliable stopping, and good permission guidance.',
+    status: 'Dedicated project site on the personal archive.',
+    image: liveScreenshot(projectSiteUrl('touchytap')),
+    tags: ['Live', 'macOS', 'Automation'],
+    tech: ['Swift', 'SwiftUI', 'AppKit', 'CoreGraphics'],
+    link: projectSiteUrl('touchytap'),
+  },
+  {
+    id: 'deepworkclock',
+    title: 'DeepWorkClock',
+    description: 'A macOS menu-bar focus timer built around a drag-to-set clock gesture.',
+    longDescription: 'A menu-bar deep-work prototype with a signature drag-to-set clock interaction, focus sessions, progress feedback, and early blocking and sync scaffolding.',
+    what: 'A focus timer where the session length is set by dragging a clock hand, then tracked from the menu bar.',
+    why: 'I wanted starting a focus session to feel physical and immediate instead of like filling out another form.',
+    learned: 'A single strong interaction can give a small utility its identity when the rest of the interface stays quiet.',
+    status: 'Dedicated project site on the personal archive.',
+    image: liveScreenshot(projectSiteUrl('deepworkclock')),
+    tags: ['Live', 'macOS', 'Focus'],
+    tech: ['Swift', 'SwiftUI', 'AppKit', 'Keychain'],
+    link: projectSiteUrl('deepworkclock'),
+  },
+  {
+    id: 'hidevault',
+    title: 'HideVault',
+    description: 'A local encrypted macOS vault skeleton for private files, notes, and items.',
+    longDescription: 'An original SwiftUI architecture and code skeleton for a local encrypted vault, with AES-GCM protection, vault locking, notes, item search, and a menu-bar helper.',
+    what: 'A local vault shell for storing and hiding private items with encrypted data and a searchable sidebar.',
+    why: 'I wanted private local data to have a deliberate home instead of being scattered across folders and notes.',
+    learned: 'The security model and the everyday item-management flow need to be designed together from the start.',
+    status: 'Dedicated project site on the personal archive.',
+    image: liveScreenshot(projectSiteUrl('hidevault')),
+    tags: ['Live', 'macOS', 'Privacy'],
+    tech: ['Swift', 'SwiftUI', 'CryptoKit', 'AES-GCM'],
+    link: projectSiteUrl('hidevault'),
+  },
+  {
+    id: 'spoof',
+    title: 'Spoof',
+    description: 'A compact macOS network interface inspector for hardware and live MAC details.',
+    longDescription: 'A small native macOS utility that presents network interface state, hardware and live MAC addresses, private Wi-Fi addressing, and copyable raw interface output.',
+    what: 'A focused network inspector for checking interface kinds, link state, private addressing, and raw system details.',
+    why: 'I wanted the useful network details in one small window without making a simple inspection task feel like a diagnostics suite.',
+    learned: 'Small utilities work best when the information hierarchy is obvious before the user touches a control.',
+    status: 'Dedicated project site on the personal archive.',
+    image: liveScreenshot(projectSiteUrl('spoof')),
+    tags: ['Live', 'macOS', 'Networking'],
+    tech: ['Swift', 'SwiftUI', 'AppKit', 'ifconfig'],
+    link: projectSiteUrl('spoof'),
+  },
   {
     id: 'pro-timetable',
     title: 'Pro Timetable',

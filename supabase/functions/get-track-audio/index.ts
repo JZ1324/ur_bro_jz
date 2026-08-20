@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
   }
 
   const objectPath = qualityObjectPaths[quality];
-  const storageUrl = `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/${bucketName}/${objectPath}`;
+  const storageUrl = `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/authenticated/${bucketName}/${objectPath}`;
   const storageHeaders = new Headers({
     Authorization: `Bearer ${serviceRoleKey}`,
     apikey: serviceRoleKey,

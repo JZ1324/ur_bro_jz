@@ -1,4 +1,4 @@
-import { Music2, Pause, Play, X } from 'lucide-react';
+import { ExternalLink, Music2, Pause, Play, RefreshCw, X } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -508,7 +508,6 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
 
   const displayTime = isSeeking ? seekValue : currentTime;
   const progress = duration > 0 ? Math.min(100, (displayTime / duration) * 100) : 0;
-  
 
   const togglePlayback = async () => {
     const audio = audioRef.current;
@@ -527,6 +526,17 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
     }
 
     audio.pause();
+  };
+
+  const retryAudio = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    setHasAudioError(false);
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    audio.load();
   };
 
   const commitSeek = (value?: number) => {
@@ -594,24 +604,28 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
           : 'mt-3 min-h-[6.25rem] max-w-[13rem] rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl hover:-translate-y-px md:max-w-[15rem]'
       }`}
       data-mini-music-player={variant}
-      role="button"
-      tabIndex={0}
+      role={hasAudioError ? 'group' : 'button'}
+      tabIndex={hasAudioError ? undefined : 0}
       onClick={(event) => {
-        if (shouldIgnoreOpen(event.target)) return;
+        if (hasAudioError || shouldIgnoreOpen(event.target)) return;
         setShowExpandedPlayer(true);
       }}
       onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
+        if (!hasAudioError && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault();
           setShowExpandedPlayer(true);
         }
       }}
-      aria-label={`Open expanded player for ${track.title}`}
+      aria-label={hasAudioError ? `${track.title} stream controls` : `Open expanded player for ${track.title}`}
     >
       <audio
         ref={audioRef}
         preload="metadata"
-        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        onLoadedMetadata={(event) => {
+          setDuration(event.currentTarget.duration);
+          setHasAudioError(false);
+        }}
+        onCanPlay={() => setHasAudioError(false)}
         onTimeUpdate={(event) => {
           if (!isPlaying && !isSeeking) {
             setCurrentTime(event.currentTarget.currentTime);
@@ -665,7 +679,8 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
         </button>
       </div>
 
-      <div className={`relative ${variant === 'strip' ? 'mt-1.5' : 'mt-2.5'}`}>
+      {!hasAudioError ? (
+        <div className={`relative ${variant === 'strip' ? 'mt-1.5' : 'mt-2.5'}`}>
         <div className="flex items-center gap-2">
           <input
             data-player-control="true"
@@ -778,12 +793,42 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
             </div>
           </div>
         )}
-      </div>
-
-      {hasAudioError && (
-        <p className="relative mt-2 text-[10px] font-semibold text-warm-accent" role="status" aria-live="polite">
-          Audio stream is unavailable right now. Please try again shortly.
-        </p>
+        </div>
+      ) : (
+        <div
+          className={`relative flex items-center gap-1.5 text-[9px] font-semibold ${variant === 'strip' ? 'mt-1.5' : 'mt-2'}`}
+          role="status"
+          aria-live="polite"
+        >
+          <span className="min-w-0 flex-1 truncate text-warm-accent">Stream offline</span>
+          <button
+            type="button"
+            data-player-control="true"
+            onClick={(event) => {
+              event.stopPropagation();
+              retryAudio();
+            }}
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-accent/20 bg-accent/8 px-2 py-1 text-accent transition-colors hover:bg-accent/15"
+            aria-label={`Retry ${track.title} audio stream`}
+          >
+            <RefreshCw size={9} aria-hidden="true" />
+            Retry
+          </button>
+          {track.externalUrl && (
+            <a
+              href={track.externalUrl}
+              target="_blank"
+              rel="noreferrer"
+              data-player-control="true"
+              onClick={(event) => event.stopPropagation()}
+              className="inline-flex shrink-0 items-center gap-1 rounded-full px-1 py-1 text-muted transition-colors hover:text-text"
+              aria-label={`Open ${track.title} on Apple Music`}
+            >
+              Apple
+              <ExternalLink size={9} aria-hidden="true" />
+            </a>
+          )}
+        </div>
       )}
     </div>
     {typeof document !== 'undefined' ? createPortal((
