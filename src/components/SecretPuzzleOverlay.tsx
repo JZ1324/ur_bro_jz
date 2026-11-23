@@ -26,6 +26,13 @@ const stageLabels: Record<PuzzleStage, string> = {
   name: 'Puzzle 5',
 };
 
+const puzzleHints: Partial<Record<PuzzleStage, string>> = {
+  fragment: 'Hint: look at printable strings near the end of the file.',
+  payload: 'Hint: the payload is base64.',
+  hex: 'Hint: hex can become plain text.',
+  cipher: 'Hint: ROT13 swaps alphabet halves.',
+};
+
 export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProps) {
   const [secretName, setSecretName] = useState('');
   const [revealedName, setRevealedName] = useState('');
@@ -33,6 +40,8 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
   const [stage, setStage] = useState<PuzzleStage>('manual');
   const [puzzleInput, setPuzzleInput] = useState('');
   const [puzzleStatus, setPuzzleStatus] = useState<PuzzleStatus>('idle');
+  const [wrongAttempts, setWrongAttempts] = useState(0);
+  const puzzleRequest = useRef(0);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -58,9 +67,13 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     setStage('manual');
     setPuzzleInput('');
     setPuzzleStatus('idle');
+    setWrongAttempts(0);
+    return () => { puzzleRequest.current += 1; };
   }, [isOpen]);
 
   const moveToStage = (nextStage: PuzzleStage) => {
+    puzzleRequest.current += 1;
+    setWrongAttempts(0);
     setStage(nextStage);
     setPuzzleInput('');
     setPuzzleStatus('idle');
@@ -78,11 +91,14 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     const value = puzzleInput.trim();
     if (!value || stage === 'manual' || stage === 'name' || puzzleStatus === 'checking') return;
 
+    const request = ++puzzleRequest.current;
     setPuzzleStatus('checking');
 
     try {
       const result = await submitSecretPuzzleStep(stage, value);
+      if (request !== puzzleRequest.current) return;
       if (!result.matched) {
+        setWrongAttempts((attempts) => attempts + 1);
         setPuzzleStatus('wrong');
         return;
       }
@@ -104,11 +120,9 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
 
       setRevealedName(result.name || '');
       setStatus(result.name ? 'matched' : 'error');
-      setStage('name');
-      setPuzzleInput('');
-      setPuzzleStatus('idle');
+      moveToStage('name');
     } catch {
-      setPuzzleStatus('error');
+      if (request === puzzleRequest.current) setPuzzleStatus('error');
     }
   };
 
@@ -126,6 +140,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     }
   };
 
+  const activePuzzleHint = wrongAttempts >= 3 ? puzzleHints[stage] : undefined;
   const puzzleStarted = stage !== 'manual';
 
   return (
@@ -313,7 +328,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         value={puzzleInput}
                         onChange={(event) => {
                           setPuzzleInput(event.target.value);
-                          setPuzzleStatus('idle');
+                          setPuzzleStatus((current) => current === 'checking' ? current : 'idle');
                         }}
                         autoComplete="off"
                         autoCapitalize="none"
@@ -322,7 +337,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       />
                     </div>
                     <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
-                    {puzzleStatus === 'wrong' && <PuzzleError>That is not the fragment payload.</PuzzleError>}
+                    {puzzleStatus === 'wrong' && <PuzzleError hint={activePuzzleHint}>That is not the fragment payload.</PuzzleError>}
                     {puzzleStatus === 'error' && <PuzzleError>The fragment could not be checked right now.</PuzzleError>}
                   </form>
                 )}
@@ -337,7 +352,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         value={puzzleInput}
                         onChange={(event) => {
                           setPuzzleInput(event.target.value);
-                          setPuzzleStatus('idle');
+                          setPuzzleStatus((current) => current === 'checking' ? current : 'idle');
                         }}
                         autoComplete="off"
                         autoCapitalize="none"
@@ -346,7 +361,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       />
                     </div>
                     <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
-                    {puzzleStatus === 'wrong' && <PuzzleError>That payload did not open.</PuzzleError>}
+                    {puzzleStatus === 'wrong' && <PuzzleError hint={activePuzzleHint}>That payload did not open.</PuzzleError>}
                     {puzzleStatus === 'error' && <PuzzleError>The payload could not be checked right now.</PuzzleError>}
                   </form>
                 )}
@@ -361,7 +376,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         value={puzzleInput}
                         onChange={(event) => {
                           setPuzzleInput(event.target.value);
-                          setPuzzleStatus('idle');
+                          setPuzzleStatus((current) => current === 'checking' ? current : 'idle');
                         }}
                         autoComplete="off"
                         autoCapitalize="none"
@@ -370,7 +385,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       />
                     </div>
                     <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
-                    {puzzleStatus === 'wrong' && <PuzzleError>That is not the decoded line.</PuzzleError>}
+                    {puzzleStatus === 'wrong' && <PuzzleError hint={activePuzzleHint}>That is not the decoded line.</PuzzleError>}
                     {puzzleStatus === 'error' && <PuzzleError>The cipher could not be checked right now.</PuzzleError>}
                   </form>
                 )}
@@ -385,7 +400,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         value={puzzleInput}
                         onChange={(event) => {
                           setPuzzleInput(event.target.value);
-                          setPuzzleStatus('idle');
+                          setPuzzleStatus((current) => current === 'checking' ? current : 'idle');
                         }}
                         autoComplete="off"
                         autoCapitalize="none"
@@ -394,7 +409,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       />
                     </div>
                     <PuzzleSubmitButton disabled={!puzzleInput.trim() || puzzleStatus === 'checking'} loading={puzzleStatus === 'checking'} />
-                    {puzzleStatus === 'wrong' && <PuzzleError>Line does not match.</PuzzleError>}
+                    {puzzleStatus === 'wrong' && <PuzzleError hint={activePuzzleHint}>Line does not match.</PuzzleError>}
                     {puzzleStatus === 'error' && <PuzzleError>The line could not be checked right now.</PuzzleError>}
                   </form>
                 )}
@@ -663,7 +678,7 @@ function SunlightSparkles({
   );
 }
 
-function PuzzleError({ children }: { children: string }) {
+function PuzzleError({ children, hint }: { children: string; hint?: string }) {
   return (
     <motion.p
       initial={{ opacity: 0, y: 6 }}
@@ -671,6 +686,7 @@ function PuzzleError({ children }: { children: string }) {
       className="mt-4 rounded-2xl border border-warm-accent/30 bg-warm-accent/10 px-4 py-3 text-sm font-semibold leading-6 text-warm-accent"
     >
       <span>{children}</span>
+      {hint && <span className="mt-2 block text-warm-accent/85">{hint}</span>}
     </motion.p>
   );
 }
