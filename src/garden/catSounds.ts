@@ -14,36 +14,19 @@ export function createCartoonBlastSound() {
 
 // “Huss Huss Huss Sound Effect (No Music)” — https://www.youtube.com/watch?v=Cy-uv_uBJkk
 export function createCatRunSound() {
-  const sound = createCatSound(runSoundUrl, { loop: true, peak: .9 });
-  let idleTimer: ReturnType<typeof setTimeout> | undefined;
-
-  function play() {
-    sound.play();
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(sound.stop, 300);
-  }
-
-  function stop() {
-    clearTimeout(idleTimer);
-    sound.stop();
-  }
-
-  function dispose() {
-    clearTimeout(idleTimer);
-    sound.dispose();
-  }
-
-  return { unlock: sound.unlock, play, stop, dispose };
+  return createCatSound(runSoundUrl, { peak: .9, finishBeforeReplay: true });
 }
 
 const fadeTimeConstant = .008;
 
-function createCatSound(url: string | undefined, { peak, loop = false }: { peak: number; loop?: boolean }) {
+function createCatSound(
+  url: string | undefined,
+  { peak, finishBeforeReplay = false }: { peak: number; finishBeforeReplay?: boolean },
+) {
   let context: AudioContext | undefined;
   let buffer: AudioBuffer | undefined;
   let preparation: Promise<void> | undefined;
-  let playing: { source: AudioBufferSourceNode; gain?: GainNode; startedAt: number } | undefined;
-  let offset = 0;
+  let playing: { source: AudioBufferSourceNode; gain?: GainNode } | undefined;
   const controller = new AbortController();
 
   async function unlock() {
@@ -83,16 +66,14 @@ function createCatSound(url: string | undefined, { peak, loop = false }: { peak:
 
   function play() {
     if (!context || context.state !== 'running' || !buffer) return;
-    if (loop && playing) return;
+    if (finishBeforeReplay && playing) return;
     stop();
     const source = context.createBufferSource();
     source.buffer = buffer;
-    source.loop = loop;
-    const startedAt = context.currentTime;
-    const gain = loop ? context.createGain() : undefined;
+    const gain = finishBeforeReplay ? context.createGain() : undefined;
     if (gain) {
       gain.gain.value = 0;
-      gain.gain.setTargetAtTime(1, startedAt, fadeTimeConstant);
+      gain.gain.setTargetAtTime(1, context.currentTime, fadeTimeConstant);
       source.connect(gain).connect(context.destination);
     } else {
       source.connect(context.destination);
@@ -102,25 +83,21 @@ function createCatSound(url: string | undefined, { peak, loop = false }: { peak:
       gain?.disconnect();
       if (playing?.source === source) playing = undefined;
     };
-    playing = { source, gain, startedAt };
-    source.start(startedAt, offset);
+    playing = { source, gain };
+    source.start();
   }
 
   function stop() {
     if (!playing) return;
-    const { source, gain, startedAt } = playing;
+    const { source, gain } = playing;
     playing = undefined;
-    if (gain && context && buffer) {
+    if (gain && context?.state === 'running') {
       const now = context.currentTime;
-      // Resume the loop from this point when scrolling picks up again.
-      offset = (offset + now - startedAt) % buffer.duration;
-      if (context.state === 'running') {
-        gain.gain.setTargetAtTime(0, now, fadeTimeConstant);
-        source.stop(now + fadeTimeConstant * 5);
-        return;
-      }
+      gain.gain.setTargetAtTime(0, now, fadeTimeConstant);
+      source.stop(now + fadeTimeConstant * 5);
+    } else {
+      source.stop();
     }
-    source.stop();
   }
 
   function dispose() {

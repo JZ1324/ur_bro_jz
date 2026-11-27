@@ -537,7 +537,8 @@ export function GardenScrollCat({ paused, rain }: { paused: boolean; rain: boole
       }
 
       if (t < 1 || !effectsEnabled || mishap || waking || props.chasing || pointing || poseTarget || hop > 2) {
-        stopWalking();
+        element.dataset.walking = 'false';
+        if (!effectsEnabled) runSound.current?.stop();
       } else if (catchingUp || gardenWalking || scrollChange > .5) {
         element.dataset.walking = 'true';
         if (!document.hidden) runSound.current?.play();
@@ -546,11 +547,6 @@ export function GardenScrollCat({ paused, rain }: { paused: boolean; rain: boole
       }
       lastScroll = scroll;
     };
-
-    function stopWalking() {
-      if (element) element.dataset.walking = 'false';
-      runSound.current?.stop();
-    }
 
     function schedule() {
       if (!disposed && !frame) frame = requestAnimationFrame(update);
@@ -592,7 +588,7 @@ export function GardenScrollCat({ paused, rain }: { paused: boolean; rain: boole
       shot.removeAttribute('data-firing');
       cancelAnimationFrame(frame);
       window.clearTimeout(restTimer);
-      stopWalking();
+      element.dataset.walking = 'false';
       window.clearTimeout(washTimer);
       accident.started = null;
       clearTrail();
