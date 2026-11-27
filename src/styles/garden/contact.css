@@ -1,0 +1,102 @@
+/* Contact links and planting entry point. */
+
+.garden-app .contact-details > a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-top: 1px solid var(--line);
+  padding: 17px 0;
+}
+
+.garden-app .contact-details > a > span {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.garden-app .contact-details strong {
+  font-family: var(--display);
+  font-size: 26px;
+  line-height: 1.1;
+  font-weight: 500;
+}
+
+.garden-app .contact-details > a > span > span {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.garden-app .plant-moment {
+  margin-top: 28px;
+}
+
+.garden-app .plant-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 40px;
+  padding: 11px 18px;
+  transition: background .2s;
+}
+
+.garden-app .plant-button svg {
+  color: #ad7d8d;
+}
+
+.garden-app .plant-button:hover:not(:disabled) {
+  background: #89997012;
+}
+
+.garden-app .plant-moment .quiet-caption {
+  margin-top: 9px;
+  font-size: 10px;
+}
+
+@media (max-width: 760px) {
+  .garden-app .section-contact h2 {
+    font-size: 51px;
+  }
+
+  .garden-app .section-contact .section-description {
+    margin: 16px 0 18px;
+  }
+
+  .garden-app .plant-moment {
+    margin-top: 19px;
+  }
+
+  .garden-app .plant-button {
+    font-size: 11px;
+    padding: 10px 15px;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 730px) {
+  .garden-app .section-contact h2 {
+    font-size: 46px;
+  }
+
+  .garden-app .plant-moment {
+    margin-top: 15px;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 620px) {
+  .garden-app .section-contact h2 {
+    font-size: 42px;
+  }
+
+  .garden-app .section-contact .section-description {
+    margin: 12px 0;
+    font-size: 17px;
+  }
+
+  .garden-app .plant-moment {
+    margin-top: 13px;
+  }
+}

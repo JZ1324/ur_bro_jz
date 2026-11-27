@@ -1,0 +1,240 @@
+.scroll-cat-stories {
+  position: absolute;
+  inset: auto auto 2% -35%;
+  width: 170%;
+  overflow: visible;
+  --story-ink: color-mix(in srgb, var(--ink) 78%, var(--sage));
+  --story-paper: var(--paper);
+}
+
+.cat-story {
+  display: none;
+}
+
+.garden-cat-nap-space {
+  display: grid;
+  min-height: 76px;
+  place-items: center;
+}
+
+.garden-cat-nap-space > span {
+  position: relative;
+  width: 60px;
+  height: 48px;
+}
+
+.garden-cat-nap-space > span::after {
+  position: absolute;
+  inset: 66% 0 2%;
+  border-radius: 52% 48% 45% 50%;
+  background: #a3cbb52b;
+  border: 1px solid #a3cbb53a;
+  content: '';
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-cat-nap-space { display: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-cat[data-paused='false'][data-pointing='nap'] .cat-sleeping {
+    display: inline;
+  }
+
+  .scroll-cat[data-paused='false'][data-pointing='projects'] .scroll-cat-body {
+    animation: cat-knight-recoil 1140ms ease-in-out;
+  }
+
+  .scroll-cat[data-paused='false'][data-butterfly-chase='true'] .scroll-cat-body {
+    animation: cat-chase-daisy 1440ms ease-in-out;
+  }
+
+  .scroll-cat[data-paused='false'][data-pointing='sprinkler'] .scroll-cat-body {
+    animation: cat-wash-paws 1270ms ease-in-out;
+  }
+
+  .scroll-cat[data-pointing='sprinkler'] .cat-gesture-paw {
+    animation: cat-test-water 1270ms ease-in-out both;
+  }
+
+  .scroll-cat[data-pointing='sprinkler'] .scroll-cat-paw {
+    inset-block-end: 8%;
+    animation: cat-rinse-feet 1270ms ease-out both;
+  }
+
+  .scroll-cat[data-paused='false'][data-pointing='nap'] .scroll-cat-body {
+    animation: cat-curl-up 450ms ease-out both;
+  }
+
+  .scroll-cat[data-paused='false'][data-waking='true'] .scroll-cat-body {
+    animation: cat-wake-stretch 480ms ease-out;
+  }
+
+
+
+  .cat-sleeping { animation: cat-reveal-nap 450ms step-end both; }
+  .cat-nap-breath { animation: cat-sleep-breath 2600ms ease-in-out 450ms infinite; }
+  .cat-nap-dream { animation: cat-sleep-dream 2600ms ease-in-out 775ms infinite both; }
+}
+
+.cat-nap-breath {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.cat-nap-breath { transform-origin: center bottom; }
+.cat-sleeping { translate: 0 -9px; }
+.cat-nap-dream { stroke: #aac6b1; }
+
+.cat-spray {
+  stroke: #69a997;
+  stroke-dasharray: 8 3;
+}
+
+@keyframes cat-knight-recoil {
+  0%, 100% { transform: none; }
+  38%, 47% { transform: translate(-2px,3px) rotate(-10deg) scale(1.05,.88); }
+  63% { transform: translate(7px,-12px) rotate(20deg) scale(.89,1.11); }
+  79% { transform: translate(3px,1px) rotate(-7deg) scale(1.05,.92); }
+}
+
+@keyframes cat-story-spark {
+  0% { opacity: 0; scale: .4; }
+  27% { opacity: 1; scale: 1.1; }
+  100% { opacity: 0; scale: 1.3; }
+}
+
+@keyframes cat-butterfly-flap {
+  from { scale: .48 1; }
+  to { scale: 1 .86; }
+}
+
+@keyframes cat-chase-daisy {
+  0%, 100% { transform: none; }
+  24% { transform: translateY(3px) rotate(7deg) scale(1.08,.9); }
+  42% { transform: translate(-8px,-9px) rotate(-14deg); }
+  56% { transform: translate(-5px,2px) rotate(6deg) scale(1.02,.93); }
+  73% { transform: translate(-1px,-8px) rotate(11deg); }
+  87% { transform: translateY(2px) rotate(-4deg) scale(1.04,.95); }
+}
+
+@keyframes cat-water-stream {
+  0% { opacity: 0; stroke-dashoffset: 26; }
+  12% { opacity: 1; }
+  26%, 79% { opacity: 1; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 0; }
+}
+
+@keyframes cat-wash-paws {
+  0%, 100% { transform: none; }
+  19% { transform: translate(-4px,1px) rotate(-10deg); }
+  36% { transform: translate(5px,-5px) rotate(16deg); }
+  52% { transform: translate(-5px,2px) rotate(-12deg) scale(1.03,.92); }
+  68% { transform: translate(-3px,-10px) rotate(12deg); }
+  87% { transform: translateY(2px) rotate(-5deg) scale(1.12,.92); }
+}
+
+@keyframes cat-test-water {
+  0%, 10%, 41%, 100% { transform: none; }
+  23%, 30% { transform: translate(-79px, -11px) rotate(-12deg) scale(1.45, .84); }
+}
+
+@keyframes cat-rinse-feet {
+  0%, 54%, 100% { opacity: 0; }
+  66%, 89% { opacity: 1; }
+}
+
+@keyframes cat-curl-up {
+  0% { transform: none; opacity: 1; }
+  74%, 99% { transform: translateY(7px) rotate(10deg) scale(1.06,.55); opacity: 1; }
+  100% { transform: translateY(9px) rotate(8deg) scale(1.11,.44); opacity: 0; }
+}
+
+@keyframes cat-reveal-nap {
+  0%, 99% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes cat-sleep-breath {
+  0%, 100% { scale: 1 .99; }
+  52% { scale: 1.02 1.045; }
+}
+
+@keyframes cat-sleep-dream {
+  0% { opacity: 0; translate: 0 5px; }
+  33%, 58% { opacity: .78; }
+  100% { opacity: 0; translate: 3px -9px; }
+}
+
+@keyframes cat-wake-stretch {
+  0% { transform: translateY(7px) scale(1.08,.55); }
+  35% { transform: translateY(4px) scale(1.22,.81); }
+  70% { transform: translateY(-3px) scale(.95,1.1) rotate(-7deg); }
+  100% { transform: none; }
+}
+
+.garden-scene-props {
+  position: fixed;
+  inset: 0;
+  z-index: 13;
+  pointer-events: none;
+  --story-ink: color-mix(in srgb, var(--ink) 78%, var(--sage));
+  --story-paper: var(--paper);
+  --reaction-ink: var(--story-ink);
+  --sprinkler-water: #467f94;
+}
+
+.dark .garden-scene-props { --sprinkler-water: #a5ddeb; }
+
+.garden-scene-props > svg {
+  display: none;
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: var(--prop-size);
+  translate: calc(var(--prop-x) - 50%) calc(var(--prop-y) - 50%);
+  rotate: var(--prop-turn, 0deg);
+}
+
+.garden-scene-props > svg[data-placed] { display: block; }
+
+.garden-scene-props [data-cat-prop='knight'] {
+  transform-origin: center 89%;
+}
+
+.garden-scene-props [data-cat-prop='leaf'],
+.garden-scene-props [data-cat-prop='camera'],
+.garden-scene-props [data-cat-prop='butterfly'] {
+  z-index: 1;
+}
+
+.cat-knight-surprise,
+.cat-stolen-daisy,
+.cat-spray,
+.cat-wash-spark,
+.cat-photo-spark {
+  opacity: 0;
+}
+
+[data-cat-prop='butterfly'][data-carrying] .cat-stolen-daisy,
+[data-cat-prop='camera'][data-flash] .cat-photo-spark,
+[data-cat-prop='knight'][data-tipping] .cat-knight-surprise {
+  opacity: 1;
+}
+
+.scroll-cat[data-daisy-away='true'] .cat-held-daisy { opacity: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-cat-prop='butterfly'][data-flying] .cat-butterfly-wings {
+    transform-origin: center;
+    transform-box: fill-box;
+    animation: cat-butterfly-flap 145ms ease-in-out infinite alternate;
+  }
+
+  [data-cat-prop='sprinkler'][data-watering] .cat-spray {
+    animation: cat-water-stream 1400ms ease-out both;
+  }
+
+  [data-cat-prop='sprinkler'][data-watering] .cat-wash-spark {
+    animation: cat-story-spark 320ms ease-out 895ms both;
+  }
+}

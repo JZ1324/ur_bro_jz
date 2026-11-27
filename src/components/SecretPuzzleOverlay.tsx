@@ -1,16 +1,19 @@
+import { useOverlayFocus } from '../hooks/useOverlayFocus';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Download, Loader2, Lock, X } from 'lucide-react';
+import { ArrowUpLeft, Check, Download, Loader2, Lock, X } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-import { checkSecretName, submitSecretPuzzleStep } from '../lib/secretName';
+import { DaisyCat } from 'trazo-stickers';
+import { checkSecretName, submitSecretPuzzleStep, type SecretPuzzleStage } from '../lib/secretName';
 import { ShinyText } from './ui/ShinyText';
 import { DecodedText } from './ui/DecodedText';
+import './sealed-note.css';
 
 type SecretPuzzleOverlayProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-type PuzzleStage = 'manual' | 'fragment' | 'payload' | 'hex' | 'cipher' | 'name';
+type PuzzleStage = 'manual' | SecretPuzzleStage | 'name';
 type PuzzleStatus = 'idle' | 'checking' | 'wrong' | 'error';
 
 const fragmentSrc = `${import.meta.env.BASE_URL}archive-fragment.png`;
@@ -26,13 +29,28 @@ const stageLabels: Record<PuzzleStage, string> = {
   name: 'Puzzle 5',
 };
 
+const stepHints: Record<SecretPuzzleStage, string> = {
+  fragment: 'The downloaded image has more to it than its pixels.',
+  payload: 'Look at the alphabet and the padding at the end. They can tell you how the text was packed.',
+  hex: 'Read it two characters at a time. Each pair represents one byte.',
+  cipher: 'Pick a short word in the decoded line and see what pattern it gives you.',
+};
+
 export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProps) {
+  const overlayRef = useOverlayFocus(isOpen, onClose);
   const [secretName, setSecretName] = useState('');
   const [revealedName, setRevealedName] = useState('');
   const [status, setStatus] = useState<'idle' | 'checking' | 'matched' | 'missed' | 'error'>('idle');
   const [stage, setStage] = useState<PuzzleStage>('manual');
   const [puzzleInput, setPuzzleInput] = useState('');
   const [puzzleStatus, setPuzzleStatus] = useState<PuzzleStatus>('idle');
+  const [manualMisses, setManualMisses] = useState(0);
+  const [puzzleMisses, setPuzzleMisses] = useState(0);
+  const [sealCat, setSealCat] = useState<'guide' | 'hopping' | 'perched'>('guide');
+  const pendingCheck = useRef<AbortController | null>(null);
+  const sealButton = useRef<HTMLButtonElement>(null);
+  const guideCat = useRef<HTMLSpanElement>(null);
+  const sealHop = useRef<Animation | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -58,12 +76,29 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     setStage('manual');
     setPuzzleInput('');
     setPuzzleStatus('idle');
+    setManualMisses(0);
+    setPuzzleMisses(0);
+    setSealCat('guide');
+    return () => {
+      pendingCheck.current?.abort();
+      sealHop.current?.cancel();
+      sealHop.current = null;
+    };
   }, [isOpen]);
 
   const moveToStage = (nextStage: PuzzleStage) => {
+    pendingCheck.current?.abort();
     setStage(nextStage);
     setPuzzleInput('');
     setPuzzleStatus('idle');
+    setPuzzleMisses(0);
+    if (nextStage === 'manual') {
+      setSecretName('');
+      setRevealedName('');
+      setStatus('idle');
+      setManualMisses(0);
+      setSealCat('guide');
+    }
   };
 
   const startPuzzle = () => {
@@ -73,16 +108,64 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
     moveToStage('fragment');
   };
 
+  const pressSeal = () => {
+    if (stage !== 'manual') {
+      moveToStage('manual');
+      return;
+    }
+    if (sealHop.current) return;
+
+    const cat = guideCat.current;
+    const button = sealButton.current;
+    if (!cat || !button || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (cat) setSealCat('perched');
+      startPuzzle();
+      return;
+    }
+
+    pendingCheck.current?.abort();
+    const from = cat.getBoundingClientRect();
+    const to = button.getBoundingClientRect();
+    const transform = getComputedStyle(cat).transform;
+    const origin = transform === 'none' ? new DOMMatrix() : new DOMMatrix(transform);
+    const x = origin.e + to.left + to.width / 2 - (from.left + from.width / 2);
+    const y = origin.f + to.top - 17 - (from.top + from.height / 2);
+    const landing = `translate(${x}px, ${y}px)`;
+    const hop = cat.animate([
+      { transform },
+      { offset: .55, transform: `translate(${(x + origin.e) / 2}px, ${(y + origin.f) / 2 - 24}px) rotate(-9deg) scale(.96, 1.08)` },
+      { offset: .86, transform: `${landing} rotate(4deg) scale(1.07, .91)` },
+      { transform: landing },
+    ], { duration: 380, easing: 'ease-out', fill: 'forwards' });
+    sealHop.current = hop;
+    setSealCat('hopping');
+    hop.onfinish = () => {
+      sealHop.current = null;
+      setSealCat('perched');
+      startPuzzle();
+    };
+  };
+
+  const editPuzzleAnswer = (value: string) => {
+    setPuzzleInput(value);
+    if (puzzleStatus !== 'checking') setPuzzleStatus('idle');
+  };
+
   const handlePuzzleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const value = puzzleInput.trim();
-    if (!value || stage === 'manual' || stage === 'name' || puzzleStatus === 'checking') return;
+    if (!value || stage === 'manual' || stage === 'name') return;
+    if (pendingCheck.current && !pendingCheck.current.signal.aborted) return;
 
+    const request = new AbortController();
+    pendingCheck.current = request;
     setPuzzleStatus('checking');
 
     try {
-      const result = await submitSecretPuzzleStep(stage, value);
+      const result = await submitSecretPuzzleStep(stage, value, request.signal);
+      if (request.signal.aborted) return;
       if (!result.matched) {
+        setPuzzleMisses(count => count + 1);
         setPuzzleStatus('wrong');
         return;
       }
@@ -108,34 +191,44 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
       setPuzzleInput('');
       setPuzzleStatus('idle');
     } catch {
-      setPuzzleStatus('error');
+      if (!request.signal.aborted) setPuzzleStatus('error');
+    } finally {
+      if (pendingCheck.current === request) pendingCheck.current = null;
     }
   };
 
   const handleManualSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedName = secretName.trim();
-    if (!trimmedName || status === 'checking') return;
+    if (!trimmedName || sealHop.current || (pendingCheck.current && !pendingCheck.current.signal.aborted)) return;
 
+    const request = new AbortController();
+    pendingCheck.current = request;
     setStatus('checking');
     try {
-      const matched = await checkSecretName(trimmedName);
+      const matched = await checkSecretName(trimmedName, request.signal);
+      if (request.signal.aborted) return;
       setStatus(matched ? 'matched' : 'missed');
+      setManualMisses(count => matched ? 0 : count + 1);
     } catch {
-      setStatus('error');
+      if (!request.signal.aborted) setStatus('error');
+    } finally {
+      if (pendingCheck.current === request) pendingCheck.current = null;
     }
   };
 
   const puzzleStarted = stage !== 'manual';
+  const showCat = stage === 'manual' && status !== 'matched' && manualMisses >= 2;
+  const puzzleHint = stage !== 'manual' && stage !== 'name' && puzzleMisses >= 2 ? stepHints[stage] : undefined;
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <motion.div ref={overlayRef} role="dialog" aria-modal="true" aria-label="Classified name puzzle" tabIndex={-1}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[75] flex items-center justify-center overflow-y-auto bg-bg/90 p-4 backdrop-blur-2xl"
+          className="sealed-note-overlay fixed inset-0 z-[75] flex justify-center overflow-y-auto bg-bg/90 p-4 backdrop-blur-2xl"
         >
           <motion.div
             initial={{ opacity: 0, y: 18, scale: 0.97 }}
@@ -159,16 +252,31 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
 
             <div className="relative grid min-h-[32rem] gap-8 p-6 pt-20 sm:p-10 sm:pt-24 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:p-14">
               <div className="text-center lg:text-left">
-                <div className="relative mx-auto inline-flex lg:mx-0">
+                <div className="relative mx-auto inline-flex flex-col items-center lg:mx-0 lg:items-start">
                   <button
+                    ref={sealButton}
                     type="button"
-                    onClick={puzzleStarted ? () => moveToStage('manual') : startPuzzle}
-                    className="mx-auto inline-flex items-center gap-2 rounded-full border border-warm-accent/25 bg-warm-accent/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.24em] text-warm-accent transition-[transform,background-color,border-color] duration-150 ease-out hover:border-warm-accent/55 hover:bg-warm-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent/45 active:scale-[0.97] lg:mx-0"
+                    onClick={pressSeal}
+                    className="relative mx-auto inline-flex items-center gap-2 rounded-full border border-warm-accent/25 bg-warm-accent/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.24em] text-warm-accent transition-[transform,background-color,border-color] duration-150 ease-out hover:border-warm-accent/55 hover:bg-warm-accent/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-accent/45 active:scale-[0.97] lg:mx-0"
                     aria-label={puzzleStarted ? 'Return to sealed note input' : 'Start sealed note puzzle'}
+                    aria-describedby={showCat ? 'sealed-note-cat-message' : undefined}
+                    aria-busy={sealCat === 'hopping'}
                   >
+                    {sealCat === 'perched' && <DaisyCat className="sealed-note-perched" size={60} focusable="false" aria-hidden="true" />}
                     <Lock size={13} />
                     Sealed note
                   </button>
+                  <div role="status">
+                    {showCat && (
+                      <div className="sealed-note-guide">
+                        <span ref={guideCat} className="sealed-note-mascot" data-hopping={sealCat === 'hopping'} aria-hidden="true">
+                          <DaisyCat size="100%" focusable="false" />
+                          <ArrowUpLeft className="sealed-note-pointer" size={19} strokeWidth={1.7} />
+                        </span>
+                        <p id="sealed-note-cat-message">Psst… press <strong>Sealed note</strong> to start.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 {puzzleStarted ? (
                   <>
@@ -229,7 +337,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         <label htmlFor="secret-name" className="block text-2xl font-bold text-text">
                           Key:
                         </label>
-                        <div className="mt-5 rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
+                        <div className="mt-5 sealed-note-field rounded-2xl border border-border/70 bg-surface/70 px-4 py-3">
                           <input
                             id="secret-name"
                             type="password"
@@ -246,7 +354,7 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                         </div>
                         <button
                           type="submit"
-                          disabled={!secretName.trim() || status === 'checking'}
+                          disabled={!secretName.trim() || status === 'checking' || sealCat === 'hopping'}
                           className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-accent px-5 py-4 text-base font-bold text-bg transition-[transform,background-color,opacity] duration-150 ease-out hover:bg-accent-dark active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {status === 'checking' ? (
@@ -306,15 +414,12 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                       </a>
                     </div>
                     <label htmlFor="fragment-answer" className="sr-only">Puzzle answer</label>
-                    <div className="mt-5 rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
+                    <div className="mt-5 sealed-note-field rounded-2xl border border-border/70 bg-surface/70 px-4 py-3">
                       <input
                         id="fragment-answer"
                         placeholder="Put your answer here"
                         value={puzzleInput}
-                        onChange={(event) => {
-                          setPuzzleInput(event.target.value);
-                          setPuzzleStatus('idle');
-                        }}
+                        onChange={event => editPuzzleAnswer(event.target.value)}
                         autoComplete="off"
                         autoCapitalize="none"
                         spellCheck={false}
@@ -330,15 +435,12 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                 {stage === 'payload' && (
                   <form onSubmit={handlePuzzleSubmit}>
                     <label htmlFor="payload-answer" className="sr-only">Puzzle answer</label>
-                    <div className="rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
+                    <div className="sealed-note-field rounded-2xl border border-border/70 bg-surface/70 px-4 py-3">
                       <input
                         id="payload-answer"
                         placeholder="Put your answer here"
                         value={puzzleInput}
-                        onChange={(event) => {
-                          setPuzzleInput(event.target.value);
-                          setPuzzleStatus('idle');
-                        }}
+                        onChange={event => editPuzzleAnswer(event.target.value)}
                         autoComplete="off"
                         autoCapitalize="none"
                         spellCheck={false}
@@ -354,15 +456,12 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                 {stage === 'hex' && (
                   <form onSubmit={handlePuzzleSubmit}>
                     <label htmlFor="hex-answer" className="sr-only">Puzzle answer</label>
-                    <div className="rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
+                    <div className="sealed-note-field rounded-2xl border border-border/70 bg-surface/70 px-4 py-3">
                       <input
                         id="hex-answer"
                         placeholder="Put your answer here"
                         value={puzzleInput}
-                        onChange={(event) => {
-                          setPuzzleInput(event.target.value);
-                          setPuzzleStatus('idle');
-                        }}
+                        onChange={event => editPuzzleAnswer(event.target.value)}
                         autoComplete="off"
                         autoCapitalize="none"
                         spellCheck={false}
@@ -378,15 +477,12 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                 {stage === 'cipher' && (
                   <form onSubmit={handlePuzzleSubmit}>
                     <label htmlFor="cipher-answer" className="sr-only">Puzzle answer</label>
-                    <div className="rounded-2xl border border-border/70 bg-surface/70 px-4 py-3 transition-colors focus-within:border-accent/70">
+                    <div className="sealed-note-field rounded-2xl border border-border/70 bg-surface/70 px-4 py-3">
                       <input
                         id="cipher-answer"
                         placeholder="Put your answer here"
                         value={puzzleInput}
-                        onChange={(event) => {
-                          setPuzzleInput(event.target.value);
-                          setPuzzleStatus('idle');
-                        }}
+                        onChange={event => editPuzzleAnswer(event.target.value)}
                         autoComplete="off"
                         autoCapitalize="none"
                         spellCheck={false}
@@ -437,6 +533,11 @@ export function SecretPuzzleOverlay({ isOpen, onClose }: SecretPuzzleOverlayProp
                     )}
                   </div>
                 )}
+                <div role="status">
+                  {puzzleHint && (
+                    <p className="sealed-note-hint"><strong>A little hint</strong> {puzzleHint}</p>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>

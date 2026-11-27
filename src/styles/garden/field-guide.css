@@ -1,0 +1,213 @@
+/* Garden settings for weather, appearance, and sound. */
+
+.field-guide-dialog {
+  width: min(540px, calc(100% - 32px));
+}
+
+.field-guide-dialog h2 {
+  margin-top: 16px;
+}
+
+.guide-soundscape {
+  margin-top: 26px;
+}
+
+.guide-atmosphere {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--color-border);
+}
+
+.guide-moods {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 17px;
+}
+
+.guide-moods button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.guide-moods button > svg {
+  flex: none;
+}
+
+.guide-moods button:hover,
+.guide-theme-controls button:hover {
+  background: var(--color-accent-soft);
+}
+
+.guide-moods button[aria-pressed='true'],
+.guide-theme-controls button[aria-pressed='true'] {
+  background: var(--color-accent);
+  color: var(--button-text);
+  border-color: var(--color-accent);
+}
+
+.guide-appearance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.guide-theme-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.guide-theme-controls button,
+.guide-wish {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.guide-wish:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.guide-wish-hint {
+  margin-top: 11px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+
+.guide-wish-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.guide-sound-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.guide-sound-heading h3 {
+  font-family: var(--font-display);
+  font-size: 27px;
+  font-weight: 500;
+}
+
+.guide-sound-heading > svg {
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.soundscape-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 17px;
+}
+
+.soundscape-options button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.soundscape-options button:hover {
+  background: var(--color-accent-soft);
+}
+
+.soundscape-options button[aria-pressed='true'] {
+  background: var(--color-accent);
+  color: var(--button-text);
+  border-color: var(--color-accent);
+}
+
+.soundscape-volume {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 19px;
+  font-size: 10px;
+  color: var(--color-muted);
+}
+
+.soundscape-volume input {
+  flex: 1;
+  min-width: 40px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  height: 30px;
+}
+
+.soundscape-volume output {
+  min-width: 30px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.soundscape-error {
+  font-size: 11px;
+  color: var(--color-warm-accent);
+  margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+  .field-guide-dialog {
+    width: calc(100% - 24px);
+  }
+}
+
+@media (max-width: 460px) {
+  .soundscape-options {
+    gap: 6px;
+  }
+
+  .soundscape-options button {
+    padding-inline: 10px;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .guide-moods button {
+    flex-direction: column;
+    gap: 5px;
+    padding-inline: 6px;
+    font-size: 11px;
+  }
+
+  .guide-theme-controls button,
+  .guide-wish {
+    gap: 6px;
+    padding-inline: 10px;
+    font-size: 11px;
+  }
+}

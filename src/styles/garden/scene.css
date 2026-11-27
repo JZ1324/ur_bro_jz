@@ -1,0 +1,466 @@
+/* Journey atmosphere, 3D stage, loading states, landmarks, and koi controls. */
+
+.journey-world {
+  position: relative;
+}
+
+.garden-app .journey-atmosphere {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: clip;
+  pointer-events: none;
+}
+
+.garden-app .atmosphere-wash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 55% 65% at 65% 52%, color-mix(in srgb, var(--atmosphere-wash) 58%, transparent), transparent 75%);
+}
+
+.garden-app .atmosphere-art {
+  position: absolute;
+  left: 27%;
+  top: 8%;
+  width: 73%;
+  height: 82%;
+  color: var(--sage);
+}
+
+.garden-app .atmosphere-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform-origin: center;
+}
+
+.garden-app .atmosphere-layer path,
+.garden-app .atmosphere-layer circle,
+.garden-app .atmosphere-layer rect {
+  vector-effect: non-scaling-stroke;
+}
+
+.garden-app .stage-track {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+}
+
+.garden-app .garden-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
+}
+
+.garden-app .garden-viewport {
+  position: absolute;
+  margin: 0;
+  left: 27%;
+  top: 8%;
+  width: 73%;
+  height: 82%;
+}
+
+.garden-app .garden-canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .85s ease;
+}
+
+.garden-app .garden-viewport[data-scene-state="ready"] .garden-canvas {
+  opacity: 1;
+}
+
+.garden-app .garden-canvas canvas {
+  display: block;
+  touch-action: pan-y pinch-zoom;
+}
+
+.garden-app .garden-canvas[data-chess-active="true"] {
+  pointer-events: auto;
+}
+
+.garden-app .garden-canvas[data-chess-dragging="true"] {
+  cursor: grabbing !important;
+}
+
+.garden-app .garden-pins {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .6s;
+}
+
+.garden-app .garden-viewport[data-scene-state="ready"] .garden-pins {
+  opacity: 1;
+}
+
+.garden-app .landmark-pin {
+  visibility: hidden;
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+.garden-app .pin-glint {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff8dc;
+  box-shadow: 0 0 0 3px #fff8dc35, 0 0 12px 4px #f5dfb854;
+  opacity: .85;
+  transition: transform 140ms ease, opacity 140ms ease;
+}
+
+.garden-app .landmark-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(50% + 14px);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--color-surface-raised);
+  box-shadow: 0 3px 14px #233b2924;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, 4px) scale(.97);
+  transform-origin: center bottom;
+  transition: opacity 140ms cubic-bezier(.23, 1, .32, 1), transform 140ms cubic-bezier(.23, 1, .32, 1), visibility 140ms;
+}
+
+.garden-app .landmark-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: calc(50% - 4px);
+  border: 4px solid transparent;
+  border-top-color: var(--color-surface-raised);
+}
+
+.garden-app .landmark-pin[data-placement='below'] .landmark-tooltip {
+  top: calc(50% + 14px);
+  bottom: auto;
+  transform-origin: center top;
+}
+
+.garden-app .landmark-pin[data-placement='below'] .landmark-tooltip::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: var(--color-surface-raised);
+}
+
+.garden-app .pin-arrow {
+  flex: none;
+}
+
+.garden-app .landmark-pin[data-active='true'] {
+  z-index: 4;
+}
+
+.garden-app .landmark-pin[data-active='true'] .landmark-tooltip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.garden-app .landmark-pin[data-active='true'] .pin-glint {
+  opacity: 1;
+  transform: scale(1.35);
+}
+
+.garden-app .landmark-pin:focus-visible {
+  outline: 1.5px solid var(--sage);
+  outline-offset: 1px;
+}
+
+.garden-app .landmark-pin:focus-visible .landmark-tooltip {
+  transition: none;
+}
+
+.garden-app .landmark-pin:active .pin-glint {
+  transform: scale(.95);
+}
+
+.garden-app .garden-loading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(300px, 85%);
+  text-align: center;
+  color: var(--muted);
+}
+
+.garden-app .garden-loading p {
+  font-family: var(--display);
+  font-size: 26px;
+  line-height: 1.2;
+  margin: 14px 0;
+}
+
+.garden-app .loading-flower {
+  color: #c597a1;
+  font-size: 40px;
+  animation: flower-turn 12s linear infinite;
+}
+
+.garden-app .loading-track {
+  width: 130px;
+  height: 2px;
+  background: #87956e2b;
+  overflow: hidden;
+}
+
+.garden-app .loading-track span {
+  display: block;
+  height: 100%;
+  background: var(--sage);
+  transition: width .3s;
+}
+
+.garden-app .garden-error {
+  pointer-events: auto;
+}
+
+.garden-app .garden-error .loading-flower {
+  animation: none;
+}
+
+.garden-app .garden-error > span:not(.loading-flower) {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.garden-app .text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--line);
+  padding: 15px 0 8px;
+}
+
+.dark .garden-app .atmosphere-art {
+  opacity: .5;
+}
+
+.garden-secret {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.garden-secret[hidden] {
+  display: none;
+}
+
+.garden-secret-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 52px;
+  transform: translate(-50%, 4px);
+  padding: 7px 11px;
+  border-radius: 8px;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: 0 2px 10px #35432a15;
+  font-size: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+
+.garden-secret:hover .garden-secret-hint,
+.garden-secret:focus-visible .garden-secret-hint {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+
+.garden-app .garden-pond {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 12px;
+  transform: translate(-50%, 5px);
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--ink);
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px #35432a25;
+  pointer-events: auto;
+  z-index: 3;
+}
+
+.garden-app .garden-pond[hidden] {
+  display: none;
+}
+
+.garden-app .garden-pond:hover {
+  border-color: var(--sage);
+}
+
+.garden-app.is-community .journey-atmosphere,
+.garden-app.is-community .garden-stage {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.dark .planted-pin > span {
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+}
+
+.garden-weather-wash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse 65% 85% at 75% 40%, #9bbfc32e, transparent 80%);
+  transition: opacity 650ms ease;
+}
+
+.garden-app[data-garden-mood='rain']:is([data-active-section='opening'], [data-active-section='about']) .garden-weather-wash {
+  opacity: 1;
+}
+
+.garden-app[data-garden-mood='fireflies'] .garden-weather-wash {
+  background: radial-gradient(ellipse 55% 65% at 67% 45%, #90a56820, transparent 75%);
+}
+
+.garden-app[data-garden-mood='fireflies']:is([data-active-section='opening'], [data-active-section='about']) .garden-weather-wash {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-app .pin-glint {
+    transition: none;
+  }
+
+  .garden-app .landmark-tooltip {
+    transition: none;
+    transform: translateX(-50%);
+  }
+
+  .garden-app .landmark-pin[data-active='true'] .landmark-tooltip {
+    transform: translateX(-50%);
+  }
+
+  .garden-weather-wash {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .garden-app .journey-atmosphere {
+    z-index: 6;
+    bottom: auto;
+    height: var(--stage-screen);
+    background: linear-gradient(var(--paper) calc(100% - 20px), transparent);
+  }
+
+  .garden-app .atmosphere-wash {
+    background: radial-gradient(ellipse 85% 80% at 50% 55%, color-mix(in srgb, var(--atmosphere-wash) 62%, transparent), transparent 80%);
+  }
+
+  .garden-app .stage-track {
+    z-index: 7;
+  }
+
+  .garden-app .garden-loading p {
+    font-size: 23px;
+  }
+
+  .garden-app .garden-error > span:not(.loading-flower) {
+    font-size: 11px;
+  }
+
+  .garden-app .garden-pond {
+    transform: translate(calc(-50% - 44px), 5px);
+  }
+
+  .garden-app .garden-viewport,
+  .garden-app .atmosphere-art {
+    left: -5%;
+    width: 110%;
+    top: 70px;
+    height: 33svh;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 730px) {
+  .garden-app .garden-viewport,
+  .garden-app .atmosphere-art {
+    top: 64px;
+    height: 26svh;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 620px) {
+  .garden-app .garden-pins,
+  .garden-app .garden-error .loading-flower {
+    display: none;
+  }
+
+  .garden-app .garden-error p {
+    font-size: 20px;
+    margin: 8px 0;
+  }
+
+  .garden-app .garden-viewport,
+  .garden-app .atmosphere-art {
+    top: 76px;
+    height: 22svh;
+  }
+}
+
+@media (max-height: 540px) and (min-width: 761px) and (max-width: 1100px) {
+  .garden-app .garden-viewport,
+  .garden-app .atmosphere-art {
+    left: 42%;
+    top: 68px;
+    width: 58%;
+    height: 62svh;
+  }
+}
+
+@keyframes flower-turn { to { transform: rotate(360deg); } }

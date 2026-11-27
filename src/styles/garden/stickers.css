@@ -1,0 +1,198 @@
+/* Crayon marks sit beside their labels without taking up reading space. */
+.garden-app .sticker-anchor {
+  position: relative;
+  display: inline-block;
+}
+
+.garden-app .garden-sticker {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: calc(100% + var(--sticker-gap, 8px));
+  width: var(--sticker-size, 36px);
+  height: var(--sticker-size, 36px);
+  translate: 0 -50%;
+  pointer-events: none;
+}
+
+.garden-app .opening-sticker {
+  --sticker-size: clamp(54px, 6.1vw, 96px);
+  --sticker-gap: clamp(8px, .9vw, 15px);
+  inset-block-start: 47%;
+}
+
+@media (max-width: 760px) {
+  .garden-app .garden-sticker {
+    width: var(--sticker-size, 28px);
+    height: var(--sticker-size, 28px);
+  }
+
+  .garden-app .opening-sticker {
+    --sticker-size: clamp(34px, 11vw, 60px);
+  }
+}
+
+.garden-app .title-sticker-anchor {
+  --sticker-size: clamp(26px, 4vw, 44px);
+  padding-inline-end: calc(var(--sticker-size) + 8px);
+}
+
+.garden-app .title-sticker-anchor > .garden-sticker {
+  inset-inline: auto 0;
+  inset-block-start: .5em;
+}
+
+.garden-app .byline-cloud {
+  --sticker-size: 30px;
+}
+
+.garden-app .planting-sticker {
+  --sticker-size: 38px;
+}
+
+.garden-app .reef-sticker {
+  --sticker-size: clamp(26px, 4vw, 38px);
+}
+
+.garden-app .link-sparkle {
+  --sticker-size: clamp(23px, 4vw, 36px);
+}
+
+.garden-app .link-sticker {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+}
+
+.garden-app .social-sticker {
+  width: 31px;
+  height: 31px;
+}
+
+.garden-app .intro-social {
+  text-decoration: underline dotted;
+  text-underline-offset: .23em;
+}
+
+.garden-app .intro-social:hover {
+  color: var(--color-warm-accent);
+  text-decoration-style: solid;
+}
+
+.garden-app .garden-doodles {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2vw, 26px);
+  width: fit-content;
+  max-width: 100%;
+  margin-block: 14px 6px;
+  padding-block: 6px;
+  pointer-events: none;
+}
+
+.garden-app .garden-doodles > svg {
+  width: clamp(24px, 3vw, 42px);
+  height: clamp(24px, 3vw, 42px);
+  flex: none;
+}
+
+.garden-app .garden-doodles > svg:nth-child(even) {
+  translate: 0 6px;
+}
+
+.garden-app .garden-doodles[data-arrangement='about'] {
+  gap: clamp(8px, 1vw, 18px);
+  margin-block: 0 19px;
+}
+
+.garden-app .garden-hug {
+  position: relative;
+  flex: none;
+  width: clamp(60px, 8vw, 110px);
+  height: clamp(60px, 8vw, 110px);
+}
+
+.garden-hug > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.garden-hug-waiting {
+  visibility: hidden;
+}
+
+.garden-hug-orange {
+  transform-origin: 176px 173px;
+  translate: calc(-9px * var(--cat-reach, 0)) 0;
+  rotate: calc(-7deg * var(--cat-reach, 0));
+}
+
+.garden-hug-waiting-paw {
+  transform-origin: 144px 149px;
+  rotate: calc(-70deg + 70deg * var(--cat-reach, 0));
+  scale: calc(.5 + .5 * var(--cat-reach, 0)) calc(.77 + .23 * var(--cat-reach, 0));
+}
+
+.garden-hug-joined {
+  transform-origin: 142px 175px;
+}
+
+.garden-hug-joined-paw {
+  transform-origin: 144px 149px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .garden-hug-waiting { visibility: visible; }
+
+  .garden-hug-embrace,
+  .garden-hug[data-cat-action='hugging'] .garden-hug-waiting,
+  .community-note-mark > svg { visibility: hidden; }
+
+  .garden-hug[data-cat-action='hugging'] .garden-hug-embrace,
+  .community-note-mark[data-cat-action='offering'] > svg { visibility: visible; }
+
+  .garden-hug[data-cat-action='hugging'] .garden-hug-joined {
+    animation: garden-hug-squeeze 460ms cubic-bezier(.23, 1, .32, 1) both;
+  }
+
+  .garden-hug[data-cat-action='hugging'] .garden-hug-joined-paw {
+    animation: garden-hug-paw 460ms cubic-bezier(.23, 1, .32, 1) both;
+  }
+
+  .community-note-mark[data-cat-action='offering'] > svg {
+    transform-origin: 55% 78%;
+    animation: garden-cat-offer 380ms cubic-bezier(.23, 1, .32, 1) both;
+  }
+}
+
+@keyframes garden-hug-squeeze {
+  0% { scale: 1.02 .98; }
+  35% { scale: .94 1.04; rotate: -3deg; }
+  72% { scale: 1.01 1; }
+  100% { scale: 1; rotate: 0deg; }
+}
+
+@keyframes garden-hug-paw {
+  0% { rotate: -7deg; }
+  36% { rotate: 5deg; }
+  100% { rotate: 0deg; }
+}
+
+@keyframes garden-cat-offer {
+  0% { scale: 1.06 .93; rotate: 4deg; }
+  33% { translate: 0 -6px; scale: .98 1.05; rotate: -5deg; }
+  100% { translate: 0 0; scale: 1; rotate: 0deg; }
+}
+
+.garden-app .garden-doodles[data-arrangement='reef'] {
+  --sage: #a2d4c5;
+  --color-warm-accent: #efb3ca;
+  margin: 0 auto 0 0;
+}
+
+.garden-app .ocean-footer {
+  align-items: center;
+  gap: 16px;
+}

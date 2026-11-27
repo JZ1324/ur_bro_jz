@@ -1,9 +1,6 @@
-name: Deploy GitHub Pages
+name: Static preview only (no garden API)
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,22 @@
+/* Garden settings button and sound indicator. */
+
+.garden-app .guide-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+.garden-app .guide-toggle:hover {
+  color: var(--sage);
+}
+
+.garden-app .sound-on-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--sage);
+  border-radius: 50%;
+}

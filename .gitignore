@@ -8,6 +8,7 @@ coverage/
 !.env.example
 supabase/.temp/
 .vercel
+.garden-data/
 
 # Local/private audio. Only publish tracks you own or are licensed to distribute.
 public/*.flac
@@ -16,3 +17,7 @@ public/audio/*.mp3
 public/audio/*.ogg
 public/audio/*.wav
 local-audio/
+dist-server/
+test-results/
+playwright-report/
+deploy/.env

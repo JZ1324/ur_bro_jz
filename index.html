@@ -1,30 +1,59 @@
 <!doctype html>
-<html lang="en" class="dark" data-theme="dark">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      const gardenScrollKey = () => 'garden:scroll:' + location.pathname + location.search + location.hash;
+
+      try {
+        if (performance.getEntriesByType('navigation')[0]?.type === 'reload') {
+          const position = JSON.parse(sessionStorage.getItem(gardenScrollKey()) || 'null');
+          if (position && Number.isFinite(position.y)) {
+            history.scrollRestoration = 'manual';
+            document.documentElement.dataset.restoreScroll = String(position.y);
+            if (position.ocean) document.documentElement.dataset.restoreOcean = '';
+            document.documentElement.classList.add('is-restoring-scroll');
+          }
+        }
+      } catch { /* Storage can be unavailable. */ }
+
+      window.addEventListener('pagehide', () => {
+        try {
+          const ocean = document.getElementById('ocean');
+          sessionStorage.setItem(gardenScrollKey(), JSON.stringify({
+            y: window.scrollY,
+            ocean: !!ocean && ocean.getBoundingClientRect().top < 0,
+          }));
+        } catch { /* Browser history can still restore the position. */ }
+      });
+    </script>
+    <style>
+      html.is-restoring-scroll, html.is-finishing-scroll { overflow-anchor: none; }
+      html.is-restoring-scroll #root { opacity: 0; }
+    </style>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JZ — projects, apps & archive</title>
-    <meta name="description" content="JZ's personal archive for VCE Vault, GptDoc, Studyflow, native macOS tools, and smaller interface experiments." />
+    <title>JZ’s garden</title>
+    <meta name="description" content="Hey, I’m JZ. I build study tools and macOS apps. Have a look at my projects, listen to some music or plant something in the garden." />
     
     <!-- Open Graph Meta Tags for Link Previews -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://ur-bro-jz.vercel.app/" />
-    <meta property="og:title" content="JZ — projects, apps & archive" />
-    <meta property="og:description" content="Current work, shipped projects, and the experiments behind them — kept inside JZ's personal pixel-garden archive." />
-    <meta property="og:image" content="https://ur-bro-jz.vercel.app/preview-pool.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:title" content="JZ’s garden" />
+    <meta property="og:description" content="My projects, photos and a bit about my faith. There’s a garden you can plant in, too." />
+    <meta property="og:image" content="https://ur-bro-jz.vercel.app/preview-garden.png" />
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="720" />
     
     <!-- Twitter Card Meta Tags -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://ur-bro-jz.vercel.app/" />
-    <meta property="twitter:title" content="JZ — projects, apps & archive" />
-    <meta property="twitter:description" content="Current work, shipped projects, and the experiments behind them — kept inside JZ's personal pixel-garden archive." />
-    <meta property="twitter:image" content="https://ur-bro-jz.vercel.app/preview-pool.png" />
-        <!-- Apply the saved preference before React loads; first-time visits default to dark. -->
-        <script>!function(){try{var dark=localStorage.getItem('theme')!=='light';document.documentElement.classList.toggle('dark',dark);document.documentElement.setAttribute('data-theme',dark?'dark':'light')}catch(e){}}</script>
+    <meta property="twitter:title" content="JZ’s garden" />
+    <meta property="twitter:description" content="My projects, photos and a bit about my faith. There’s a garden you can plant in, too." />
+    <meta property="twitter:image" content="https://ur-bro-jz.vercel.app/preview-garden.png" />
+        <!-- Apply the saved preference before React loads; first-time visits default to light. -->
+        <script>!function(){try{var dark=localStorage.getItem('theme')==='dark';document.documentElement.classList.toggle('dark',dark);document.documentElement.setAttribute('data-theme',dark?'dark':'light')}catch(e){}}</script>
   </head>
   <body>
     <div id="root"></div>

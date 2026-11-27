@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { GraduationCap, Lock, Music, ShieldAlert, Users, X } from 'lucide-react';
 import { TextScramble } from './TextScramble';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useOverlayFocus } from '../hooks/useOverlayFocus';
 import type { ArchiveSection, ArchiveSectionId, PrivateArchiveSection } from '../data/site';
 
 const icons = {
@@ -36,13 +37,14 @@ export function ArchiveVault({
   onLock,
 }: ArchiveVaultProps) {
   useBodyScrollLock(isOpen && isUnlocked);
+  const overlayRef = useOverlayFocus(isOpen && isUnlocked, onClose);
 
   const activeNavigationSection = sections.find((section) => section.id === activeSectionId) ?? sections[0];
 
   return (
     <AnimatePresence>
       {isOpen && isUnlocked && (
-        <motion.div
+        <motion.div ref={overlayRef} role="dialog" aria-modal="true" aria-label="Private archive" tabIndex={-1}
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: '100vh' }}
           exit={{ opacity: 0, height: 0 }}
@@ -148,7 +150,7 @@ export function ArchiveVault({
                     <h3 className="text-xl font-bold text-text">Private archive unavailable</h3>
                     <p className="mt-2 leading-relaxed text-muted">{errorMessage}</p>
                     <p className="mt-4 text-xs leading-relaxed text-subtle">
-                      This is intentional: the site will not fall back to bundled private data or public image files.
+                      Your private notes and photos are still locked. Try opening the archive again.
                     </p>
                   </div>
                 </div>

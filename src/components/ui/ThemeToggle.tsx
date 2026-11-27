@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
-export type Theme = 'light' | 'dark';
+import type { Theme } from '../../themePreference';
+export type { Theme } from '../../themePreference';
 
 type ThemeToggleProps = {
   defaultTheme?: Theme;

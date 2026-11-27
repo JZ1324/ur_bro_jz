@@ -1,0 +1,11 @@
+/* Deferred feature placeholders and recovery. */
+
+.deferred-feature {
+  min-height: 620px;
+}
+
+.deferred-feature > p,
+.feature-recovery {
+  padding: 2rem;
+  text-align: center;
+}

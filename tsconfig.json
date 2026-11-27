@@ -21,11 +21,15 @@
       ]
     },
     "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
     "noEmit": true
   },
     "include": [
       "src",
-      "types"
+      "types",
+      "server",
+      "api",
+      "vite.config.ts"
     ],
   "exclude": [
     "dist",

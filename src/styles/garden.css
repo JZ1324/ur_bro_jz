@@ -1,0 +1,25 @@
+/* Garden stylesheet entry point. Edit the owning component module; keep shared
+   foundations first. Component modules include their own responsive states.
+   Community, planting, and game styles live beside those components. */
+
+@import './garden/base.css';
+@import './garden/header.css';
+@import './garden/scene.css';
+@import './garden/chapters.css';
+@import './garden/stickers.css';
+@import './garden/about.css';
+@import './garden/projects.css';
+@import './garden/music.css';
+@import './garden/memories.css';
+@import './garden/contact.css';
+@import './garden/chess.css';
+@import './garden/controls.css';
+@import './garden/field-guide.css';
+@import './garden/mood-controls.css';
+@import './garden/features.css';
+
+@import './garden/notebook.css';
+
+@import './garden/scroll-motion.css';
+@import './garden/cat-reactions.css';
+@import './garden/cat-stories.css';

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "count": 3877,
+  "stride": 12,
+  "layouts": [
+    "opening",
+    "about",
+    "projects",
+    "school",
+    "music",
+    "memories",
+    "contact"
+  ],
+  "buffer": "journey-voxels.bin",
+  "components": [
+    "x",
+    "y",
+    "z",
+    "sx",
+    "sy",
+    "sz",
+    "rx",
+    "ry",
+    "rz",
+    "r",
+    "g",
+    "b"
+  ]
+}

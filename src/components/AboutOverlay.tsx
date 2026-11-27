@@ -1,3 +1,4 @@
+import { useOverlayFocus } from '../hooks/useOverlayFocus';
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
 import { TextScramble } from './TextScramble';
@@ -37,6 +38,7 @@ export function AboutOverlay({
   onClose,
 }: AboutOverlayProps) {
   useBodyScrollLock(isOpen);
+  const overlayRef = useOverlayFocus(isOpen, onClose);
 
   const intro = sections.find((section) => section.id === 'about-intro');
   const bio = sections.find((section) => section.id === 'about-bio');
@@ -49,7 +51,7 @@ export function AboutOverlay({
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <motion.div ref={overlayRef} role="dialog" aria-modal="true" aria-label="About JZ" tabIndex={-1}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

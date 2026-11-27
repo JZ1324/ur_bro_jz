@@ -34,6 +34,7 @@ export function BibleVersePreviewPanel({ verse }: BibleVersePreviewPanelProps) {
 
 export function BibleVerseHoverCard({ children, verse, className }: BibleVerseHoverCardProps) {
   const [isOpen, setOpen] = React.useState(false);
+  const panelId = React.useId();
 
   return (
     <HoverCardPrimitive.Root open={isOpen} openDelay={120} closeDelay={110} onOpenChange={setOpen}>
@@ -42,6 +43,8 @@ export function BibleVerseHoverCard({ children, verse, className }: BibleVerseHo
           type="button"
           data-verse-preview-trigger="true"
           aria-label={`Preview Bible verse ${verse.reference}`}
+          aria-expanded={isOpen}
+          aria-controls={panelId}
           onClick={() => setOpen(true)}
           onFocus={() => setOpen(true)}
           onMouseEnter={() => setOpen(true)}
@@ -54,6 +57,7 @@ export function BibleVerseHoverCard({ children, verse, className }: BibleVerseHo
 
       <HoverCardPrimitive.Portal>
         <HoverCardPrimitive.Content
+          id={panelId}
           side="top"
           align="center"
           sideOffset={8}

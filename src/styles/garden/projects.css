@@ -1,0 +1,117 @@
+/* Featured work takes the reading column. Chess stays playable beside it. */
+
+.garden-app .section-projects {
+  padding-top: 16svh;
+}
+
+.garden-app .section-projects .section-copy {
+  --copy-top: 16svh;
+}
+
+.garden-app .project-list {
+  list-style: none;
+  padding: 0;
+  margin: 22px 0 4px;
+  border-top: 1px solid var(--line);
+}
+
+.garden-app .project-list > li {
+  padding: 5px 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.garden-app .project-list h3 {
+  font: 500 clamp(26px, 2.5vw, 34px) / 1 var(--display);
+  margin: 0;
+}
+
+.garden-app .project-list h3 button {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  min-height: 44px;
+  padding: 0;
+  gap: 10px;
+  font: inherit;
+}
+
+.garden-app .project-list h3 button svg {
+  flex: none;
+  color: var(--sage);
+}
+
+.garden-app .project-list h3 button:hover {
+  color: var(--sage);
+}
+
+.garden-app .project-list p {
+  max-width: 52ch;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.garden-app .project-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.garden-app .project-heading .section-link,
+.garden-app .all-projects-link {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+}
+
+.garden-app .project-heading .section-link {
+  gap: 8px;
+  flex: none;
+  scroll-margin: 0;
+}
+
+@media (min-width: 761px) {
+  .garden-app .section-projects .section-copy {
+    width: 39%;
+    max-width: 510px;
+  }
+
+  .garden-app[data-active-section='projects'] .garden-viewport {
+    left: 45%;
+    width: 55%;
+  }
+}
+
+@media (min-width: 761px) and (max-height: 540px) {
+  .garden-app .section-projects {
+    padding-top: 82px;
+  }
+
+  .garden-app .section-projects .section-copy {
+    --copy-top: 82px;
+  }
+}
+
+@media (max-width: 760px) {
+  .garden-app .section-projects {
+    --projects-copy-top: calc(var(--stage-screen) + 8px);
+    padding-top: var(--projects-copy-top);
+  }
+
+  .garden-app .section-projects .section-copy {
+    --copy-top: var(--projects-copy-top);
+  }
+
+  .garden-app .project-list {
+    margin-top: 14px;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 620px) {
+  .garden-app .section-projects {
+    --projects-copy-top: calc(84px + 22svh);
+  }
+}

@@ -1,0 +1,261 @@
+/* The garden and board sit in their own document rows. Everything else reads
+   as an ordinary page, so nearby sections stay visible while scrolling. */
+.garden-app {
+  --reading-width: 1180px;
+  --reading-gutter: max(5%, calc((100% - var(--reading-width)) / 2));
+  --chess-scene-height: clamp(270px, 65vw, 410px);
+}
+
+.garden-app .site-header {
+  position: sticky;
+  inset: 0 0 auto;
+  padding: 10px var(--reading-gutter);
+  margin: 0;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+
+.garden-app .site-header::before {
+  display: none;
+}
+
+.garden-app .journey-world {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  isolation: isolate;
+}
+
+.garden-app .journey-sections {
+  display: contents;
+}
+
+.garden-app .journey-section {
+  display: block;
+  grid-column: 1 / -1;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  padding: clamp(34px, 5vw, 72px) var(--reading-gutter);
+  scroll-margin-top: 54px;
+}
+
+.garden-app .journey-section:last-child {
+  min-height: 0;
+  padding-bottom: clamp(34px, 5vw, 72px);
+}
+
+.garden-app .section-copy {
+  position: relative;
+  z-index: 5;
+  top: auto;
+  width: auto;
+  max-width: none;
+  margin: 0;
+}
+
+.garden-app .journey-section:not(.section-opening) h2 {
+  font-size: clamp(44px, 5.2vw, 78px);
+  line-height: .94;
+}
+
+.garden-app .section-description {
+  margin: 18px 0 22px;
+}
+
+.garden-app .section-opening {
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  padding-block: clamp(36px, 7vw, 104px);
+  min-height: clamp(540px, 72svh, 800px);
+  background: radial-gradient(ellipse at 74% 48%, var(--atmosphere-wash), transparent 61%);
+}
+
+.garden-app .introduction {
+  max-width: min(40%, 425px);
+}
+
+.garden-app .intro-actions {
+  display: flex;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 8px 30px;
+}
+
+.garden-app .intro-actions .sticker-anchor {
+  margin-inline-end: 28px;
+}
+
+.garden-app .intro-actions .guide-toggle {
+  min-height: 44px;
+  font-size: 12px;
+}
+
+.garden-app .section-about {
+  grid-row: 2;
+  border-block: 1px solid var(--line);
+  background: color-mix(in srgb, var(--color-warm-accent) 5%, var(--paper));
+}
+
+.garden-app .section-about .section-copy {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: 0 clamp(36px, 7vw, 110px);
+}
+
+.garden-app .section-about .section-description {
+  grid-column: 1;
+}
+
+.garden-app .about-details {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.garden-app .section-projects {
+  grid-row: 3;
+}
+
+.garden-app .section-projects .section-copy {
+  width: 47%;
+  min-width: 0;
+}
+
+.garden-app .section-school,
+.garden-app .section-music {
+  grid-row: 4;
+  border-block: 1px solid var(--line);
+  background: color-mix(in srgb, var(--sage) 7%, var(--paper));
+}
+
+.garden-app .section-school {
+  grid-column: 1;
+  padding-inline: max(10%, calc(100% - 590px)) clamp(20px, 4vw, 60px);
+}
+
+.garden-app .section-music {
+  grid-column: 2;
+  padding-inline: clamp(20px, 4vw, 60px) max(10%, calc(100% - 590px));
+  border-inline-start: 1px solid var(--line);
+}
+
+.garden-app .section-memories {
+  grid-row: 5;
+}
+
+.garden-app .memory-gallery {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.garden-app .section-contact {
+  grid-row: 6;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--color-warm-accent) 4%, var(--paper));
+}
+
+.garden-app .section-contact .section-copy {
+  max-width: 630px;
+}
+
+.garden-app .stage-track {
+  grid-area: 1 / 1 / auto / -1;
+  position: relative;
+  inset: auto;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 0;
+}
+
+.garden-app .stage-track[data-scene='projects'] {
+  grid-row: 3;
+}
+
+.garden-app .stage-track[data-visible='false'] {
+  visibility: hidden;
+}
+
+.garden-app .garden-stage {
+  position: absolute;
+  overflow: visible;
+  inset: 0;
+  height: auto;
+  scroll-margin-block: 88px 24px;
+}
+
+.garden-app .stage-track .garden-viewport {
+  inset: 0 0 0 40%;
+  width: auto;
+  height: auto;
+}
+
+.garden-app .stage-track[data-scene='projects'] .garden-viewport {
+  inset-inline-start: 48%;
+  inset-inline-end: var(--reading-gutter);
+}
+
+@media (max-width: 960px) {
+  .garden-app .memory-gallery {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .garden-app .journey-section {
+    padding-inline: 6%;
+  }
+
+  .garden-app .section-opening {
+    display: block;
+    min-height: 0;
+    padding-block: calc(clamp(220px, 45svh, 380px) + 16px) 36px;
+  }
+
+  .garden-app .introduction,
+  .garden-app .section-projects .section-copy {
+    max-width: 100%;
+    width: auto;
+  }
+
+  .garden-app .stage-track .garden-viewport {
+    inset: 0 0 auto;
+    height: clamp(220px, 45svh, 380px);
+  }
+
+  .garden-app .section-about .section-copy {
+    display: block;
+  }
+
+  .garden-app .section-projects {
+    padding-bottom: calc(var(--chess-scene-height) + 22px);
+  }
+
+  .garden-app .stage-track[data-scene='projects'] .garden-stage {
+    inset: auto 0 14px;
+    height: var(--chess-scene-height);
+  }
+
+  .garden-app .stage-track[data-scene='projects'] .garden-viewport {
+    inset: 0;
+    height: auto;
+  }
+
+  .garden-app .section-school,
+  .garden-app .section-music {
+    grid-column: 1 / -1;
+    border: 0;
+    border-block: 1px solid var(--line);
+  }
+
+  .garden-app .section-music { grid-row: 5; border-top: 0; }
+  .garden-app .section-memories { grid-row: 6; }
+  .garden-app .section-contact { grid-row: 7; }
+
+  .garden-app .memory-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .garden-app .section-copy :is(a, button, summary) {
+    scroll-margin-block: 30px;
+  }
+}

@@ -1,0 +1,81 @@
+/* Music chapter and editorial player. */
+
+.garden-app .featured-song {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 0 0 20px;
+}
+
+.garden-app .featured-song img {
+  width: 108px;
+  height: 108px;
+  object-fit: cover;
+  border-radius: 2px;
+  box-shadow: 0 6px 20px #29213015;
+}
+
+.garden-app .featured-song h3 {
+  font-family: var(--display);
+  font-size: 33px;
+  font-weight: 500;
+  line-height: 1;
+  margin: 9px 0;
+}
+
+.garden-app .featured-song figcaption > p:last-child {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.garden-app .chapter-details .song-note {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+.garden-app .song-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.garden-app .song-note svg {
+  flex: none;
+}
+
+.garden-app [data-mini-music-player='editorial'] {
+  padding: 15px 14px 10px;
+}
+
+.garden-app [data-mini-music-player='editorial'] > .grid {
+  grid-template-columns: 44px minmax(0, 1fr) 38px;
+  gap: 12px;
+}
+
+.garden-app [data-mini-music-player='editorial'] .grid > img {
+  width: 44px;
+  height: 44px;
+}
+
+.garden-app [data-mini-music-player='editorial'] .grid > button {
+  width: 38px;
+  height: 38px;
+  background: var(--color-accent);
+  color: var(--button-text);
+}
+
+.garden-app [data-mini-music-player='editorial'] .grid p:first-of-type {
+  margin-top: 3px;
+}
+
+.garden-app [data-mini-music-player='editorial'] .grid .h-3\.5 {
+  font-size: 9px;
+}
+
+.garden-app [data-mini-music-player='editorial'] .grid p:last-of-type {
+  font-size: 11px;
+}

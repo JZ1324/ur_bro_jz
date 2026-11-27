@@ -1,12 +1,14 @@
-import { ExternalLink, Music2, Pause, Play, RefreshCw, X } from 'lucide-react';
+import { ExternalLink, Maximize2, Music2, Pause, Play, RefreshCw, X } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { ProfileTrack, ProfileTrackSource } from '../data/site';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useOverlayFocus } from '../hooks/useOverlayFocus';
 
 type MiniMusicPlayerProps = {
   track: ProfileTrack;
-  variant?: 'card' | 'strip';
+  variant?: 'card' | 'strip' | 'editorial';
 };
 
 type NetworkInformation = {
@@ -229,6 +231,8 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
   const [currentTime, setCurrentTime] = useState(0);
   const [hasAudioError, setHasAudioError] = useState(false);
   const [showExpandedPlayer, setShowExpandedPlayer] = useState(false);
+  useBodyScrollLock(showExpandedPlayer);
+  const expandedRef = useOverlayFocus(showExpandedPlayer, () => setShowExpandedPlayer(false));
   const [isSeeking, setIsSeeking] = useState(false);
   const [isCompactViewport, setIsCompactViewport] = useState(false);
   const [seekValue, setSeekValue] = useState(0);
@@ -264,15 +268,6 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
     mediaQuery.addEventListener('change', syncViewport);
     return () => mediaQuery.removeEventListener('change', syncViewport);
   }, []);
-
-  useEffect(() => {
-    if (!showExpandedPlayer) return;
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, [showExpandedPlayer]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -403,28 +398,28 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
     if (lyrics.length === 0) return [];
 
     const centerIndex = hasReachedFirstLyric ? currentLyricIndex : 0;
-    const start = Math.max(0, centerIndex - 2);
-    const end = Math.min(lyrics.length, centerIndex + 3);
+    const start = Math.max(0, centerIndex - 1);
+    const end = Math.min(lyrics.length, centerIndex + 2);
     return lyrics.slice(start, end).map((line, offset) => ({ line, index: start + offset }));
   }, [currentLyricIndex, hasReachedFirstLyric, lyrics]);
 
   const getTokenFillStyle = (tokenIndex: number, activeTokenIndex: number) => (
     tokenIndex === activeTokenIndex
       ? {
-        backgroundImage: `linear-gradient(90deg, rgb(228 154 120) 0%, rgb(201 211 176) ${currentTokenProgress * 100}%, rgb(183 187 168 / 0.5) ${currentTokenProgress * 100}%, rgb(183 187 168 / 0.5) 100%)`,
+        backgroundImage: `linear-gradient(90deg, var(--color-warm-accent) 0%, var(--color-accent) ${currentTokenProgress * 100}%, var(--color-muted) ${currentTokenProgress * 100}%, var(--color-muted) 100%)`,
         WebkitBackgroundClip: 'text',
         backgroundClip: 'text',
-        textShadow: currentTokenProgress > 0.02 ? '0 0 18px rgba(228,154,120,0.22)' : 'none',
+        textShadow: 'none',
       }
       : undefined
   );
 
   const getTokenClassName = (tokenIndex: number, activeTokenIndex: number) => (
     tokenIndex < activeTokenIndex
-      ? 'text-warm-accent/90'
+      ? 'text-warm-accent'
       : tokenIndex === activeTokenIndex
         ? 'text-transparent'
-        : 'text-muted/55'
+        : 'text-muted'
   );
 
   // Auto-scroll follow loop: smoothly follow active token using syllable timing
@@ -604,19 +599,21 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
           : 'mt-3 min-h-[6.25rem] max-w-[13rem] rounded-2xl border border-accent/20 bg-white/[0.055] p-2.5 shadow-2xl shadow-black/20 ring-1 ring-white/[0.05] backdrop-blur-xl hover:-translate-y-px md:max-w-[15rem]'
       }`}
       data-mini-music-player={variant}
-      role={hasAudioError ? 'group' : 'button'}
-      tabIndex={hasAudioError ? undefined : 0}
+      data-cat-stop={variant === 'editorial' ? 'music' : undefined}
+      role={hasAudioError || variant === 'editorial' ? 'group' : 'button'}
+      tabIndex={hasAudioError || variant === 'editorial' ? undefined : 0}
       onClick={(event) => {
         if (hasAudioError || shouldIgnoreOpen(event.target)) return;
         setShowExpandedPlayer(true);
       }}
       onKeyDown={(event) => {
+        if (event.target !== event.currentTarget) return;
         if (!hasAudioError && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault();
           setShowExpandedPlayer(true);
         }
       }}
-      aria-label={hasAudioError ? `${track.title} stream controls` : `Open expanded player for ${track.title}`}
+      aria-label={hasAudioError || variant === 'editorial' ? `${track.title} stream controls` : `Open expanded player for ${track.title}`}
     >
       <audio
         ref={audioRef}
@@ -652,9 +649,9 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
         />
 
         <div className="min-w-0 flex-1">
-          <div className="flex h-3.5 items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-warm-accent/90">
+          <div className="flex h-3.5 items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-warm-accent">
             <Music2 size={10} className="shrink-0" />
-            <span className="inline-block min-w-[5.9rem]">Now playing</span>
+            <span className="inline-block min-w-[5.9rem]">{variant === 'editorial' ? 'On repeat' : 'Now playing'}</span>
             <span
               className={`h-1 w-1 rounded-full bg-warm-accent transition-opacity ${isPlaying ? 'opacity-100' : 'opacity-35'}`}
               aria-hidden="true"
@@ -735,11 +732,11 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
             disabled={!duration}
             className="mini-range -my-1.5 w-full"
             style={{
-              backgroundImage: `linear-gradient(90deg, rgba(201,211,176,1) ${progress}%, rgba(255,255,255,0.06) ${progress}%)`,
+              backgroundImage: `linear-gradient(90deg, var(--color-accent) ${progress}%, var(--color-border) ${progress}%)`,
             }}
           />
         </div>
-        <style>{`\n          .mini-range {\n            -webkit-appearance: none;\n            appearance: none;\n            height: 20px;\n            border-radius: 9999px;\n            outline: none;\n            background-clip: padding-box;\n            background-position: center;\n            background-repeat: no-repeat;\n            background-size: 100% 5px;\n            cursor: pointer;\n            touch-action: none;\n            transition: filter 160ms ease, opacity 160ms ease;\n          }\n          .mini-range:disabled {\n            cursor: not-allowed;\n            opacity: 0.45;\n          }\n          .mini-range:focus-visible {\n            filter: drop-shadow(0 0 0.4rem rgba(201,211,176,0.34));\n          }\n          .mini-range::-webkit-slider-runnable-track {\n            height: 5px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-webkit-slider-thumb {\n            -webkit-appearance: none;\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: #c9d3b0;\n            border: 2px solid rgba(0,0,0,0.28);\n            margin-top: -4.5px;\n            box-shadow: 0 3px 8px rgba(0,0,0,0.42);\n            transition: transform 150ms ease, box-shadow 150ms ease;\n          }\n          .mini-range:active::-webkit-slider-thumb {\n            transform: scale(1.1);\n            box-shadow: 0 5px 14px rgba(0,0,0,0.48), 0 0 0 4px rgba(201,211,176,0.12);\n          }\n          .mini-range::-moz-range-track {\n            height: 5px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-moz-range-thumb {\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: #c9d3b0;\n            border: 2px solid rgba(0,0,0,0.28);\n            box-shadow: 0 3px 8px rgba(0,0,0,0.42);\n            transition: transform 150ms ease, box-shadow 150ms ease;\n          }\n          .mini-range:active::-moz-range-thumb {\n            transform: scale(1.1);\n            box-shadow: 0 5px 14px rgba(0,0,0,0.48), 0 0 0 4px rgba(201,211,176,0.12);\n          }\n        `}</style>
+        <style>{`\n          .mini-range {\n            -webkit-appearance: none;\n            appearance: none;\n            height: 20px;\n            border-radius: 9999px;\n            outline: none;\n            background-clip: padding-box;\n            background-position: center;\n            background-repeat: no-repeat;\n            background-size: 100% 5px;\n            cursor: pointer;\n            touch-action: none;\n            transition: filter 160ms ease, opacity 160ms ease;\n          }\n          .mini-range:disabled {\n            cursor: not-allowed;\n            opacity: 0.45;\n          }\n          .mini-range:focus-visible {\n            filter: drop-shadow(0 0 0.4rem rgba(201,211,176,0.34));\n          }\n          .mini-range::-webkit-slider-runnable-track {\n            height: 5px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-webkit-slider-thumb {\n            -webkit-appearance: none;\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: var(--color-accent);\n            border: 2px solid rgba(0,0,0,0.28);\n            margin-top: -4.5px;\n            box-shadow: 0 3px 8px rgba(0,0,0,0.42);\n            transition: transform 150ms ease, box-shadow 150ms ease;\n          }\n          .mini-range:active::-webkit-slider-thumb {\n            transform: scale(1.1);\n            box-shadow: 0 5px 14px rgba(0,0,0,0.48), 0 0 0 4px rgba(201,211,176,0.12);\n          }\n          .mini-range::-moz-range-track {\n            height: 5px;\n            border-radius: 9999px;\n            background: transparent;\n          }\n          .mini-range::-moz-range-thumb {\n            width: 14px;\n            height: 14px;\n            border-radius: 50%;\n            background: var(--color-accent);\n            border: 2px solid rgba(0,0,0,0.28);\n            box-shadow: 0 3px 8px rgba(0,0,0,0.42);\n            transition: transform 150ms ease, box-shadow 150ms ease;\n          }\n          .mini-range:active::-moz-range-thumb {\n            transform: scale(1.1);\n            box-shadow: 0 5px 14px rgba(0,0,0,0.48), 0 0 0 4px rgba(201,211,176,0.12);\n          }\n        `}</style>
 
         <div className={`${variant === 'strip' ? 'mt-0' : 'mt-1'} grid grid-cols-3 items-center text-[9px] font-semibold text-subtle`}>
           <span className="text-left">{formatTime(displayTime)}</span>
@@ -830,11 +827,17 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
           )}
         </div>
       )}
+      {variant === 'editorial' && <button type="button" data-player-control="true" className="music-expand" onClick={(event) => { event.stopPropagation(); setShowExpandedPlayer(true); }}>Open player & lyrics<Maximize2 size={13} /></button>}
     </div>
     {typeof document !== 'undefined' ? createPortal((
     <AnimatePresence>
       {showExpandedPlayer && (
         <motion.div
+          ref={expandedRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${track.title} player and lyrics`}
+          tabIndex={-1}
           className="fixed inset-0 z-[90] overflow-hidden bg-bg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -964,10 +967,14 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
                         event.stopPropagation();
                         commitSeek();
                       }}
+                      onKeyUp={(event) => {
+                        if (event.key.startsWith('Arrow') || ['Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) commitSeek(Number(event.currentTarget.value));
+                      }}
+                      onBlur={() => { if (isSeeking) commitSeek(); }}
                       disabled={!duration}
                       className="mini-range -my-1 w-full"
                       style={{
-                        backgroundImage: `linear-gradient(90deg, rgba(201,211,176,1) ${progress}%, rgba(255,255,255,0.06) ${progress}%)`,
+                        backgroundImage: `linear-gradient(90deg, var(--color-accent) ${progress}%, var(--color-border) ${progress}%)`,
                       }}
                     />
                     <div className="mt-2 grid grid-cols-3 text-[10px] font-semibold text-muted md:text-xs">
@@ -998,10 +1005,8 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
                     const activeTokenIndex = isActive ? currentTokenIndex : -1;
                     const signedDistance = hasReachedFirstLyric ? index - currentLyricIndex : index;
                     const distance = Math.abs(signedDistance);
-                    const lineOffset = isCompactViewport ? 68 : 116;
+                    const lineOffset = isCompactViewport ? 112 : 176;
                     const targetY = signedDistance * lineOffset;
-                    const lineOpacity = isActive ? 1 : Math.max(0.08, 0.34 - distance * 0.08);
-                    const blur = Math.min(9, 3.2 + distance * 1.7);
                     return (
                       <div
                         key={`${line.begin}-${index}`}
@@ -1015,10 +1020,10 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
                             ? { opacity: 0, y: targetY }
                             : { opacity: 0, y: targetY + (signedDistance >= 0 ? 18 : -18), filter: 'blur(8px)' }}
                           animate={{
-                            opacity: lineOpacity,
+                            opacity: 1,
                             y: targetY,
                             scale: shouldReduceMotion ? 1 : isActive ? 1 : Math.max(0.88, 0.98 - distance * 0.025),
-                            filter: shouldReduceMotion ? 'blur(0px)' : `blur(${isActive ? 0 : blur}px)`,
+                            filter: 'blur(0px)',
                           }}
                           transition={{ duration: shouldReduceMotion ? 0.16 : 0.42, ease: [0.23, 1, 0.32, 1] }}
                           className={`mx-auto w-full origin-center text-center text-balance font-bold leading-tight tracking-tight ${
@@ -1033,10 +1038,10 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
                             line.tokens.map((token, tokenIndex) => (
                               <span
                                 key={`${token.begin}-${tokenIndex}`}
-                                className={`${token.trailingSpace ? 'mr-[0.22em]' : ''} inline-block ${isActive ? getTokenClassName(tokenIndex, activeTokenIndex) : 'text-muted/50'}`}
+                                className={`${token.trailingSpace ? 'mr-[0.22em]' : ''} inline-block ${isActive ? getTokenClassName(tokenIndex, activeTokenIndex) : 'text-muted'}`}
                                 style={isActive ? {
                                   ...getTokenFillStyle(tokenIndex, activeTokenIndex),
-                                  opacity: tokenIndex > activeTokenIndex ? 0.72 : 1,
+                                  opacity: 1,
                                   transform: tokenIndex === activeTokenIndex && !shouldReduceMotion
                                     ? 'translateY(-0.025em) scale(1.018)'
                                     : 'translateY(0) scale(1)',
@@ -1060,11 +1065,11 @@ export function MiniMusicPlayer({ track, variant = 'card' }: MiniMusicPlayerProp
                   <motion.p
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mx-auto max-w-md text-center text-sm font-semibold leading-relaxed text-muted/60 md:text-base"
+                    className="mx-auto max-w-md text-center text-sm font-semibold leading-relaxed text-muted md:text-base"
                   >
                     {lyricsStatus === 'loading'
                       ? 'Loading lyrics...'
-                      : 'Lyrics are quiet right now.'}
+                      : 'Lyrics aren’t available right now.'}
                   </motion.p>
                 )}
               </div>

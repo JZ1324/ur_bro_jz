@@ -1,0 +1,222 @@
+.editorial-dialog.ocean-chest-dialog {
+  width: min(880px, calc(100vw - 40px));
+  height: min(700px, calc(100dvh - 40px));
+  max-height: none;
+  color: var(--ocean-paper);
+  overflow: clip;
+  border-radius: 14px;
+  box-shadow: 0 24px 100px #02182055;
+}
+.ocean-chest-dialog::backdrop { background: #03151ec9; backdrop-filter: blur(8px); }
+.ocean-chest-dialog .dialog-surface {
+  display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 0;
+  border: 1px solid #b4ded23b; border-radius: inherit; background: #0c303d; overflow: clip;
+}
+.ocean-chest-dialog .dialog-close {
+  position: absolute; top: 24px; right: 24px; float: none; margin: 0;
+  width: 44px; height: 44px; border: 1px solid var(--ocean-line);
+  color: var(--ocean-paper); background: #143b46; z-index: 2;
+}
+.ocean-chest-dialog .dialog-close:hover { background: #224b54; }
+.ocean-chest-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex: none; padding: 27px 90px 24px 28px; }
+.garden-app .ocean-chest-heading h2 { font: 500 38px/1 var(--display); letter-spacing: -.025em; color: var(--ocean-paper); margin: 0; }
+.ocean-collection-progress { display: grid; gap: 10px; padding-bottom: 3px; min-width: 170px; }
+.ocean-collection-progress > span { display: flex; align-items: center; gap: 6px; color: var(--ocean-muted); font-size: 11px; white-space: nowrap; }
+.ocean-collection-progress strong { color: var(--ocean-paper); font-weight: 500; }
+.ocean-collection-progress progress { display: block; appearance: none; width: 100%; height: 3px; border: 0; overflow: hidden; border-radius: 2px; background: #afd5ca1f; color: #aadac3; }
+.ocean-collection-progress progress::-webkit-progress-bar { background: #afd5ca1f; }
+.ocean-collection-progress progress::-webkit-progress-value { background: #aadac3; }
+.ocean-collection-progress progress::-moz-progress-bar { background: #aadac3; }
+.ocean-chest-tabs { display: flex; flex: none; gap: 8px; padding: 0 28px; border-bottom: 1px solid var(--ocean-line); }
+.garden-app .ocean-chest-tabs > button {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 52px; padding: 12px 20px; border: 0; color: var(--ocean-muted); font-size: 13px;
+  border-bottom: 2px solid transparent; transition: color .16s, background .16s;
+}
+.garden-app .ocean-chest-tabs > button:hover:enabled { color: var(--ocean-paper); background: #b1dcca08; }
+.garden-app .ocean-chest-tabs > button[aria-selected='true'] { border-bottom-color: #c0dfc8; color: var(--ocean-paper); }
+.ocean-chest-tabs > button > span { min-width: 21px; font-size: 10px; line-height: 21px; color: #c4dfd7; background: #a9d4c51b; border-radius: 5px; }
+.ocean-chest-tabs > button:disabled { opacity: .5; }
+.ocean-chest-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #37606a transparent; scrollbar-gutter: stable; padding: 26px 28px; }
+.ocean-chest-body [role='tabpanel']:focus-visible { outline: 1px solid var(--ocean-gold); outline-offset: 4px; }
+.ocean-chest-body [role='tabpanel']:not([hidden]) { animation: ocean-pane-in .2s ease-out both; }
+.ocean-chest-dialog .ocean-status { min-height: 0; margin: 0 0 20px; padding: 12px 14px; border-left: 2px solid #a9d4c5; background: #a9d4c50a; font-size: 12px; }
+.ocean-garden .ocean-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.ocean-chest-dialog .ocean-case-panel { border: 0; background: none; width: 100%; margin: 0; padding: 0; }
+.ocean-case-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; padding: 2px 0 26px; }
+.ocean-chest-dialog .ocean-case-picker h3 { font: 500 28px/1.1 var(--display); letter-spacing: -.02em; color: var(--ocean-paper); margin: 0 0 8px; }
+.ocean-case-picker > p { margin: 0 0 22px; font-size: 12px; line-height: 1.6; color: var(--ocean-muted); }
+.ocean-chest-dialog .ocean-case-tabs { flex-direction: column; gap: 10px; }
+.garden-app .ocean-chest-dialog .ocean-case-tabs button { display: flex; justify-content: flex-start; gap: 10px; min-height: 75px; padding: 7px 12px 7px 4px; border-radius: 7px; text-align: left; transition: background .16s, border-color .16s; }
+.ocean-chest-dialog .ocean-case-tabs button .ocean-chest { width: 66px; height: 47px; margin: 0; flex: none; filter: none; transition: transform .2s ease; }
+.ocean-chest-dialog .ocean-case-tabs button:hover:enabled .ocean-chest { transform: translateY(-3px); }
+.ocean-case-tabs button > span { display: grid; gap: 4px; }
+.ocean-case-tabs button strong { font-size: 14px; font-weight: 500; color: var(--ocean-paper); }
+.ocean-case-tabs button small { font-size: 11px; color: var(--ocean-muted); }
+.ocean-chest-dialog .ocean-case-tabs button[aria-pressed='true'] { border-color: color-mix(in srgb, var(--case-color) 55%, transparent); background: color-mix(in srgb, var(--case-color) 8%, transparent); }
+.ocean-case-check { margin-left: auto; color: var(--case-color); opacity: 0; }
+.ocean-case-tabs [aria-pressed='true'] .ocean-case-check { opacity: 1; }
+.ocean-picker-note { display: flex; align-items: center; gap: 8px; color: var(--ocean-muted); font-size: 11px; margin-top: 20px; }
+.ocean-case-stage { min-width: 0; padding: 0 0 0 32px; border-left: 1px solid var(--ocean-line); }
+.ocean-chest-dialog .ocean-case-window { display: grid; align-content: center; height: 180px; margin: 0; }
+.ocean-chest-dialog .ocean-case-window > .ocean-chest { width: 215px; height: 160px; animation: ocean-chest-in .28s ease-out both; }
+.ocean-chest-dialog .ocean-reel { padding: 0; }
+.ocean-chest-dialog .ocean-reel-card { height: 146px; border-radius: 6px; padding: 12px 4px; }
+.ocean-chest-dialog .ocean-reel-card > span { font-size: 11px; }
+.ocean-chest-dialog .ocean-reel-card small { font-size: 10px; }
+.ocean-chest-dialog .ocean-reel-pointer { top: 3px; }
+.ocean-chest-dialog .ocean-case-result { min-height: 92px; gap: 8px; margin: 8px 0 18px; }
+.ocean-chest-dialog .ocean-case-result > strong { font-size: 32px; }
+.ocean-chest-dialog .ocean-case-result > span:last-child { font-size: 12px; }
+.ocean-case-kicker { color: #a8cfca; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.garden-app .ocean-chest-dialog .ocean-open-button { min-height: 48px; justify-content: flex-start; padding: 13px 17px; gap: 10px; border-radius: 6px; font-size: 13px; }
+.ocean-open-button > span { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; font-size: 11px; }
+.garden-app .ocean-chest-dialog .ocean-skip-reveal { min-height: 44px; margin: 0; font-size: 12px; }
+.ocean-chest-dialog .ocean-case-footnote { margin: 15px 0 0; font-size: 11px; }
+.ocean-chest-dialog .ocean-odds { font-size: 12px; }
+.ocean-chest-dialog .ocean-odds summary { min-height: 48px; padding: 12px 0; color: #c7ded6; }
+.ocean-odds summary > span { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+.ocean-odds summary small { font-size: 11px; color: var(--ocean-muted); }
+.ocean-chest-dialog .ocean-odds p { margin-top: 0; }
+.ocean-chest-dialog .ocean-odds dl { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px 30px; padding: 3px 0 12px; }
+.ocean-chest-dialog :is(.ocean-shop, .ocean-collection) { padding: 0; border: 0; }
+.ocean-chest-dialog .ocean-section-heading { align-items: center; gap: 20px; margin-bottom: 24px; }
+.garden-app .ocean-chest-dialog .ocean-section-heading h3 { display: flex; align-items: center; gap: 10px; font: 500 30px/1.1 var(--display); color: var(--ocean-paper); }
+.ocean-chest-dialog .ocean-section-heading h3 + p { margin-top: 9px; font-size: 12px; line-height: 1.7; }
+.ocean-chest-dialog .ocean-tide-clock { gap: 10px; }
+.ocean-chest-dialog .ocean-tide-clock span { font-size: 10px; white-space: nowrap; }
+.ocean-chest-dialog .ocean-tide-clock strong { font-size: 24px; margin-top: 3px; }
+.ocean-chest-dialog .ocean-stock { gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ocean-chest-dialog .ocean-offer { position: relative; display: grid; grid-template-columns: 105px minmax(0, 1fr); align-items: center; padding: 16px 16px 0; border-radius: 8px; }
+.ocean-chest-dialog .ocean-offer-top { grid-column: 1 / -1; }
+.ocean-chest-dialog .ocean-offer-top > span:last-child { font-size: 10px; }
+.ocean-chest-dialog .ocean-rarity { font-size: 10px; gap: 6px; }
+.ocean-chest-dialog .ocean-rarity i { width: 5px; height: 5px; }
+.ocean-chest-dialog .ocean-offer > svg { height: 108px; }
+.ocean-chest-dialog .ocean-offer h4 { font: 500 24px/1.15 var(--display); text-align: left; margin: 0; padding-left: 10px; }
+.garden-app .ocean-chest-dialog .ocean-offer > button { grid-column: 1 / -1; font-size: 12px; min-height: 46px; }
+.ocean-chest-dialog .ocean-offer.is-claimed { background: #b5d8c807; }
+.garden-app .ocean-chest-dialog .ocean-offer.is-claimed > button { justify-content: flex-start; color: #abd7ba; }
+.ocean-chest-dialog .ocean-shop-note { font-size: 11px; line-height: 1.7; margin-top: 18px; }
+.ocean-collection-toolbar { display: flex; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
+.ocean-guide-switch { display: inline-flex; flex: none; gap: 3px; padding: 4px; background: #052633; border: 1px solid var(--ocean-line); border-radius: 8px; }
+.garden-app .ocean-guide-switch button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 7px 12px; border-radius: 5px; font-size: 12px; color: var(--ocean-muted); }
+.garden-app .ocean-guide-switch button[aria-pressed='true'] { background: #234954; color: var(--ocean-paper); }
+.ocean-guide-switch button > span { font-size: 10px; color: var(--ocean-muted); }
+.ocean-search { display: flex; align-items: center; gap: 8px; min-width: 0; max-width: 230px; flex: 1; padding: 0 12px; border: 1px solid var(--ocean-line); border-radius: 7px; color: var(--ocean-muted); }
+.ocean-search:focus-within { border-color: #a1d4c4; }
+.ocean-search > svg { flex: none; }
+.ocean-search input { width: 100%; min-width: 0; height: 44px; padding: 0; border: 0; outline: 0; background: transparent; color: var(--ocean-paper); font: inherit; font-size: 12px; }
+.ocean-search input::placeholder { color: var(--ocean-muted); opacity: .9; }
+.ocean-search input::-webkit-search-cancel-button { display: none; }
+.garden-app .ocean-search button { display: grid; place-items: center; flex: none; width: 32px; height: 40px; margin-right: -6px; color: var(--ocean-paper); }
+.ocean-chest-dialog .ocean-guide-filters { gap: 6px; margin: 0 0 20px; }
+.garden-app .ocean-chest-dialog .ocean-guide-filters button { padding: 8px 12px; min-height: 38px; font-size: 11px; border-color: transparent; border-radius: 5px; }
+.garden-app .ocean-chest-dialog .ocean-guide-filters button:hover { background-color: #b1dcca0a; color: var(--ocean-paper); }
+.garden-app .ocean-chest-dialog .ocean-guide-filters button[aria-pressed='true'] { border-color: #b0d8c74a; background-color: #aed6c610; }
+.ocean-chest-dialog .ocean-fish-guide { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.garden-app .ocean-chest-dialog .ocean-guide-fish { display: flex; flex-direction: column; align-items: center; padding: 28px 10px 16px; border-radius: 8px; transition: background .16s, border-color .16s; }
+.ocean-chest-dialog .ocean-guide-fish > svg { height: 87px; transition: transform .2s ease; }
+.ocean-chest-dialog .ocean-guide-fish:hover > svg { transform: translateY(-4px); }
+.ocean-chest-dialog .ocean-guide-fish strong { display: flex; align-items: center; justify-content: center; font-size: 12px; min-height: 36px; line-height: 1.5; margin: 4px 0 9px; }
+.ocean-chest-dialog .ocean-guide-count { display: flex; align-items: center; gap: 4px; top: 11px; right: 11px; font-size: 9px; }
+.ocean-chest-dialog .ocean-guide-fish .ocean-rarity { margin-top: auto; }
+.ocean-chest-dialog .ocean-specimen { align-items: center; margin: 0 0 20px; padding: 20px 48px 20px 16px; gap: 20px; border-radius: 8px; animation: ocean-pane-in .2s ease-out both; }
+.ocean-chest-dialog .ocean-specimen > svg { width: 165px; }
+.ocean-chest-dialog .ocean-specimen > div { min-width: 0; }
+.ocean-chest-dialog .ocean-specimen h4 { font-size: 30px; margin: 10px 0; }
+.ocean-chest-dialog .ocean-specimen p { font-size: 12px; margin-bottom: 12px; }
+.ocean-chest-dialog .ocean-specimen-count, .ocean-chest-dialog .ocean-specimen-chance { font-size: 11px; }
+.ocean-chest-dialog .ocean-specimen-actions { gap: 0 20px; }
+.garden-app .ocean-chest-dialog .ocean-preview-button { min-height: 44px; margin-top: 5px; font-size: 11px; }
+.garden-app .ocean-chest-dialog .ocean-specimen > button { top: 6px; right: 6px; width: 40px; height: 40px; }
+.ocean-chest-dialog .ocean-empty-collection { border: 0; padding: 46px 20px; }
+.ocean-chest-dialog .ocean-empty-collection p { font-size: 30px; line-height: 1.2; margin: 18px 0 12px; }
+.ocean-chest-dialog .ocean-empty-collection > span { display: block; font-size: 12px; line-height: 1.7; }
+.garden-app .ocean-empty-action { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-height: 44px; padding: 11px 18px; margin-top: 24px; border: 1px solid #b0d8c74a; border-radius: 6px; font-size: 12px; color: var(--ocean-paper); }
+.ocean-empty-action:hover { background: #aed6c615; }
+
+@keyframes ocean-pane-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ocean-chest-in { from { opacity: 0; transform: translateY(7px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+@media (max-width: 700px) {
+  .ocean-chest-heading { padding-right: 80px; }
+  .ocean-collection-progress { min-width: 0; }
+  .ocean-case-layout { grid-template-columns: 180px minmax(0, 1fr); gap: 20px; }
+  .ocean-case-stage { padding-left: 20px; }
+  .ocean-chest-dialog .ocean-case-tabs button .ocean-chest { width: 48px; }
+  .ocean-chest-dialog .ocean-fish-guide { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ocean-chest-dialog .ocean-offer { grid-template-columns: 80px minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .editorial-dialog.ocean-chest-dialog { width: calc(100vw - 20px); height: min(780px, calc(100dvh - 24px)); border-radius: 12px; }
+  .ocean-chest-heading { flex-direction: column; align-items: flex-start; gap: 14px; padding: 22px 64px 18px 20px; }
+  .garden-app .ocean-chest-heading h2 { font-size: 34px; }
+  .ocean-chest-dialog .dialog-close { top: 19px; right: 15px; }
+  .ocean-collection-progress { padding: 0; }
+  .ocean-collection-progress progress { display: none; }
+  .ocean-chest-tabs { padding-inline: 12px; gap: 0; }
+  .garden-app .ocean-chest-tabs > button { flex: 1; padding-inline: 8px; font-size: 12px; gap: 7px; }
+  .ocean-chest-tabs > button > svg { width: 14px; }
+  .ocean-chest-body { padding: 22px 18px; scrollbar-gutter: auto; }
+  .ocean-case-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 0 0 12px; }
+  .ocean-chest-dialog .ocean-case-picker h3 { font-size: 27px; }
+  .ocean-case-picker > p { margin-bottom: 16px; }
+  .ocean-chest-dialog .ocean-case-tabs { flex-direction: row; gap: 8px; }
+  .garden-app .ocean-chest-dialog .ocean-case-tabs button { position: relative; flex: 1; flex-direction: column; gap: 4px; min-width: 0; min-height: 104px; padding: 6px 4px 12px; text-align: center; }
+  .ocean-chest-dialog .ocean-case-tabs button .ocean-chest { width: 57px; height: 40px; }
+  .ocean-case-tabs button strong { font-size: 13px; }
+  .ocean-case-tabs button small { font-size: 10px; }
+  .ocean-case-check { position: absolute; top: 7px; right: 7px; width: 12px; }
+  .ocean-picker-note { display: none; }
+  .ocean-case-stage { padding: 0; border: 0; }
+  .ocean-chest-dialog .ocean-case-window { height: 125px; }
+  .ocean-chest-dialog .ocean-case-window > .ocean-chest { width: 165px; height: 122px; }
+  .ocean-chest-dialog .ocean-reel-card { height: 112px; padding-block: 6px; }
+  .ocean-chest-dialog .ocean-reel-card svg { height: 61px; }
+  .ocean-chest-dialog .ocean-case-result { min-height: 81px; margin: 4px 0 14px; }
+  .ocean-chest-dialog .ocean-case-result > strong { font-size: 29px; }
+  .ocean-chest-dialog .ocean-case-result > span:last-child { font-size: 11px; }
+  .ocean-chest-dialog .ocean-case-footnote { font-size: 10px; margin-top: 13px; }
+  .ocean-odds summary small { font-size: 10px; }
+  .ocean-chest-dialog .ocean-odds dl { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 22px; }
+  .garden-app .ocean-chest-dialog .ocean-section-heading h3 { font-size: 27px; }
+  .ocean-chest-dialog .ocean-section-heading h3 + p { font-size: 11px; }
+  .ocean-chest-dialog .ocean-tide-clock > svg { display: none; }
+  .ocean-chest-dialog .ocean-tide-clock strong { font-size: 23px; }
+  .ocean-chest-dialog .ocean-stock { gap: 10px; }
+  .ocean-chest-dialog .ocean-offer { display: flex; flex-direction: column; padding: 14px 12px 0; }
+  .ocean-chest-dialog .ocean-offer-top { width: 100%; gap: 4px; }
+  .ocean-chest-dialog .ocean-offer-top > span:last-child { font-size: 9px; }
+  .ocean-chest-dialog .ocean-offer > svg { height: 96px; }
+  .ocean-chest-dialog .ocean-offer h4 { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; padding: 0; margin: 0 0 12px; font-size: 23px; text-align: center; }
+  .garden-app .ocean-chest-dialog .ocean-offer > button { margin-top: auto; font-size: 11px; }
+  .ocean-chest-dialog .ocean-collection .ocean-section-heading { flex-direction: row; align-items: flex-start; margin-bottom: 18px; }
+  .ocean-collection-toolbar { flex-direction: column; gap: 12px; margin-bottom: 14px; }
+  .ocean-guide-switch { align-self: flex-start; }
+  .garden-app .ocean-guide-switch button { min-height: 40px; padding-inline: 14px; }
+  .ocean-search { max-width: none; flex: auto; }
+  .ocean-search input { font-size: 16px; }
+  .ocean-chest-dialog .ocean-guide-filters { gap: 4px; margin-bottom: 16px; }
+  .garden-app .ocean-chest-dialog .ocean-guide-filters button { min-height: 40px; padding-inline: 11px; }
+  .ocean-chest-dialog .ocean-fish-guide { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .garden-app .ocean-chest-dialog .ocean-guide-fish { padding: 29px 8px 15px; }
+  .ocean-chest-dialog .ocean-guide-fish > svg { height: 80px; }
+  .ocean-chest-dialog .ocean-guide-fish strong { font-size: 12px; }
+  .ocean-chest-dialog .ocean-specimen { flex-direction: column; text-align: center; padding: 20px 18px; gap: 6px; }
+  .ocean-chest-dialog .ocean-specimen > svg { width: 170px; }
+  .ocean-chest-dialog .ocean-specimen h4 { font-size: 28px; }
+  .ocean-chest-dialog .ocean-specimen-actions { justify-content: center; gap: 0 14px; }
+  .ocean-chest-dialog .ocean-empty-collection { padding: 38px 8px; }
+  .ocean-chest-dialog .ocean-empty-collection p { font-size: 28px; }
+}
+@media (max-width: 359px) {
+  .garden-app .ocean-chest-tabs > button { font-size: 11px; gap: 5px; padding-inline: 6px; }
+  .ocean-chest-tabs > button > svg { display: none; }
+  .ocean-chest-body { padding-inline: 14px; }
+  .ocean-chest-dialog .ocean-offer { padding-inline: 10px; }
+  .ocean-chest-dialog .ocean-offer h4 { font-size: 21px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-chest-dialog *, .ocean-chest-dialog *::before, .ocean-chest-dialog *::after { animation: none !important; transition: none !important; }
+}

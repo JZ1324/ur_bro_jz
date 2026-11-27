@@ -1,0 +1,354 @@
+/* One sticker jumps from its title dock and walks between page elements. */
+.garden-app .scroll-cat {
+  position: fixed;
+  z-index: 12;
+  inset: 0 auto auto 0;
+  width: var(--cat-size, 0px);
+  aspect-ratio: 1;
+  translate: var(--cat-x, 0px) var(--cat-y, 0px);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.garden-app .scroll-cat[data-ready='true'][data-paused='false'] {
+  visibility: visible;
+}
+
+body:has(dialog[open]) .garden-app .scroll-cat[data-ready='true'] {
+  visibility: hidden;
+}
+
+.scroll-cat-body {
+  position: absolute;
+  inset: 0;
+  rotate: var(--cat-tilt, 12deg);
+  transform-origin: 50% 92%;
+  scale: var(--cat-wide, 1) var(--cat-stretch, 1);
+}
+
+.scroll-cat[data-docked='true'] .scroll-cat-body {
+  transform-origin: center;
+}
+
+.scroll-cat-body > svg {
+  position: relative;
+  display: block;
+}
+
+.scroll-cat-body > .scroll-cat-mud-coat {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.scroll-cat[data-muddy='true'] .scroll-cat-mud-coat {
+  display: block;
+}
+
+.scroll-cat[data-muddy='true'] .scroll-cat-paw {
+  background: #926748;
+}
+
+.scroll-cat[data-docked='false'][data-facing='left'] .scroll-cat-body > svg {
+  scale: -1 1;
+}
+
+.scroll-cat[data-walking='true'] .scroll-cat-body {
+  transform: translateY(calc(-3px * var(--cat-stride))) rotate(calc(5deg * var(--cat-stride)));
+}
+
+.scroll-cat-paw {
+  position: absolute;
+  inset-block-end: 5%;
+  inset-inline-start: 30%;
+  width: 18%;
+  height: 15%;
+  background: #fffaf6;
+  border: 1.5px solid #19181e;
+  border-radius: 60% 55% 45% 48%;
+  opacity: 0;
+}
+
+.scroll-cat-paw + .scroll-cat-paw {
+  inset-inline-start: 55%;
+}
+
+.scroll-cat[data-walking='true'] .scroll-cat-paw {
+  opacity: 1;
+  translate: calc(2px * var(--cat-stride)) calc(3px * var(--cat-stride));
+}
+
+.scroll-cat[data-walking='true'] .scroll-cat-paw + .scroll-cat-paw {
+  translate: calc(-2px * var(--cat-stride)) calc(-3px * var(--cat-stride));
+}
+
+.scroll-cat:is([data-phase='slipping'], [data-phase='stuck'], [data-phase='climbing']) .scroll-cat-paw {
+  opacity: 1;
+  translate: calc(-4px * var(--cat-stride)) calc(5px * var(--cat-stride));
+}
+
+.scroll-cat:is([data-phase='slipping'], [data-phase='stuck'], [data-phase='climbing']) .scroll-cat-paw + .scroll-cat-paw {
+  translate: calc(4px * var(--cat-stride)) calc(-5px * var(--cat-stride));
+}
+
+.scroll-cat[data-phase='airborne'] .scroll-cat-paw {
+  inset-block-end: 10%;
+  width: 16%;
+  height: 22%;
+  opacity: 1;
+  transform-origin: 50% 20%;
+  translate: -2px calc(1px + 2px * var(--cat-stride));
+  rotate: calc(-23deg + 16deg * var(--cat-stride));
+}
+
+.scroll-cat[data-phase='airborne'] .scroll-cat-paw + .scroll-cat-paw {
+  translate: 2px calc(1px - 2px * var(--cat-stride));
+  rotate: calc(23deg - 16deg * var(--cat-stride));
+}
+
+.scroll-cat-slip-lines {
+  display: none;
+  position: absolute;
+  top: -33%;
+  left: -33%;
+  width: 166%;
+  color: color-mix(in srgb, var(--ink) 56%, #c59156);
+  opacity: .75;
+  overflow: visible;
+}
+
+.scroll-cat:is([data-phase='slipping'], [data-phase='airborne']) .scroll-cat-slip-lines {
+  display: block;
+}
+
+.scroll-cat:not([data-phase='slipping']) .scroll-cat-skid-lines,
+.scroll-cat:not([data-phase='airborne']) .scroll-cat-flight-lines {
+  display: none;
+}
+
+.scroll-cat[data-phase='airborne'] .scroll-cat-slip-lines {
+  animation: cat-flight-lines 570ms ease-out both;
+}
+
+@keyframes cat-flight-lines {
+  0% { scale: .76; opacity: .2; }
+  27% { scale: 1.05; opacity: .85; }
+  100% { scale: 1.13; opacity: 0; }
+}
+
+.scroll-cat[data-phase='hugging'] .scroll-cat-body,
+.scroll-cat[data-phase='offering'] .scroll-cat-body {
+  visibility: hidden;
+}
+
+.cat-gesture-paw {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transition: transform 180ms cubic-bezier(.23, 1, .32, 1);
+}
+
+.scroll-cat[data-pointing]:not([data-pointing=''], [data-pointing='song-note'], [data-pointing='nap']) .cat-gesture-paw {
+  transform: translate(46px, -26px) rotate(-15deg) scale(1.8, .85);
+}
+
+.scroll-cat:is([data-phase='reaching'], [data-phase='releasing']) .cat-gesture-paw {
+  transform: translate(calc(44px * var(--cat-reach, 0)), calc(-24px * var(--cat-reach, 0)))
+    scaleX(calc(1 + .75 * var(--cat-reach, 0)));
+}
+
+.scroll-cat-ground {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+  color: color-mix(in srgb, var(--ink) 70%, var(--sage));
+  --cat-dust: #b28e61;
+}
+
+.dark .scroll-cat-ground {
+  --cat-dust: #ead2a2;
+}
+
+.scroll-cat-muddy-trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 11;
+  pointer-events: none;
+  fill: #a07554;
+  fill-opacity: .84;
+  overflow: hidden;
+}
+
+.scroll-cat-banana,
+.scroll-cat-puddle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  overflow: visible;
+}
+
+.scroll-cat-ground[data-slip] :is(.scroll-cat-banana, .scroll-cat-puddle) {
+  visibility: inherit;
+}
+
+.scroll-cat-banana {
+  z-index: 1;
+  width: clamp(32px, 4vw, 47px);
+  translate: calc(var(--banana-x, 0px) - 50%) calc(var(--banana-y, 0px) - var(--ground-scroll, 0px) - 50%);
+  rotate: var(--banana-tilt, -13deg);
+}
+
+.scroll-cat-puddle {
+  width: clamp(76px, 9vw, 102px);
+  translate: calc(var(--puddle-x, 0px) - 50%) calc(var(--puddle-y, 0px) - var(--ground-scroll, 0px) - 50%);
+}
+
+.scroll-cat-puddle > svg {
+  display: block;
+  width: 100%;
+}
+
+.scroll-cat-mud-splash {
+  position: absolute;
+  inset: 45% auto auto 50%;
+}
+
+.scroll-cat-mud-splash i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--drop-size, 6px);
+  aspect-ratio: .75;
+  border-radius: 53% 47% 66% 40%;
+  background: #8d6144;
+  opacity: 0;
+}
+
+.scroll-cat-mud-splash i:nth-child(1) { --drop-x: -38px; --drop-y: -20px; --drop-size: 7px; }
+.scroll-cat-mud-splash i:nth-child(2) { --drop-x: -28px; --drop-y: -38px; }
+.scroll-cat-mud-splash i:nth-child(3) { --drop-x: -12px; --drop-y: -48px; --drop-size: 4px; }
+.scroll-cat-mud-splash i:nth-child(4) { --drop-x: 12px; --drop-y: -42px; --drop-size: 5px; }
+.scroll-cat-mud-splash i:nth-child(5) { --drop-x: 28px; --drop-y: -36px; --drop-size: 8px; }
+.scroll-cat-mud-splash i:nth-child(6) { --drop-x: 43px; --drop-y: -18px; --drop-size: 5px; }
+
+.scroll-cat-ground[data-slip='stuck'] .scroll-cat-mud-splash i {
+  animation: cat-mud-splash 345ms cubic-bezier(.17, .49, .38, 1) both;
+}
+
+@keyframes cat-mud-splash {
+  0% { opacity: .9; transform: translate(0, 0) rotate(0deg) scale(.6); }
+  46% { opacity: .95; transform: translate(var(--drop-x), var(--drop-y)) rotate(38deg) scale(1); }
+  100% { opacity: 0; transform: translate(calc(var(--drop-x) * 1.28), 5px) rotate(90deg) scale(.55); }
+}
+
+.scroll-cat-print,
+.scroll-cat-impact {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.scroll-cat-print {
+  width: 12px;
+  height: 12px;
+  opacity: 0;
+  translate: calc(var(--print-x, 0px) - 6px) calc(var(--print-y, 0px) - var(--ground-scroll, 0px) - 6px);
+  rotate: var(--print-angle, 0deg);
+}
+
+.scroll-cat-impact {
+  display: none;
+  width: clamp(45px, 5.3vw, 68px);
+  aspect-ratio: 68 / 26;
+  translate: calc(var(--impact-x, 0px) - 50%) calc(var(--impact-y, 0px) - var(--ground-scroll, 0px) - 50%);
+}
+
+.scroll-cat-ground[data-landed='true'] .scroll-cat-impact {
+  display: block;
+}
+
+.scroll-cat-crack {
+  display: block;
+  width: 100%;
+  stroke: currentColor;
+  stroke-width: 1.35px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: cat-crack 820ms ease-out both;
+}
+
+@keyframes cat-crack {
+  0% { opacity: .66; scale: .35 .65; }
+  17% { opacity: .65; scale: 1; }
+  100% { opacity: .34; scale: 1; }
+}
+
+.scroll-cat-dust {
+  position: absolute;
+  inset: 50% auto auto 50%;
+}
+
+.scroll-cat-dust span {
+  position: absolute;
+  top: 0;
+  left: var(--start, 0px);
+  width: var(--grain, 5px);
+  aspect-ratio: 1.5;
+  background: var(--cat-dust);
+  border-radius: 55% 65% 47% 51%;
+  animation: cat-dust 480ms cubic-bezier(.2, .65, .35, 1) var(--delay, 0ms) both;
+}
+
+.scroll-cat-dust span:nth-child(1) { --start: -13px; --drift: -20px; --rise: -8px; --grain: 8px; }
+.scroll-cat-dust span:nth-child(2) { --start: -9px; --drift: -14px; --rise: -17px; --delay: 25ms; }
+.scroll-cat-dust span:nth-child(3) { --start: -5px; --drift: -8px; --rise: -24px; --grain: 4px; --delay: 48ms; }
+.scroll-cat-dust span:nth-child(4) { --start: 1px; --drift: 4px; --rise: -18px; --grain: 4px; }
+.scroll-cat-dust span:nth-child(5) { --start: 6px; --drift: 14px; --rise: -23px; --delay: 30ms; }
+.scroll-cat-dust span:nth-child(6) { --start: 11px; --drift: 21px; --rise: -10px; --grain: 9px; }
+.scroll-cat-dust span:nth-child(7) { --start: 8px; --drift: 20px; --rise: -3px; --grain: 6px; --delay: 55ms; }
+
+@keyframes cat-dust {
+  0% { opacity: 0; transform: translate(0, 0) scale(.55); }
+  14% { opacity: .78; }
+  64% { opacity: .26; transform: translate(var(--drift), var(--rise)) scale(1.3); }
+  100% { opacity: 0; transform: translate(calc(var(--drift) * 1.2), calc(var(--rise) * .75)) scale(1.7); }
+}
+
+.scroll-cat-ground[data-paused='true'],
+.scroll-cat-muddy-trail[data-paused='true'],
+body:has(dialog[open]) :is(.scroll-cat-ground, .scroll-cat-muddy-trail) {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cat-ground,
+  .scroll-cat-muddy-trail { display: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-scroll-reveal].is-scroll-revealing:not([data-scroll-reveal='stagger'], :focus-within),
+  [data-scroll-reveal='stagger'].is-scroll-revealing:not(:focus-within) > * {
+    animation: garden-scroll-in 420ms cubic-bezier(.23, 1, .32, 1) both;
+  }
+
+  [data-scroll-reveal='stagger'].is-scroll-revealing > :nth-child(2) { animation-delay: 45ms; }
+  [data-scroll-reveal='stagger'].is-scroll-revealing > :nth-child(3) { animation-delay: 90ms; }
+  [data-scroll-reveal='stagger'].is-scroll-revealing > :nth-child(4) { animation-delay: 135ms; }
+  [data-scroll-reveal='stagger'].is-scroll-revealing > :nth-child(5) { animation-delay: 180ms; }
+}
+
+@keyframes garden-scroll-in {
+  from { opacity: .45; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .garden-app :is(.journey-section:not(.section-opening), .community-inner, .ocean-inner) {
+    padding-inline-start: max(6%, 38px);
+  }
+}

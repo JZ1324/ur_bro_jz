@@ -1,3 +1,4 @@
+import { useOverlayFocus } from '../hooks/useOverlayFocus';
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { X } from 'lucide-react';
@@ -62,6 +63,7 @@ const totalQuizSteps = commandmentQuestions.length + 5;
 
 export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
   useBodyScrollLock(isOpen);
+  const overlayRef = useOverlayFocus(isOpen, onClose);
 
   const [quizStep, setQuizStep] = useState(0);
   const [goodPersonAnswer, setGoodPersonAnswer] = useState<QuizAnswer | null>(null);
@@ -150,7 +152,7 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <motion.div ref={overlayRef} role="dialog" aria-modal="true" aria-label="Faith" tabIndex={-1}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -170,7 +172,7 @@ export function JesusOverlay({ isOpen, sections, onClose }: JesusOverlayProps) {
               <div className="mx-auto flex max-w-3xl flex-col gap-12 pb-32 pt-2">
                 <header className="border-b border-border/30 pb-8 pr-16 sm:pr-20">
                   <p className="text-xs font-bold uppercase tracking-[0.24em] text-warm-accent">Following</p>
-                  <h1 data-toc id="jesus" className="mt-3 text-4xl font-bold leading-tight text-text sm:text-6xl">
+                  <h1 data-toc id="faith-introduction" className="mt-3 text-4xl font-bold leading-tight text-text sm:text-6xl">
                     Jesus
                   </h1>
                   <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted">

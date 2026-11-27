@@ -1,0 +1,355 @@
+/* Header, primary navigation, chapter menu, archive, and account button. */
+
+.garden-app.is-community .site-header {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.garden-app .main-nav a:hover {
+  color: var(--ink);
+}
+
+.garden-app .main-nav a.active::after,
+.garden-app .main-nav a:hover::after {
+  transform: scaleX(1);
+}
+
+.garden-app .garden-archive-link:hover {
+  color: var(--ink);
+}
+
+.garden-app .site-header {
+  position: fixed;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: auto;
+  border: 0;
+  width: auto;
+  margin: 0;
+  top: 26px;
+  left: var(--page-gutter);
+  right: var(--page-gutter);
+  gap: 28px;
+}
+
+.garden-app .site-header::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: -26px -6vw -14px;
+  background: var(--paper);
+}
+
+.garden-app .brand {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  margin-right: auto;
+  gap: 13px;
+}
+
+.garden-app .brand span {
+  font-family: var(--display);
+  font-weight: 500;
+  line-height: 1;
+  font-size: clamp(34px, 2.8vw, 46px);
+  letter-spacing: -.045em;
+}
+
+.garden-app .brand svg {
+  color: var(--ink);
+  width: clamp(27px, 2.2vw, 36px);
+  height: clamp(34px, 2.7vw, 45px);
+}
+
+.garden-app .header-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(22px, 3vw, 48px);
+}
+
+.garden-app .primary-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(28px, 3.2vw, 52px);
+}
+
+.garden-app .primary-nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--ui-size);
+  color: var(--ink);
+}
+
+.garden-app .primary-nav a::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 3px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease;
+}
+
+.garden-app .primary-nav a:hover::after,
+.garden-app .primary-nav a[aria-current]::after {
+  transform: scaleX(1);
+}
+
+.garden-app .chapter-menu {
+  position: relative;
+}
+
+.garden-app .menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0;
+  font-size: var(--ui-size);
+  color: var(--ink);
+}
+
+.garden-app .menu-toggle > span {
+  display: inline;
+}
+
+.garden-app .menu-toggle svg {
+  flex: none;
+  transition: transform 180ms ease;
+}
+
+.garden-app .menu-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.garden-app .main-nav,
+.garden-app .main-nav.is-open {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 256px;
+  margin: 0;
+  padding: 18px 20px 12px;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  box-shadow: 0 12px 32px #10281d12;
+}
+
+.garden-app .main-nav[hidden] {
+  display: none;
+}
+
+.garden-app .main-nav a {
+  position: relative;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 0;
+  gap: 18px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.garden-app .main-nav a::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  left: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .22s;
+  bottom: 5px;
+}
+
+.garden-app .main-nav a.active {
+  color: var(--ink);
+}
+
+.garden-app .chapter-menu-archive {
+  display: none;
+}
+
+.garden-app .garden-archive-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 0 0 clamp(22px, 2.5vw, 40px);
+  border-left: 1px solid var(--line);
+  font-size: var(--ui-size);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.garden-app .garden-archive-link svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.garden-app .garden-account-button {
+  min-height: var(--control-height);
+  padding: 10px clamp(17px, 1.6vw, 26px);
+  gap: 10px;
+  font-size: var(--ui-size);
+  background: transparent;
+}
+
+.garden-app .garden-account-button svg {
+  width: 19px;
+  height: 19px;
+}
+
+.garden-app .garden-account-button:hover {
+  background: var(--color-accent-soft);
+}
+
+@media (max-width: 900px) {
+  .garden-app .garden-archive-link {
+    border-top: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 1100px) {
+  .garden-app .primary-nav {
+    display: none;
+  }
+
+  .garden-app .header-actions {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 760px) {
+  .garden-app .site-header {
+    top: 18px;
+    gap: 16px;
+  }
+
+  .garden-app .brand {
+    gap: 9px;
+  }
+
+  .garden-app .brand span {
+    font-size: 30px;
+  }
+
+  .garden-app .brand svg {
+    width: 24px;
+    height: 30px;
+  }
+
+  .garden-app .header-actions {
+    gap: 18px;
+  }
+
+  .garden-app .menu-toggle {
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .garden-app .garden-archive-link {
+    padding: 0;
+    border: 0;
+  }
+
+  .garden-app .garden-account-button {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .garden-app .site-header {
+    left: 5%;
+    right: 5%;
+    gap: 12px;
+  }
+
+  .garden-app .header-actions {
+    gap: 14px;
+  }
+
+  .garden-app .garden-archive-link {
+    display: none;
+  }
+
+  .garden-app .chapter-menu-archive {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    min-height: 48px;
+    margin-top: 8px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .garden-app .main-nav {
+    right: -55px;
+  }
+
+  .garden-app .garden-account-button {
+    width: 44px;
+    padding: 0;
+  }
+
+  .garden-app .garden-account-button > span {
+    display: none;
+  }
+
+  .garden-app .menu-toggle > span {
+    display: inline;
+  }
+}
+
+@media (max-width: 360px) {
+  .garden-app .brand span {
+    font-size: 27px;
+  }
+
+  .garden-app .brand svg {
+    width: 22px;
+  }
+
+  .garden-app .header-actions {
+    gap: 10px;
+  }
+}
+
+@media (max-height: 540px) and (min-width: 761px) and (max-width: 1100px) {
+  .garden-app .site-header {
+    top: 14px;
+  }
+
+  .garden-app .brand span {
+    font-size: 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-app .primary-nav a::after,
+  .garden-app .menu-toggle svg {
+    transition: none;
+  }
+}

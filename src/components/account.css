@@ -1,0 +1,39 @@
+.garden-account { flex: 0 0 auto; }
+.garden-account-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 8px 13px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink); background: var(--paper); font-size: 11px; transition: border-color .18s, background .18s; }
+.garden-account-button:hover { border-color: var(--muted); background: var(--paper-raised, var(--paper)); }
+.garden-account-button span { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.garden-account-button i { width: 5px; height: 5px; border-radius: 50%; background: #67816b; }
+.garden-account-dialog { max-width: 480px; }
+.garden-account-dialog h2 { margin: 18px 0; font-family: 'Cormorant Garamond', serif; font-size: clamp(36px, 5vw, 48px); font-weight: 500; line-height: 1.07; letter-spacing: -.025em; }
+.garden-account-dialog h2 em { color: var(--muted, #697569); font-weight: 500; }
+.account-eyebrow { display: flex; align-items: center; gap: 9px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted, #697569); }
+.account-description { max-width: 36ch; font-size: 13px; line-height: 1.8; color: var(--muted, #697569); }
+.account-collection { display: flex; gap: 26px; padding: 22px 0; margin: 10px 0; border-block: 1px solid var(--line, #deded3); }
+.account-collection span { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.account-collection strong { font-weight: 500; }
+.account-connected { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #637d68; }
+.account-signin { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; margin-top: 25px; padding: 12px 16px; border-radius: 7px; background: #455f53; color: #fffdf4; font-size: 12px; }
+.account-signout, .account-retry { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; margin: 12px auto 0; font-size: 11px; text-decoration: underline; text-underline-offset: 4px; color: var(--muted, #697569); }
+.account-error { font-size: 12px; line-height: 1.6; color: #a15848; }
+.ocean-account-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; padding: 14px 0; border-top: 1px solid #a0c1be2b; color: #bed3cd; font-size: 11px; }
+.ocean-account-note > span, .ocean-account-note button { display: inline-flex; align-items: center; gap: 8px; }
+.ocean-account-note button { min-height: 44px; color: #f1e9d2; font-size: 11px; }
+.ocean-account-note button:hover { text-decoration: underline; text-underline-offset: 4px; }
+.ocean-account-note p { flex-basis: 100%; margin: 0; line-height: 1.6; color: #f0c8b5; }
+.ocean-chest-dialog .ocean-account-note { padding: 10px 24px; border-top: 0; border-bottom: 1px solid #a0c1be2b; }
+.studio-account-caption { display: flex; align-items: center; gap: 6px; margin-top: 10px; color: #66796a; font-size: 11px; }
+.garden-app .plant-account-badge { display: inline-flex; align-items: center; gap: 4px; font-family: 'DM Sans', sans-serif; font-size: 9px; color: var(--muted); }
+@media (min-width: 901px) { .garden-app .site-header { gap: 22px; } .garden-app .main-nav { gap: clamp(13px, 1.7vw, 28px); margin-left: auto; } }
+@media (max-width: 900px) { .garden-app .site-header { gap: 13px; } .garden-app .brand { margin-right: auto; } .garden-app .menu-toggle { order: 3; } .garden-account-button { min-height: 36px; padding: 7px 10px; } }
+@media (max-width: 420px) { .garden-app .menu-toggle > span { display: none; } .garden-app .menu-toggle { gap: 0; padding-left: 3px; } .garden-account-button span { max-width: 70px; } .ocean-account-note { font-size: 10px; } }
+@media (prefers-reduced-motion: reduce) { .garden-account-button { transition: none; } }
+.account-form { display: grid; gap: 16px; margin-top: 24px; }
+.account-form label { display: grid; gap: 7px; font-size: 11px; color: var(--ink, #28382e); }
+.account-form label small { margin-left: 4px; color: var(--muted, #697569); font-size: 10px; }
+.account-form input { width: 100%; min-height: 44px; padding: 11px 13px; border: 1px solid var(--line, #d6dacf); border-radius: 7px; background: transparent; color: inherit; font: inherit; font-size: 13px; }
+.account-form input:focus-visible { outline: 2px solid #688473; outline-offset: 2px; }
+.account-form .account-signin { margin-top: 3px; gap: 8px; }
+.account-form .account-signin > svg:last-child { margin-left: auto; }
+.account-privacy { margin: 0; text-align: center; color: var(--muted, #697569); font-size: 10px; }
+#garden-sign-in-code { letter-spacing: .2em; font-size: 17px; }
+.garden-account-dialog .dialog-surface { min-width: 0; }

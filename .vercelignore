@@ -5,3 +5,8 @@ public/audio/*.ogg
 public/audio/*.wav
 local-audio/
 dist/audio/
+dist/
+dist-server/
+.garden-data/
+test-results/
+playwright-report/

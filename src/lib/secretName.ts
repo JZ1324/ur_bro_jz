@@ -50,7 +50,7 @@ function isSecretPuzzleResponse(value: unknown): value is SecretPuzzleResponse {
   );
 }
 
-export async function checkSecretName(name: string) {
+export async function checkSecretName(name: string, signal?: AbortSignal) {
   const functionUrl = getSecretNameFunctionUrl();
   if (!functionUrl) {
     throw new SecretNameError(
@@ -61,6 +61,7 @@ export async function checkSecretName(name: string) {
 
   const response = await fetch(functionUrl, {
     method: 'POST',
+    signal,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -81,7 +82,7 @@ export async function checkSecretName(name: string) {
   return payload.matched;
 }
 
-export async function submitSecretPuzzleStep(stage: SecretPuzzleStage, answer: string) {
+export async function submitSecretPuzzleStep(stage: SecretPuzzleStage, answer: string, signal?: AbortSignal) {
   const functionUrl = getSecretNameFunctionUrl();
   if (!functionUrl) {
     throw new SecretNameError(
@@ -92,6 +93,7 @@ export async function submitSecretPuzzleStep(stage: SecretPuzzleStage, answer: s
 
   const response = await fetch(functionUrl, {
     method: 'POST',
+    signal,
     headers: {
       'Content-Type': 'application/json',
     },

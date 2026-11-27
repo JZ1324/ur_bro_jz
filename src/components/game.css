@@ -1,0 +1,675 @@
+/* Hidden garden game: layout, theme, and responsive states. */
+
+.hidden-garden-dialog {
+  --game-paper: #f6f4e9;
+  --game-ink: #374330;
+  --game-muted: #747b69;
+  --game-sage: #819667;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  overflow: hidden;
+  color: var(--game-ink);
+  background: var(--game-paper);
+  font-family: 'DM Sans', sans-serif;
+  overscroll-behavior: none;
+}
+
+.hidden-garden-dialog::backdrop {
+  background: #f6f4e9;
+}
+
+.hidden-garden-dialog.game-dusk {
+  --game-paper: #e8e0e6;
+  --game-ink: #443e4a;
+  --game-muted: #7e7181;
+  --game-sage: #8d7992;
+}
+
+.game-world {
+  position: absolute;
+  inset: 0;
+  outline: none;
+  touch-action: none;
+}
+
+.game-world canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.game-hud {
+  position: absolute;
+  inset: max(25px, env(safe-area-inset-top)) 4% auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  gap: 16px;
+}
+
+.game-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--display);
+  font-size: 29px;
+  letter-spacing: -.9px;
+}
+
+.game-wordmark > svg {
+  width: 22px;
+  height: 30px;
+  color: var(--game-sage);
+}
+
+.game-wordmark-dot {
+  color: var(--game-sage);
+}
+
+.game-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  pointer-events: auto;
+}
+
+.game-icon-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #68795025;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--game-paper) 88%, transparent);
+  color: var(--game-ink);
+  transition: background .2s;
+}
+
+.game-icon-button:hover {
+  background: #fffdf5;
+}
+
+.game-flower-count {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border-radius: 30px;
+  background: color-mix(in srgb, var(--game-paper) 88%, transparent);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.game-flower-count > svg {
+  color: #bd8798;
+}
+
+.game-count-total {
+  color: var(--game-muted);
+}
+
+.hidden-garden-dialog button:focus-visible {
+  outline: 2px solid var(--game-sage);
+  outline-offset: 4px;
+}
+
+.game-introduction {
+  position: absolute;
+  isolation: isolate;
+  left: 7%;
+  top: 50%;
+  transform: translateY(-43%);
+  width: 350px;
+  max-width: 40%;
+}
+
+.game-introduction::before {
+  content: '';
+  position: absolute;
+  inset: -110px -65px -100px -10vw;
+  background: radial-gradient(ellipse at 30% 50%, var(--game-paper) 30%, color-mix(in srgb, var(--game-paper) 92%, transparent) 55%, transparent 73%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.game-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  letter-spacing: .14em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--game-muted);
+  margin: 0 0 23px;
+}
+
+.game-eyebrow > span {
+  width: 21px;
+  height: 1px;
+  background: var(--game-sage);
+}
+
+.hidden-garden-dialog h2 {
+  font-family: var(--display);
+  font-size: clamp(66px, 6.5vw, 94px);
+  line-height: .86;
+  letter-spacing: -.045em;
+  font-weight: 500;
+  margin: 0;
+}
+
+.hidden-garden-dialog h2 em {
+  color: var(--game-sage);
+  font-weight: 500;
+}
+
+.game-intro-copy {
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 26px 0 16px;
+}
+
+.game-intro-note {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--game-muted);
+  margin: 0 0 27px;
+}
+
+.game-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: 40px;
+  background: var(--game-ink);
+  color: var(--game-paper);
+  font-size: 13px;
+  transition: transform .2s, background .2s;
+}
+
+.game-primary:hover {
+  background: #59694b;
+  transform: translateY(-1px);
+}
+
+.game-control-guide {
+  margin-top: 19px;
+  color: var(--game-muted);
+  font-size: 9px;
+  line-height: 1.9;
+}
+
+.game-control-guide span > span {
+  margin: 0 6px;
+  opacity: .5;
+}
+
+.hidden-garden-dialog kbd {
+  font: inherit;
+  color: var(--game-ink);
+}
+
+.game-touch-guide {
+  display: none;
+}
+
+.game-personal-best {
+  color: var(--game-muted);
+  font-size: 10px;
+  line-height: 1.6;
+  margin-top: 14px;
+}
+
+.game-screen {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.game-loading-screen {
+  width: 300px;
+}
+
+.game-loading-screen p {
+  font-family: var(--display);
+  font-size: 31px;
+  margin: 20px 0 10px;
+}
+
+.game-loading-screen > span:last-child {
+  font-size: 11px;
+  color: var(--game-muted);
+}
+
+.game-loading-sprout {
+  display: inline-block;
+  color: var(--game-sage);
+  animation: game-breathe 1.5s ease-in-out infinite alternate;
+}
+
+.game-loading-sprout svg {
+  width: 30px;
+  height: 40px;
+}
+
+.game-menu-shade {
+  position: absolute;
+  inset: 80px 0 0;
+  background: radial-gradient(ellipse at 50% 48%, color-mix(in srgb, var(--game-paper) 95%, transparent) 5%, color-mix(in srgb, var(--game-paper) 88%, transparent) 25%, transparent 63%);
+}
+
+.game-menu {
+  width: min(410px, 88%);
+  padding: 24px 12px;
+}
+
+.game-menu .game-eyebrow {
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.game-menu h2 {
+  font-size: 72px;
+}
+
+.game-menu > p:not(.game-eyebrow) {
+  color: var(--game-muted);
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 22px 0;
+}
+
+.game-menu .game-primary {
+  min-width: 205px;
+}
+
+.game-text-button {
+  display: block;
+  min-height: 44px;
+  padding: 12px 18px;
+  margin: 5px auto 0;
+  color: var(--game-muted);
+  font-size: 11px;
+}
+
+.game-text-button:hover {
+  color: var(--game-ink);
+}
+
+.game-menu-caption {
+  display: block;
+  margin-top: 19px;
+  font-size: 9px;
+  color: var(--game-muted);
+}
+
+.game-complete-flower {
+  display: block;
+  color: #b88e9b;
+  margin-bottom: 19px;
+}
+
+.game-menu .game-result-note {
+  font-size: 10px !important;
+  margin: -10px 0 24px !important;
+}
+
+.game-notice {
+  position: absolute;
+  top: max(92px, calc(env(safe-area-inset-top) + 65px));
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 20px;
+  color: var(--game-ink);
+  font-size: 11px;
+  text-align: center;
+  max-width: calc(100% - 30px);
+  width: max-content;
+  pointer-events: none;
+}
+
+.game-notice:not(:empty) {
+  background: color-mix(in srgb, var(--game-paper) 94%, transparent);
+  padding: 10px 17px;
+}
+
+.game-touch-controls {
+  display: none;
+  position: absolute;
+  inset: auto 7% max(26px, env(safe-area-inset-bottom));
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+
+.game-stick {
+  --stick-x: 0px;
+  --stick-y: 0px;
+  position: relative;
+  width: 106px;
+  height: 106px;
+  border-radius: 50%;
+  border: 1px solid #87937360;
+  background: color-mix(in srgb, var(--game-paper) 64%, transparent);
+  touch-action: none;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.game-stick-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  transform: translate(var(--stick-x), var(--stick-y));
+  border: 1px solid #6b7d5845;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--game-sage) 28%, var(--game-paper));
+  box-shadow: 0 3px 7px #52644813;
+}
+
+.game-stick-lines::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 76%;
+  height: 1px;
+  background: #7f906320;
+  transform: translate(-50%, -50%);
+}
+
+.game-stick-lines::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 76%;
+  height: 1px;
+  background: #7f906320;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.game-jump {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 1px solid #6b7d5860;
+  background: color-mix(in srgb, var(--game-paper) 85%, transparent);
+  touch-action: none;
+  pointer-events: auto;
+  user-select: none;
+  color: var(--game-ink);
+}
+
+.game-jump span {
+  font-size: 9px;
+  letter-spacing: .035em;
+}
+
+.game-jump:active {
+  background: #cbd5b5;
+  transform: scale(.96);
+}
+
+.garden-app .hidden-garden-dialog h2 {
+  font-size: 86px;
+  line-height: .9;
+  color: var(--game-ink);
+}
+
+.garden-app .hidden-garden-dialog h2 em {
+  color: var(--game-sage);
+}
+
+.garden-app .game-menu h2 {
+  font-size: 64px;
+}
+
+.garden-app .hidden-garden-dialog :is(h2, p, span, legend, button) {
+  letter-spacing: 0;
+}
+
+@media (pointer: coarse), (max-width: 760px) {
+  .game-touch-controls {
+    display: flex;
+  }
+
+  .game-keyboard-guide {
+    display: none;
+  }
+
+  .game-touch-guide {
+    display: inline;
+  }
+}
+
+@media (max-width: 380px) {
+  .game-wordmark {
+    font-size: 19px;
+    white-space: nowrap;
+  }
+
+  .game-wordmark > svg {
+    display: none;
+  }
+
+  .game-hud {
+    left: 5%;
+    right: 5%;
+    gap: 8px;
+  }
+
+  .game-hud-actions {
+    gap: 4px;
+  }
+
+  .game-flower-count {
+    font-size: 10px;
+    gap: 4px;
+    padding: 8px 4px;
+  }
+
+  .game-intro-note {
+    font-size: 10px;
+  }
+}
+
+@media (max-height: 610px) {
+  .game-introduction {
+    left: 7%;
+    top: 54%;
+    bottom: auto;
+    width: 330px;
+    max-width: 60%;
+    transform: translateY(-50%);
+  }
+
+  .game-introduction h2 {
+    font-size: 58px;
+  }
+
+  .game-introduction .game-eyebrow {
+    margin-bottom: 12px;
+    font-size: 8px;
+  }
+
+  .game-intro-copy {
+    font-size: 19px;
+    margin: 14px 0 10px;
+  }
+
+  .game-intro-note {
+    font-size: 10px;
+    margin-bottom: 15px;
+  }
+
+  .game-control-guide {
+    margin-top: 10px;
+  }
+
+  .game-personal-best {
+    display: none;
+  }
+
+  .game-menu {
+    padding: 5px 12px;
+  }
+
+  .game-menu h2 {
+    font-size: 52px;
+  }
+
+  .game-menu > p:not(.game-eyebrow) {
+    margin: 15px 0;
+  }
+
+  .game-menu .game-eyebrow {
+    margin-bottom: 14px;
+  }
+
+  .game-menu-caption,
+  .game-complete-flower {
+    display: none;
+  }
+}
+
+@media (max-width: 440px) and (max-height: 610px) {
+  .game-introduction {
+    max-width: 86%;
+    top: auto;
+    bottom: 22px;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-loading-sprout {
+    animation: none;
+  }
+
+  .hidden-garden-dialog button {
+    transition: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .game-hud {
+    left: 6%;
+    right: 6%;
+    top: max(19px, env(safe-area-inset-top));
+  }
+
+  .game-wordmark {
+    font-size: 24px;
+    gap: 8px;
+  }
+
+  .game-wordmark > svg {
+    width: 18px;
+    height: 24px;
+  }
+
+  .game-hud-actions {
+    gap: 6px;
+  }
+
+  .game-flower-count {
+    font-size: 11px;
+    padding: 8px 5px;
+    gap: 6px;
+  }
+
+  .game-icon-button {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border: 0;
+    background: color-mix(in srgb, var(--game-paper) 70%, transparent);
+  }
+
+  .game-introduction {
+    top: auto;
+    bottom: max(32px, env(safe-area-inset-bottom));
+    left: 8%;
+    width: 84%;
+    max-width: 84%;
+    transform: none;
+  }
+
+  .game-introduction::before {
+    inset: -50px -10vw -100px;
+    background: linear-gradient(transparent, color-mix(in srgb, var(--game-paper) 95%, transparent) 28%, var(--game-paper) 70%);
+  }
+
+  .game-introduction .game-eyebrow {
+    margin-bottom: 15px;
+  }
+
+  .game-introduction h2 {
+    font-size: clamp(63px, 15vw, 82px);
+  }
+
+  .game-intro-copy {
+    margin: 19px 0 11px;
+    font-size: 22px;
+  }
+
+  .game-intro-note {
+    margin: 0 0 20px;
+    font-size: 11px;
+  }
+
+  .game-control-guide {
+    margin-top: 13px;
+  }
+
+  .game-menu-shade {
+    top: 66px;
+    background: radial-gradient(ellipse at 50% 48%, color-mix(in srgb, var(--game-paper) 97%, transparent) 28%, color-mix(in srgb, var(--game-paper) 85%, transparent) 45%, transparent 85%);
+  }
+
+  .game-menu h2 {
+    font-size: 63px;
+  }
+
+  .garden-app .hidden-garden-dialog h2 {
+    font-size: 66px;
+  }
+
+  .garden-app .game-menu h2 {
+    font-size: 58px;
+  }
+}
+
+@media (max-width: 360px), (max-height: 610px) {
+  .garden-app .hidden-garden-dialog h2 {
+    font-size: 54px;
+  }
+}
+
+@keyframes game-breathe { from { opacity: .5; transform: translateY(2px); } to { opacity: 1; transform: translateY(-3px); } }

@@ -56,6 +56,8 @@ export function FaithHoverCard({ children, faith, className, onOpenPage }: Faith
       <HoverCardPrimitive.Trigger asChild>
         <button
           type="button"
+          aria-haspopup="dialog"
+          onFocus={() => handleOpenChange(true)}
           onPointerDown={() => {
             suppressHoverUntilRef.current = Date.now() + 700;
           }}

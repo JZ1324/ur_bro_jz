@@ -1,0 +1,111 @@
+/* Memories chapter, postcard grid, slideshow, and photo tools. */
+
+.garden-app .memory-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px 17px;
+}
+
+.garden-app .memory-gallery figure {
+  margin: 0;
+  min-width: 0;
+}
+
+.garden-app .memory-gallery figcaption {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--muted);
+  padding-top: 9px;
+}
+
+.garden-app .memory-gallery figcaption span {
+  font-size: 8px;
+}
+
+.garden-app .chapter-details .memory-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--muted);
+  margin: 0 0 20px;
+}
+
+.garden-app .memory-hint svg {
+  flex-shrink: 0;
+}
+
+.garden-app .memory-gallery .memory-enlarge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: auto;
+  min-height: 36px;
+  font-size: 10px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.garden-app .memory-gallery .memory-postcard {
+  display: block;
+  width: 100%;
+  transition: transform .2s;
+}
+
+.garden-app .memory-slideshow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 0;
+  margin-top: 22px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  text-align: left;
+}
+
+.garden-app .memory-slideshow span {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--muted);
+}
+
+.garden-app .memory-slideshow:hover {
+  color: var(--sage);
+}
+
+.photo-tools {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 10px;
+}
+
+.photo-tools button,
+.photo-tools a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.photo-tools button:hover,
+.photo-tools a:hover {
+  color: var(--color-warm-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-app .memory-gallery .memory-postcard:hover {
+    transform: none;
+  }
+}

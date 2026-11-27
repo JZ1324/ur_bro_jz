@@ -1,0 +1,32 @@
+services:
+  garden:
+    build:
+      context: ..
+    restart: unless-stopped
+    environment:
+      GARDEN_PUBLIC_URL: https://${GARDEN_DOMAIN:?Set GARDEN_DOMAIN}
+      GARDEN_DATABASE: /data/plantings.sqlite
+    volumes:
+      - garden-data:/data
+    expose:
+      - "4179"
+    stop_grace_period: 30s
+  proxy:
+    image: caddy:2.10.2
+    restart: unless-stopped
+    environment:
+      GARDEN_DOMAIN: ${GARDEN_DOMAIN:?Set GARDEN_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      garden:
+        condition: service_healthy
+volumes:
+  garden-data:
+  caddy-data:
+  caddy-config:

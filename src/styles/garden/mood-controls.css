@@ -1,0 +1,395 @@
+/* Standalone atmosphere controls and wish feedback. */
+
+.garden-mood-controls {
+  position: absolute;
+  z-index: 6;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.garden-mood-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  border: 1px solid color-mix(in srgb, var(--sage) 25%, transparent);
+  border-radius: 30px;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  box-shadow: 0 3px 12px #15291906;
+  backdrop-filter: blur(12px);
+}
+
+.garden-mood-bar > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 24px;
+  font-size: 10px;
+  transition: background 160ms ease, transform 160ms cubic-bezier(.23, 1, .32, 1);
+}
+
+.garden-mood-bar > button > svg {
+  flex: none;
+}
+
+.garden-mood-bar > button:active {
+  transform: scale(.97);
+}
+
+.garden-mood-trigger > svg:last-child {
+  transition: transform 180ms cubic-bezier(.23, 1, .32, 1);
+}
+
+.garden-mood-trigger[aria-expanded='true'] > svg:last-child {
+  transform: rotate(180deg);
+}
+
+.garden-mood-divider {
+  height: 17px;
+  width: 1px;
+  background: var(--line);
+}
+
+.garden-wish-button {
+  color: var(--sage) !important;
+}
+
+.garden-wish-button[aria-disabled='true'] {
+  cursor: default;
+}
+
+.garden-mood-panel {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  width: 310px;
+  padding: 17px 8px 8px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--paper);
+  box-shadow: 0 12px 36px #10281d14, 0 2px 5px #10281d08;
+  transform-origin: 24% bottom;
+  animation: garden-mood-enter 180ms cubic-bezier(.23, 1, .32, 1) both;
+}
+
+.garden-mood-panel > p {
+  margin: 0 12px 10px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.garden-mood-panel > button {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  min-height: 63px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  text-align: left;
+  transition: background 160ms ease;
+}
+
+.garden-mood-panel > button[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--sage) 10%, transparent);
+}
+
+.garden-mood-panel > button > span {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+}
+
+.garden-mood-panel strong {
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.garden-mood-panel small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.garden-mood-panel > button > svg {
+  flex: none;
+  color: var(--sage);
+}
+
+.garden-mood-trigger:focus-visible + .garden-mood-panel {
+  animation: none;
+}
+
+.garden-wish-note {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  margin: 0 0 12px;
+  padding: 4px 13px;
+  border-radius: 20px;
+  transform: translate(-50%, 4px);
+  opacity: 0;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  font: italic 21px/1.25 var(--display);
+  pointer-events: none;
+  transition: opacity 200ms ease, transform 200ms cubic-bezier(.23, 1, .32, 1);
+}
+
+.garden-wish-note.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.garden-app .garden-mood-controls {
+  position: relative;
+  inset: auto;
+  left: auto;
+  bottom: auto;
+  transform: none;
+}
+
+.garden-app .garden-mood-bar {
+  gap: clamp(12px, 1.9vw, 32px);
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.garden-app .garden-mood-bar > button {
+  min-height: var(--control-height);
+  padding: 0 clamp(14px, 1.25vw, 21px);
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: var(--ui-size);
+  color: var(--ink);
+}
+
+.garden-app .garden-mood-bar > button > svg:first-child {
+  width: 20px;
+  height: 20px;
+}
+
+.garden-app .garden-mood-trigger > svg:last-child {
+  width: 14px;
+  height: 14px;
+}
+
+.garden-app .garden-mood-divider {
+  display: none;
+}
+
+.garden-app .garden-wish-button {
+  color: var(--ink) !important;
+}
+
+.garden-app .garden-mood-panel {
+  left: 0;
+  right: auto;
+  top: auto;
+  bottom: calc(100% + 14px);
+  width: 320px;
+  transform: none;
+  transform-origin: left bottom;
+  animation-name: garden-mood-enter;
+}
+
+.garden-app .garden-mood-panel > p {
+  font-size: 11px;
+}
+
+.garden-app .garden-mood-panel strong {
+  font-size: 14px;
+}
+
+.garden-app .garden-mood-panel small {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .garden-mood-bar > button:hover,
+  .garden-mood-panel > button:hover {
+    background: color-mix(in srgb, var(--sage) 12%, transparent);
+  }
+}
+
+@media (max-width: 760px) and (max-height: 730px) {
+  .garden-mood-controls {
+    bottom: 10px;
+  }
+
+  .garden-mood-panel {
+    bottom: auto;
+    top: calc(100% + 8px);
+    transform-origin: center top;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 620px) {
+  .garden-mood-controls {
+    left: auto;
+    right: 8%;
+    bottom: 12px;
+    transform: none;
+  }
+
+  .garden-mood-bar {
+    flex-direction: column;
+    border-radius: 24px;
+  }
+
+  .garden-mood-bar > button {
+    width: 38px;
+    min-height: 38px;
+    padding: 0;
+  }
+
+  .garden-mood-bar > button > span,
+  .garden-mood-trigger > svg:last-child {
+    display: none;
+  }
+
+  .garden-mood-divider {
+    width: 16px;
+    height: 1px;
+  }
+
+  .garden-mood-panel {
+    left: auto;
+    right: 0;
+    width: min(288px, calc(100vw - 32px));
+    transform: none;
+    transform-origin: right top;
+    animation-name: garden-mood-enter;
+  }
+
+  .garden-wish-note {
+    left: auto;
+    right: 0;
+    bottom: 0;
+    margin-right: 55px;
+    transform: translateY(4px);
+  }
+
+  .garden-wish-note.is-visible {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-mood-controls * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .garden-mood-controls {
+    bottom: 6px;
+  }
+
+  .garden-mood-bar > button {
+    min-height: 38px;
+    padding: 0 11px;
+    font-size: 10px;
+    gap: 7px;
+  }
+
+  .garden-mood-panel {
+    left: 50%;
+    width: min(310px, calc(100vw - 32px));
+    transform: translateX(-50%);
+    transform-origin: center bottom;
+    animation-name: garden-mood-enter-mobile;
+  }
+
+  .garden-mood-panel > button {
+    min-height: 58px;
+  }
+
+  .garden-wish-note {
+    font-size: 18px;
+    margin-bottom: 7px;
+  }
+
+  .garden-app .garden-mood-controls {
+    inset: auto;
+    transform: none;
+  }
+
+  .garden-app .garden-mood-bar {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .garden-app .garden-mood-bar > button {
+    width: auto;
+    min-height: 44px;
+    padding: 0 14px;
+    font-size: 13px;
+    gap: 8px;
+  }
+
+  .garden-app .garden-mood-bar > button > span,
+  .garden-app .garden-mood-trigger > svg:last-child {
+    display: inline;
+  }
+
+  .garden-app .garden-mood-panel {
+    left: 50%;
+    right: auto;
+    top: auto;
+    bottom: calc(100% + 12px);
+    width: min(320px, calc(100vw - 32px));
+    transform: translateX(-50%);
+    transform-origin: center bottom;
+    animation-name: garden-mood-enter-mobile;
+  }
+
+  .garden-app .garden-wish-note {
+    left: 50%;
+    right: auto;
+    bottom: 100%;
+    margin: 0 0 10px;
+    transform: translate(-50%, 4px);
+    font-size: 18px;
+  }
+
+  .garden-app .garden-wish-note.is-visible {
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (max-width: 360px) {
+  .garden-app .garden-mood-bar {
+    gap: 8px;
+  }
+
+  .garden-app .garden-mood-bar > button {
+    padding: 0 10px;
+    font-size: 12px;
+    gap: 7px;
+  }
+
+  .garden-app .garden-mood-bar > button > svg:first-child {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+@keyframes garden-mood-enter { from { opacity: 0; transform: translateY(5px) scale(.98); } to { opacity: 1; transform: none; } }
+
+@keyframes garden-mood-enter-mobile { from { opacity: 0; transform: translate(-50%, 5px) scale(.98); } to { opacity: 1; transform: translate(-50%, 0); } }

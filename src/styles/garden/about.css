@@ -1,0 +1,10 @@
+/* About chapter faith note. */
+
+.garden-app .faith-note {
+  border-top: 1px solid var(--line);
+  padding-top: 23px;
+}
+
+.garden-app .faith-note > p:last-child {
+  color: var(--muted);
+}

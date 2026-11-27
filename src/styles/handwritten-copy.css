@@ -1,0 +1,62 @@
+:root {
+  --font-handwritten: 'Caveat', cursive;
+}
+
+/* Prose, captions, and notes share the handwriting already used on the postcards. */
+.garden-app :is(
+  .intro-copy, .section-description, .project-list p, .faith-note > p,
+  .faith-note blockquote, .disclosure-copy, .chapter-details .song-note,
+  .plant-moment .quiet-caption, .ocean-heading h2 + p, .ocean-case-picker > p,
+  .ocean-chest-dialog .ocean-section-heading h3 + p, .ocean-chest-dialog .ocean-odds p,
+  .ocean-chest-dialog .ocean-shop-note, .ocean-chest-dialog .ocean-specimen p,
+  .studio-sharing, .game-intro-copy, .game-intro-note, .game-menu h2 + p,
+  .guide-wish-hint
+),
+.editorial-dialog :is(.archive-intro, .detail-intro, .row-description, .detail-notes p, .project-process, .project-unpublished, .tool-notes p, .account-description, .account-privacy),
+[data-verse-preview-text] {
+  font-family: var(--font-handwritten);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.garden-app :is(.intro-copy, .section-description) {
+  font-size: clamp(23px, 1.95vw, 30px);
+}
+
+.garden-app .faith-note blockquote {
+  font-size: 30px;
+}
+
+.garden-app .chapter-details .song-note {
+  font-size: 23px;
+  font-style: normal;
+}
+
+.garden-app .game-intro-copy {
+  font-size: clamp(20px, 4vw, 25px);
+}
+
+.editorial-dialog :is(.archive-intro, .detail-intro, .account-description) {
+  font-size: 22px;
+}
+
+/* Long-form overlays use their existing type scale. Match the apparent
+   lowercase height of the UI font while leaving labels and titles alone. */
+:is(#about-panel, #jesus-panel, [aria-label='Private archive'], [aria-label='Archive map'], [aria-label='Classified name puzzle'])
+  p:is(.leading-relaxed, .leading-6, .leading-7, .leading-9):not(.uppercase) {
+  font-family: var(--font-handwritten);
+  font-size-adjust: .49;
+}
+
+@media (max-width: 760px) {
+  .garden-app :is(.intro-copy, .section-description) {
+    font-size: 22px;
+  }
+}
+
+@media (max-height: 620px) {
+  .garden-app :is(.intro-copy, .section-description) {
+    font-size: 20px;
+  }
+}

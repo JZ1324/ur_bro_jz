@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-server
+.git
+.env*
+.garden-data
+local-audio
+test-results
+playwright-report
