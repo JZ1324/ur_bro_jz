@@ -145,15 +145,18 @@ function GardenEntrance({ onEnter }: { onEnter: () => void }) {
   }, []);
 
   return <dialog ref={dialog} className="garden-entrance" aria-labelledby="garden-entrance-title" onCancel={event => event.preventDefault()}>
-    <div className="garden-entrance-mark" aria-hidden="true">
-      <SparkleFour className="garden-entrance-spark" focusable="false" />
-      <Sprout />
-      <DoubleHearts className="garden-entrance-hearts" focusable="false" />
+    <div className="garden-entrance-scene" aria-hidden="true">
+      <div className="garden-entrance-moon" />
+      <div className="garden-entrance-fireflies" />
+      <img src={`${import.meta.env.BASE_URL}garden-entrance.webp`} alt="" fetchPriority="high" />
     </div>
-    <h2 id="garden-entrance-title">JZ’s garden</h2>
-    <button type="button" className="primary-button" data-blast-sound onClick={onEnter}>
-      Enter <ArrowRight size={17} aria-hidden="true" />
-    </button>
+    <div className="garden-entrance-copy">
+      <div className="garden-entrance-mark" aria-hidden="true"><Sprout /></div>
+      <h2 id="garden-entrance-title">JZ’s <em>garden</em></h2>
+      <button type="button" className="primary-button" data-blast-sound onClick={onEnter}>
+        Enter <ArrowRight size={17} aria-hidden="true" />
+      </button>
+    </div>
   </dialog>;
 }
 

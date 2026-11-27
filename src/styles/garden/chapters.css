@@ -513,65 +513,199 @@
   }
 }
 
+/* The entrance uses a still of the garden model so it can appear before WebGL loads. */
 .garden-entrance {
-  width: min(510px, calc(100% - 32px));
+  position: fixed;
+  inset: 0;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
   max-width: none;
-  max-height: calc(100% - 32px);
-  margin: auto;
-  padding: clamp(24px, 7vh, 66px) 22px;
+  max-height: none;
+  margin: 0;
+  padding: clamp(32px, 7vw, 130px);
+  overflow: auto;
   border: 0;
-  background: transparent;
-  color: var(--ink);
-  text-align: center;
+  background:
+    radial-gradient(ellipse at 68% 42%, #435759 0%, transparent 52%),
+    linear-gradient(155deg, #111c24 15%, #203638 75%, #131f19);
+  color: #faf1de;
 }
 
-.garden-entrance::backdrop {
+.garden-entrance[open] {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  align-content: center;
+  align-items: center;
+  gap: clamp(24px, 4vw, 68px);
+}
+
+.garden-entrance::before {
+  position: absolute;
+  z-index: -1;
+  inset: auto 0 0;
+  height: 72%;
   background:
-    radial-gradient(ellipse at 50% 43%, color-mix(in srgb, var(--sage) 25%, var(--paper)), transparent 47%),
-    var(--paper);
+    url('/garden-pixel/landscape-evening-foreground.png') center bottom / 100% 67% no-repeat,
+    url('/garden-pixel/landscape-evening-distant.png') center bottom / 100% 100% no-repeat;
+  opacity: .55;
+  content: '';
+  pointer-events: none;
+}
+
+.garden-entrance::backdrop { background: #111c24; }
+
+.garden-entrance-copy {
+  grid-area: 1 / 1;
+  justify-self: end;
+  width: min(100%, 440px);
 }
 
 .garden-entrance-mark {
-  position: relative;
   display: grid;
   place-items: center;
-  width: 84px;
-  height: 84px;
-  margin: 0 auto 20px;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 22px;
+  border: 1px solid #b8c79866;
   border-radius: 50%;
-  border: 1px solid var(--line);
-  color: var(--sage);
+  color: #d2dcad;
 }
 
-.garden-entrance-mark > svg:nth-child(2) { width: 32px; height: 40px; }
-
-.garden-entrance-spark,
-.garden-entrance-hearts {
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  color: var(--color-warm-accent);
-}
-
-.garden-entrance-spark { top: 9px; left: -15px; rotate: -12deg; }
-.garden-entrance-hearts { right: -18px; bottom: 2px; rotate: 12deg; }
+.garden-entrance-mark svg { width: 24px; height: 30px; }
 
 .garden-entrance h2 {
-  margin: 0 0 clamp(20px, 5vh, 34px);
-  font: 500 clamp(53px, 10vw, 78px)/.98 var(--display);
-  letter-spacing: -.045em;
+  margin: 0 0 clamp(24px, 4vw, 46px);
+  font: 500 clamp(4.7rem, 8.4vw, 9rem)/.76 var(--display);
+  letter-spacing: -.055em;
+}
+
+.garden-app .garden-entrance h2 em {
+  display: block;
+  padding-block: .13em .12em;
+  color: #edc8b6;
 }
 
 .garden-app .garden-entrance .primary-button {
   min-height: 50px;
-  justify-content: center;
-  gap: 20px;
-  margin: 0 auto;
-  padding-inline: 30px;
+  gap: 32px;
+  padding-inline: 25px;
+  border: 1px solid #d4dfac;
+  background: #d4dfac;
+  color: #19261e;
   font: 500 15px 'DM Sans', sans-serif;
 }
 
+.garden-app .garden-entrance .primary-button:hover { background: #eff1c8; }
+.garden-entrance .primary-button svg { transition: translate .2s ease; }
+.garden-entrance .primary-button:hover svg { translate: 4px 0; }
+
 .garden-app .garden-entrance .primary-button:focus-visible {
-  outline-width: 1px;
-  outline-offset: 4px;
+  outline: 1px solid #edf2cb;
+  outline-offset: 5px;
+}
+
+.garden-entrance-scene {
+  position: relative;
+  grid-area: 1 / 2;
+  justify-self: start;
+  width: min(100%, 75svh, 730px);
+  padding: 7% 2% 2%;
+}
+
+.garden-entrance-scene img {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1108 / 946;
+  filter: drop-shadow(0 28px 28px #07151880);
+}
+
+.garden-entrance-moon {
+  position: absolute;
+  top: 0;
+  left: 14%;
+  width: 35%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 29%, #f4e4be, #c1aa8c);
+  box-shadow: 0 0 75px #f4e4be36;
+  opacity: .79;
+}
+
+.garden-entrance-fireflies {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 7% 37%, #e7d39a 1px, transparent 3px),
+    radial-gradient(circle at 21% 55%, #e7d39a 1px, transparent 3px),
+    radial-gradient(circle at 49% 8%, #eedaa7 1px, transparent 3px),
+    radial-gradient(circle at 82% 13%, #edc8b6 1.5px, transparent 3px),
+    radial-gradient(circle at 97% 44%, #e7d39a 1px, transparent 3px),
+    radial-gradient(circle at 87% 76%, #eedaa7 1.5px, transparent 4px),
+    radial-gradient(circle at 13% 87%, #e7d39a 1px, transparent 3px);
+  filter: drop-shadow(0 0 6px #ecd797);
+  opacity: .75;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .garden-entrance-scene { animation: garden-entrance-reveal .65s ease-out both; }
+  .garden-entrance-fireflies { animation: garden-entrance-fireflies 5s ease-in-out infinite alternate; }
+}
+
+@keyframes garden-entrance-reveal {
+  from { opacity: 0; transform: translateY(16px); }
+}
+
+@keyframes garden-entrance-fireflies {
+  from { opacity: .42; transform: translateY(4px); }
+  to { opacity: .95; transform: translateY(-5px); }
+}
+
+@media (max-width: 700px) {
+  .garden-entrance {
+    padding: clamp(16px, 4svh, 35px) 22px;
+    background:
+      radial-gradient(ellipse at 52% 32%, #435759 0%, transparent 61%),
+      linear-gradient(155deg, #111c24 15%, #203638 75%, #131f19);
+  }
+
+  .garden-entrance[open] {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: clamp(15px, 3svh, 26px);
+  }
+
+  .garden-entrance-scene {
+    grid-area: 1 / 1;
+    justify-self: center;
+    width: min(100%, 49svh, 420px);
+    padding: 6% 2% 0;
+  }
+
+  .garden-entrance-copy {
+    grid-area: 2 / 1;
+    justify-self: center;
+    text-align: center;
+  }
+
+  .garden-entrance-mark { display: none; }
+
+  .garden-entrance h2 {
+    margin-bottom: 24px;
+    font-size: clamp(3.3rem, 12vw, 5rem);
+    line-height: 1;
+  }
+
+  .garden-app .garden-entrance h2 em { display: inline; }
+  .garden-entrance::before { background-size: auto 67%, auto 100%; }
+}
+
+@media (min-width: 701px) and (max-height: 500px) {
+  .garden-entrance { padding-block: 24px; }
+  .garden-entrance h2 { font-size: clamp(3.6rem, 16svh, 5rem); }
+  .garden-entrance-mark { margin-bottom: 12px; }
 }
